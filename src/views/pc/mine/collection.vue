@@ -1,10 +1,11 @@
 <template>
   <div class="pc-collection">
+    <!-- PC端头部 -->
     <div class="pc-header">
       <el-button
-        type="text"
+        type="primary"
         :icon="ArrowLeft"
-        @click="onClickLeft"
+        @click="handleBack"
         class="back-btn"
       >
         {{ $t('common.back') }}
@@ -12,6 +13,7 @@
       <h2 class="page-title">{{ $t('game.myCollection') }}</h2>
     </div>
 
+    <!-- PC端内容区域 -->
     <div class="pc-content">
       <el-tabs v-model="active" class="collection-tabs">
         <el-tab-pane :label="$t('all')" name="all">
@@ -245,7 +247,7 @@ const list = ref<{ [key: string]: ApiCollectGame[] }>({
   '6': [],
 })
 
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -290,153 +292,152 @@ onMounted(async () => {
   min-height: 100vh;
   background: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-  .pc-header {
-    max-width: 1400px;
-    margin: 0 auto 20px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 
-    .back-btn {
-      font-size: 14px;
+.back-btn {
+  margin-right: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .collection-tabs {
+    :deep(.el-tabs__header) {
+      margin-bottom: 30px;
     }
 
-    .page-title {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-      color: #303133;
+    :deep(.el-tabs__nav-wrap) {
+      &::after {
+        height: 1px;
+      }
+    }
+
+    :deep(.el-tabs__item) {
+      font-size: 16px;
+      padding: 0 30px;
+      height: 50px;
+      line-height: 50px;
+
+      &.is-active {
+        color: #409eff;
+        font-weight: 600;
+      }
+    }
+
+    :deep(.el-tabs__active-bar) {
+      height: 3px;
+      background: #409eff;
+    }
+
+    :deep(.el-tabs__content) {
+      min-height: 500px;
     }
   }
 
-  .pc-content {
-    max-width: 1400px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    padding: 30px;
+  .game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
 
-    .collection-tabs {
-      :deep(.el-tabs__header) {
-        margin-bottom: 30px;
+    .game-item {
+      display: flex;
+      align-items: center;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+      cursor: pointer;
+
+      &:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        border-color: #409eff;
       }
 
-      :deep(.el-tabs__nav-wrap) {
-        &::after {
-          height: 1px;
-        }
+      .game-image {
+        width: 100px;
+        height: 140px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
-      :deep(.el-tabs__item) {
-        font-size: 16px;
-        padding: 0 30px;
-        height: 50px;
-        line-height: 50px;
+      .game-info {
+        flex: 1;
+        margin: 0 20px;
+        min-width: 0;
 
-        &.is-active {
-          color: #409eff;
+        .game-title {
+          font-size: 18px;
           font-weight: 600;
-        }
-      }
-
-      :deep(.el-tabs__active-bar) {
-        height: 3px;
-        background: #409eff;
-      }
-
-      :deep(.el-tabs__content) {
-        min-height: 500px;
-      }
-    }
-
-    .game-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-
-      .game-item {
-        display: flex;
-        align-items: center;
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 12px;
-        padding: 20px;
-        transition: all 0.3s;
-        cursor: pointer;
-
-        &:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-          border-color: #409eff;
-        }
-
-        .game-image {
-          width: 100px;
-          height: 140px;
-          border-radius: 8px;
+          color: #303133;
+          margin-bottom: 10px;
           overflow: hidden;
-          flex-shrink: 0;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .game-info {
-          flex: 1;
-          margin: 0 20px;
-          min-width: 0;
-
-          .game-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #303133;
-            margin-bottom: 10px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-          }
-
-          .game-code {
-            background: #e0f2fe;
-            color: #409eff;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            display: inline-block;
-          }
+        .game-code {
+          background: #e0f2fe;
+          color: #409eff;
+          padding: 6px 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 500;
+          display: inline-block;
         }
+      }
 
-        .game-action {
-          flex-shrink: 0;
+      .game-action {
+        flex-shrink: 0;
 
-          :deep(.el-button) {
-            &:hover {
-              transform: scale(1.1);
-            }
+        :deep(.el-button) {
+          &:hover {
+            transform: scale(1.1);
           }
         }
       }
     }
+  }
 
-    :deep(.el-empty) {
-      padding: 80px 0;
+  :deep(.el-empty) {
+    padding: 80px 0;
 
-      .el-empty__description {
-        font-size: 16px;
-        color: #909399;
-      }
+    .el-empty__description {
+      font-size: 16px;
+      color: #909399;
     }
   }
 }
 
-// 大屏幕优化
 @media (min-width: 1600px) {
   .pc-collection {
+    max-width: 1400px;
+
     .pc-content {
       .game-grid {
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

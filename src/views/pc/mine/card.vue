@@ -1,18 +1,20 @@
 <template>
   <div class="pc-card">
+    <!-- PC端头部 -->
     <div class="pc-header">
       <el-button
-        type="text"
-        icon="ArrowLeft"
-        @click="onClickLeft"
-        class="pc-back-btn"
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
       >
         {{ $t('common.back') }}
       </el-button>
-      <h2 class="pc-title">{{ $t('mine.bankManage') }}</h2>
+      <h2 class="page-title">{{ $t('mine.bankManage') }}</h2>
     </div>
 
-    <div class="pc-card-contain">
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
       <!-- 账户列表展示 -->
       <div class="pc-bank-list" v-if="list.length > 0">
         <div class="pc-bank-item" v-for="(item, idx) in list" :key="`account-${item.id}`" :class="{ 'is-default': item.is_default }">
@@ -184,7 +186,7 @@ import { useAppStore } from '@/stores/app'
 import { useI18n } from 'vue-i18n'
 import { invokeApi } from '@/utils/tools'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, ArrowLeft } from '@element-plus/icons-vue'
 
 defineOptions({ name: 'PcBankCardManage' })
 
@@ -609,7 +611,7 @@ async function init() {
 }
 
 // 返回按钮
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -623,169 +625,170 @@ onMounted(() => {
   min-height: 100vh;
   background: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-  .pc-header {
-    max-width: 1200px;
-    margin: 0 auto 20px;
-    display: flex;
-    align-items: center;
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
+  margin-right: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+  .pc-bank-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
     gap: 20px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
+    margin-bottom: 30px;
 
-    .pc-back-btn {
-      font-size: 14px;
-    }
+    .pc-bank-item {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      padding: 20px;
+      color: #fff;
+      position: relative;
+      transition: all 0.3s;
+      min-height: 180px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
 
-    .pc-title {
-      margin: 0;
-      font-size: 24px;
-      color: #303133;
+      &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+      }
+
+      &.is-default {
+        border: 2px solid #ff6b35;
+        box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+      }
+
+      .pc-bank-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        .pc-bank-left {
+          .pc-bank-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          }
+
+          .pc-bank-details {
+            font-size: 14px;
+            opacity: 0.9;
+          }
+        }
+
+        .pc-bank-actions {
+          display: flex;
+          gap: 10px;
+        }
+      }
+
+      .pc-bank-card {
+        font-size: 18px;
+        font-weight: 500;
+        word-break: break-all;
+        line-height: 1.5;
+      }
+
+      .pc-bank-extra-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 14px;
+        opacity: 0.85;
+        margin-top: auto;
+
+        .pc-account-holder {
+          font-size: 14px;
+        }
+
+        .pc-account-date {
+          font-size: 12px;
+          opacity: 0.7;
+        }
+      }
     }
   }
 
-  .pc-card-contain {
-    max-width: 1200px;
-    margin: 0 auto;
-    background: #fff;
-    border-radius: 8px;
-    padding: 30px;
+  .pc-empty-state {
+    padding: 60px 0;
+    text-align: center;
 
-    .pc-bank-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-      gap: 20px;
-      margin-bottom: 30px;
+    .pc-empty-icon {
+      font-size: 80px;
+      margin-bottom: 20px;
 
-      .pc-bank-item {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 12px;
-        padding: 20px;
-        color: #fff;
+      .icon-bank-empty {
+        display: inline-block;
+        width: 80px;
+        height: 80px;
         position: relative;
-        transition: all 0.3s;
-        min-height: 180px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
 
-        &:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        &.is-default {
-          border: 2px solid #ff6b35;
-          box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
-        }
-
-        .pc-bank-info {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-
-          .pc-bank-left {
-            .pc-bank-name {
-              font-size: 20px;
-              font-weight: 600;
-              margin-bottom: 8px;
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-
-            .pc-bank-details {
-              font-size: 14px;
-              opacity: 0.9;
-            }
-          }
-
-          .pc-bank-actions {
-            display: flex;
-            gap: 10px;
-          }
-        }
-
-        .pc-bank-card {
-          font-size: 18px;
-          font-weight: 500;
-          word-break: break-all;
-          line-height: 1.5;
-        }
-
-        .pc-bank-extra-info {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 14px;
-          opacity: 0.85;
-          margin-top: auto;
-
-          .pc-account-holder {
-            font-size: 14px;
-          }
-
-          .pc-account-date {
-            font-size: 12px;
-            opacity: 0.7;
-          }
-        }
-      }
-    }
-
-    .pc-empty-state {
-      padding: 60px 0;
-      text-align: center;
-
-      .pc-empty-icon {
-        font-size: 80px;
-        margin-bottom: 20px;
-
-        .icon-bank-empty {
-          display: inline-block;
+        &::before {
+          content: '';
+          position: absolute;
           width: 80px;
-          height: 80px;
-          position: relative;
+          height: 60px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border-radius: 8px;
+          top: 10px;
+          opacity: 0.3;
+        }
 
-          &::before {
-            content: '';
-            position: absolute;
-            width: 80px;
-            height: 60px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 8px;
-            top: 10px;
-            opacity: 0.3;
-          }
-
-          &::after {
-            content: '';
-            position: absolute;
-            width: 60px;
-            height: 40px;
-            background: #fff;
-            border-radius: 4px;
-            top: 20px;
-            left: 10px;
-            box-shadow: inset 0 0 0 2px #667eea;
-          }
+        &::after {
+          content: '';
+          position: absolute;
+          width: 60px;
+          height: 40px;
+          background: #fff;
+          border-radius: 4px;
+          top: 20px;
+          left: 10px;
+          box-shadow: inset 0 0 0 2px #667eea;
         }
       }
-
-      .pc-empty-desc {
-        margin-top: 10px;
-        color: #909399;
-        font-size: 14px;
-      }
     }
 
-    .pc-btn-add {
-      display: block;
-      margin: 40px auto 0;
-      width: 200px;
-      height: 44px;
+    .pc-empty-desc {
+      margin-top: 10px;
+      color: #909399;
+      font-size: 14px;
     }
+  }
+
+  .pc-btn-add {
+    display: block;
+    margin: 40px auto 0;
+    width: 200px;
+    height: 44px;
   }
 }
 
@@ -797,6 +800,12 @@ onMounted(() => {
 
   .el-form {
     padding: 20px 0;
+  }
+}
+
+@media (min-width: 1600px) {
+  .pc-card {
+    max-width: 1400px;
   }
 }
 </style>

@@ -1,10 +1,11 @@
 <template>
   <div class="pc-deposit">
+    <!-- PC端头部 -->
     <div class="pc-header">
       <el-button
-        type="text"
+        type="primary"
         :icon="ArrowLeft"
-        @click="onClickLeft"
+        @click="handleBack"
         class="back-btn"
       >
         {{ $t('common.back') }}
@@ -12,6 +13,7 @@
       <h2 class="page-title">{{ $t('mine.quickDeposit') }}</h2>
     </div>
 
+    <!-- PC端内容区域 -->
     <div class="pc-content">
       <!-- 支付方式选择 -->
       <el-card class="pay-method-card">
@@ -340,7 +342,7 @@ const selectedAccount = computed(() => {
 })
 
 // 方法
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -577,348 +579,351 @@ onMounted(() => {
   min-height: 100vh;
   background: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-  .pc-header {
-    max-width: 1200px;
-    margin: 0 auto 20px;
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
+  margin-right: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  .el-card {
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .card-header {
     display: flex;
     align-items: center;
-    gap: 20px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    gap: 12px;
+    font-size: 16px;
+    font-weight: 600;
 
-    .back-btn {
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #409eff;
+      color: #fff;
+      border-radius: 50%;
       font-size: 14px;
     }
 
-    .page-title {
-      margin: 0;
-      font-size: 24px;
-      font-weight: 600;
-      color: #303133;
+    .amount-range {
+      margin-left: auto;
+      color: #f56c6c;
+      font-size: 14px;
+      font-weight: normal;
     }
   }
 
-  .pc-content {
-    max-width: 1200px;
-    margin: 0 auto;
+  // 支付方式样式
+  .pay-method-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
 
-    .el-card {
-      margin-bottom: 20px;
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 16px;
-      font-weight: 600;
-
-      .step-number {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 28px;
-        height: 28px;
-        background: #409eff;
-        color: #fff;
-        border-radius: 50%;
-        font-size: 14px;
-      }
-
-      .amount-range {
-        margin-left: auto;
-        color: #f56c6c;
-        font-size: 14px;
-        font-weight: normal;
-      }
-    }
-
-    // 支付方式样式
-    .pay-method-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 16px;
-
-      .pay-method-item {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
-        border: 2px solid #e4e7ed;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s;
-        position: relative;
-
-        &:hover {
-          border-color: #409eff;
-          background: #f0f9ff;
-        }
-
-        &.active {
-          border-color: #409eff;
-          background: #f0f9ff;
-        }
-
-        .method-icon {
-          width: 50px;
-          height: 50px;
-          margin-bottom: 10px;
-          border-radius: 8px;
-
-          &.icon-bank {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-
-            &::before {
-              content: '';
-              position: absolute;
-              width: 30px;
-              height: 20px;
-              background: #fff;
-              border-radius: 4px;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-
-          &.icon-huiwang {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            position: relative;
-
-            &::before {
-              content: 'W';
-              position: absolute;
-              color: #fff;
-              font-size: 24px;
-              font-weight: bold;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-
-          &.icon-usdt {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            position: relative;
-
-            &::before {
-              content: '₮';
-              position: absolute;
-              color: #fff;
-              font-size: 24px;
-              font-weight: bold;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-        }
-
-        .method-name {
-          font-size: 14px;
-          color: #303133;
-          font-weight: 500;
-        }
-
-        .check-mark {
-          position: absolute;
-          top: 10px;
-          right: 10px;
-          width: 24px;
-          height: 24px;
-          background: #67c23a;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-        }
-      }
-    }
-
-    // 账户列表样式
-    .account-list {
+    .pay-method-item {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      align-items: center;
+      padding: 20px;
+      border: 2px solid #e4e7ed;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
 
-      .account-item {
+      &:hover {
+        border-color: #409eff;
+        background: #f0f9ff;
+      }
+
+      &.active {
+        border-color: #409eff;
+        background: #f0f9ff;
+      }
+
+      .method-icon {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+
+        &.icon-bank {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background: #fff;
+            border-radius: 4px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+
+        &.icon-huiwang {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          position: relative;
+
+          &::before {
+            content: 'W';
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+
+        &.icon-usdt {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          position: relative;
+
+          &::before {
+            content: '₮';
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+      }
+
+      .method-name {
+        font-size: 14px;
+        color: #303133;
+        font-weight: 500;
+      }
+
+      .check-mark {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 24px;
+        height: 24px;
+        background: #67c23a;
+        border-radius: 50%;
         display: flex;
         align-items: center;
-        padding: 16px;
-        border: 2px solid #e4e7ed;
-        border-radius: 12px;
-        cursor: pointer;
-        transition: all 0.3s;
-        position: relative;
-
-        &:hover {
-          border-color: #409eff;
-          background: #f0f9ff;
-        }
-
-        &.active {
-          border-color: #409eff;
-          background: #f0f9ff;
-        }
-
-        .account-icon {
-          width: 50px;
-          height: 50px;
-          margin-right: 16px;
-          border-radius: 8px;
-          flex-shrink: 0;
-
-          &.icon-bank {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-
-            &::before {
-              content: '';
-              position: absolute;
-              width: 30px;
-              height: 20px;
-              background: #fff;
-              border-radius: 4px;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-
-          &.icon-huiwang {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            position: relative;
-
-            &::before {
-              content: 'W';
-              position: absolute;
-              color: #fff;
-              font-size: 24px;
-              font-weight: bold;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-
-          &.icon-usdt {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            position: relative;
-
-            &::before {
-              content: '₮';
-              position: absolute;
-              color: #fff;
-              font-size: 24px;
-              font-weight: bold;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-            }
-          }
-        }
-
-        .account-info {
-          flex: 1;
-
-          .account-name {
-            font-size: 16px;
-            font-weight: 500;
-            color: #303133;
-            margin-bottom: 4px;
-          }
-
-          .account-desc {
-            font-size: 14px;
-            color: #909399;
-          }
-        }
-
-        .check-mark {
-          width: 24px;
-          height: 24px;
-          background: #67c23a;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: #fff;
-        }
+        justify-content: center;
+        color: #fff;
       }
     }
+  }
 
-    // 支付详情样式
-    .payment-details {
-      .copy-field {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+  // 账户列表样式
+  .account-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 
-        span {
-          font-family: monospace;
-          font-size: 14px;
+    .account-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      border: 2px solid #e4e7ed;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+
+      &:hover {
+        border-color: #409eff;
+        background: #f0f9ff;
+      }
+
+      &.active {
+        border-color: #409eff;
+        background: #f0f9ff;
+      }
+
+      .account-icon {
+        width: 50px;
+        height: 50px;
+        margin-right: 16px;
+        border-radius: 8px;
+        flex-shrink: 0;
+
+        &.icon-bank {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 20px;
+            background: #fff;
+            border-radius: 4px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+
+        &.icon-huiwang {
+          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+          position: relative;
+
+          &::before {
+            content: 'W';
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
+        }
+
+        &.icon-usdt {
+          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+          position: relative;
+
+          &::before {
+            content: '₮';
+            position: absolute;
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+          }
         }
       }
 
-      .qrcode-container {
-        text-align: center;
-        padding: 20px;
-        margin-bottom: 20px;
+      .account-info {
+        flex: 1;
 
-        h4 {
-          margin-bottom: 16px;
+        .account-name {
+          font-size: 16px;
+          font-weight: 500;
           color: #303133;
+          margin-bottom: 4px;
         }
 
-        .qrcode-image {
-          width: 200px;
-          height: 200px;
-          border: 1px solid #e4e7ed;
-          padding: 10px;
-          background: #fff;
-          border-radius: 8px;
+        .account-desc {
+          font-size: 14px;
+          color: #909399;
         }
+      }
+
+      .check-mark {
+        width: 24px;
+        height: 24px;
+        background: #67c23a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+      }
+    }
+  }
+
+  // 支付详情样式
+  .payment-details {
+    .copy-field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      span {
+        font-family: monospace;
+        font-size: 14px;
       }
     }
 
-    // 充值表单样式
-    .recharge-form {
-      max-width: 600px;
-      margin: 0 auto;
+    .qrcode-container {
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 20px;
 
-      .submit-btn {
-        width: 100%;
-        height: 48px;
-        font-size: 16px;
-        margin-top: 20px;
+      h4 {
+        margin-bottom: 16px;
+        color: #303133;
       }
 
-      :deep(.el-upload-list__item) {
-        width: 148px;
-        height: 148px;
-      }
-    }
-
-    // 提示信息样式
-    .tips-alert {
-      .tips-content {
-        margin-top: 10px;
-
-        p {
-          margin: 8px 0;
-          line-height: 1.6;
-          color: #e6a23c;
-        }
+      .qrcode-image {
+        width: 200px;
+        height: 200px;
+        border: 1px solid #e4e7ed;
+        padding: 10px;
+        background: #fff;
+        border-radius: 8px;
       }
     }
+  }
+
+  // 充值表单样式
+  .recharge-form {
+    max-width: 600px;
+    margin: 0 auto;
+
+    .submit-btn {
+      width: 100%;
+      height: 48px;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+
+    :deep(.el-upload-list__item) {
+      width: 148px;
+      height: 148px;
+    }
+  }
+
+  // 提示信息样式
+  .tips-alert {
+    .tips-content {
+      margin-top: 10px;
+
+      p {
+        margin: 8px 0;
+        line-height: 1.6;
+        color: #e6a23c;
+      }
+    }
+  }
+}
+
+@media (min-width: 1600px) {
+  .pc-deposit {
+    max-width: 1400px;
   }
 }
 </style>
