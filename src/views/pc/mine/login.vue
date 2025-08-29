@@ -112,8 +112,8 @@ const captchaKey = ref('')
 // 获取验证码
 const getCaptcha = async () => {
   try {
-    const res = await api.authCaptcha()
-    if (res.code === 200 || res.code === 1 || res.code === 0) {
+    const res: any = await api.authCaptcha()
+    if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
       captchaUrl.value = res.data.img
       captchaKey.value = res.data.key
     }
@@ -126,7 +126,7 @@ const getCaptcha = async () => {
 const handleLogin = async () => {
   if (!loginFormRef.value) return
 
-  await loginFormRef.value.validate(async (valid) => {
+  await loginFormRef.value.validate(async (valid: any) => {
     if (!valid) return
 
     loading.value = true
@@ -142,9 +142,9 @@ const handleLogin = async () => {
         params.key = captchaKey.value
       }
 
-      const res = await api.login(params)
+      const res: any = await api.login(params)
 
-      if (res.code === 200 || res.code === 1 || res.code === 0) {
+      if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
         // 保存token
         localStorage.setItem('access_token', res.data.token)
 

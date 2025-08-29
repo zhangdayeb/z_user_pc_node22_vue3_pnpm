@@ -3,333 +3,172 @@ import { ref } from 'vue'
 import { ElLoading, ElMessage } from 'element-plus'
 import type { LoadingInstance } from 'element-plus/es/components/loading/src/loading'
 import api from '@/api'
-import { t } from '@/lang'
-import type { ApiUser } from 'typings'
+import router from '@/router'
 
 // 常量定义
 const TOKEN_KEY = 'access_token'
-const USER_KEY = 'current_user'
+const USER_KEY = 'user_info'
 
 export const useAppStore = defineStore('app', () => {
-  // 状态定义
-  const loginShow = ref(false)
-  const systemConf = ref<any>(null)
-  const token = ref<string | null>(null)
+  // ========== 状态定义 ==========
+  const token = ref<string>('')
+  const userInfo = ref<any>(null)
   const loadingInstance = ref<LoadingInstance | null>(null)
-  const registerConf = ref<any>({})
-  const me = ref<ApiUser | null>(null)
-  const loadingCount = ref(0) // 支持嵌套loading
 
-  // ==================== 加载状态管理 ====================
+  // ========== Token 管理 ==========
 
-  /**
-   * 显示全屏加载
-   * @param text 加载文本
-   * @param fullscreen 是否全屏
-   */
-  function loading(text: string = '', fullscreen: boolean = true) {
-    loadingCount.value++
-
-    if (loadingCount.value === 1) {
-      loadingInstance.value = ElLoading.service({
-        lock: true,
-        fullscreen,
-        text: text || t('common.loading'),
-        background: 'rgba(0, 0, 0, 0.7)',
-        customClass: 'app-loading'
-      })
+  // 初始化 token
+  function initToken() {
+    const storedToken = localStorage.getItem(TOKEN_KEY)
+    if (storedToken) {
+      token.value = storedToken
     }
   }
 
-  /**
-   * 关闭加载
-   */
-  function stopLoad() {
-    if (loadingCount.value > 0) {
-      loadingCount.value--
-    }
+  // 设置 token
+  function setToken(newToken: string) {
+    token.value = newToken
+    localStorage.setItem(TOKEN_KEY, newToken)
+  }
 
-    if (loadingCount.value === 0 && loadingInstance.value) {
-      loadingInstance.value.close()
-      loadingInstance.value = null
+  // 清除 token
+  function clearToken() {
+    token.value = ''
+    localStorage.removeItem(TOKEN_KEY)
+  }
+
+  // ========== 用户信息管理 ==========
+
+  // 初始化用户信息
+  function initUserInfo() {
+    const storedUser = localStorage.getItem(USER_KEY)
+    if (storedUser) {
+      try {
+        userInfo.value = JSON.parse(storedUser)
+      } catch (e) {
+        localStorage.removeItem(USER_KEY)
+      }
     }
   }
 
-  /**
-   * 强制关闭所有加载
-   */
-  function forceStopLoad() {
-    loadingCount.value = 0
+  // 设置用户信息
+  function setUserInfo(info: any) {
+    userInfo.value = info
+    localStorage.setItem(USER_KEY, JSON.stringify(info))
+  }
+
+  // 清除用户信息
+  function clearUserInfo() {
+    userInfo.value = null
+    localStorage.removeItem(USER_KEY)
+  }
+
+  // 获取用户信息（从API）
+  async function fetchUserInfo() {
+    try {
+      const res: any = await api.getUserInfo()
+      if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
+        setUserInfo(res.data)
+        return res.data
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+    return null
+  }
+
+  // ========== 登录状态管理 ==========
+
+  // 检查是否登录
+  function isLogin(): boolean {
+    return !!token.value
+  }
+
+  // 登录
+  async function login(username: string, password: string) {
+    try {
+      const res: any = await api.login({ username, password })
+      if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
+        // 保存 token
+        setToken(res.data.token)
+
+        // 保存用户信息
+        if (res.data.user) {
+          setUserInfo(res.data.user)
+        } else {
+          // 如果登录接口没返回用户信息，单独获取
+          await fetchUserInfo()
+        }
+
+        ElMessage.success('登录成功')
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('登录失败:', error)
+      return false
+    }
+  }
+
+  // 登出
+  function logout() {
+    clearToken()
+    clearUserInfo()
+    ElMessage.success('已退出登录')
+    router.push('/login')
+  }
+
+  // ========== Loading 管理 ==========
+
+  // 显示 loading
+  function showLoading(text: string = '加载中...') {
+    loadingInstance.value = ElLoading.service({
+      lock: true,
+      text,
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+  }
+
+  // 隐藏 loading
+  function hideLoading() {
     if (loadingInstance.value) {
       loadingInstance.value.close()
       loadingInstance.value = null
     }
   }
 
-  // ==================== Token 管理 ====================
+  // ========== 初始化 ==========
 
-  /**
-   * 获取 Token
-   */
-  function getToken(): string | null {
-    if (!token.value) {
-      token.value = localStorage.getItem(TOKEN_KEY)
-    }
-    return token.value
+  // 初始化
+  function init() {
+    initToken()
+    initUserInfo()
   }
 
-  /**
-   * 设置 Token
-   */
-  function setToken(tk: string) {
-    if (!tk) {
-      console.error('尝试设置空的 token')
-      return
-    }
+  // 自动初始化
+  init()
 
-    token.value = tk
-    localStorage.setItem(TOKEN_KEY, tk)
-
-    // 设置 axios 默认 header
-    if (api.defaults?.headers) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${tk}`
-    }
-  }
-
-  /**
-   * 清除 Token
-   */
-  function clearToken() {
-    token.value = null
-    localStorage.removeItem(TOKEN_KEY)
-
-    // 清除 axios header
-    if (api.defaults?.headers) {
-      delete api.defaults.headers.common['Authorization']
-    }
-  }
-
-  // ==================== 用户信息管理 ====================
-
-  /**
-   * 获取用户信息
-   */
-  function getUser(): ApiUser | null {
-    if (!me.value) {
-      const storedUser = localStorage.getItem(USER_KEY)
-      if (storedUser) {
-        try {
-          me.value = JSON.parse(storedUser)
-        } catch (error) {
-          console.error('解析用户信息失败:', error)
-          localStorage.removeItem(USER_KEY)
-        }
-      }
-    }
-    return me.value
-  }
-
-  /**
-   * 设置用户信息
-   */
-  function setUser(user: ApiUser) {
-    if (!user) {
-      console.error('尝试设置空的用户信息')
-      return
-    }
-
-    me.value = user
-    localStorage.setItem(USER_KEY, JSON.stringify(user))
-  }
-
-  /**
-   * 清除用户信息
-   */
-  function clearUser() {
-    me.value = null
-    localStorage.removeItem(USER_KEY)
-  }
-
-  /**
-   * 从 API 获取最新用户信息
-   */
-  async function getMeForApi(): Promise<ApiUser | null> {
-    // 先检查 token
-    if (!getToken()) {
-      console.log('无 token，跳过获取用户信息')
-      return null
-    }
-
-    try {
-      const resp = await api.me()
-
-      if (resp && resp.code === 200 && resp.data) {
-        setUser(resp.data)
-        return resp.data
-      } else {
-        console.error('获取用户信息失败:', resp?.message)
-
-        // 如果是认证失败，清除登录状态
-        if (resp?.code === 401) {
-          logout()
-          ElMessage.error('登录已过期，请重新登录')
-        }
-
-        return null
-      }
-    } catch (error: any) {
-      console.error('获取用户信息异常:', error)
-
-      // 网络错误处理
-      if (error?.response?.status === 401) {
-        logout()
-        ElMessage.error('登录已过期，请重新登录')
-      }
-
-      return null
-    }
-  }
-
-  /**
-   * 更新用户余额（局部更新）
-   */
-  function updateUserBalance(balance: number) {
-    if (me.value) {
-      me.value.money = balance
-      localStorage.setItem(USER_KEY, JSON.stringify(me.value))
-    }
-  }
-
-  // ==================== 登录状态管理 ====================
-
-  /**
-   * 检查是否已登录
-   */
-  function isLogin(): boolean {
-    return !!getToken() && !!getUser()
-  }
-
-  /**
-   * 登出
-   * @param showMessage 是否显示消息
-   */
-  function logout(showMessage: boolean = true) {
-    // 清除所有数据
-    clearToken()
-    clearUser()
-
-    // 关闭加载状态
-    forceStopLoad()
-
-    // 关闭登录弹窗
-    loginShow.value = false
-
-    // 显示消息
-    if (showMessage) {
-      ElMessage.success('已退出登录')
-    }
-
-    // 触发登出事件
-    window.dispatchEvent(new CustomEvent('user-logout'))
-  }
-
-  /**
-   * 检查登录状态，未登录则显示登录弹窗
-   */
-  function checkLogin(): boolean {
-    if (!isLogin()) {
-      loginShow.value = true
-      return false
-    }
-    return true
-  }
-
-  // ==================== 系统配置管理 ====================
-
-  /**
-   * 设置系统配置
-   */
-  function setSystemConf(conf: any) {
-    systemConf.value = conf
-  }
-
-  /**
-   * 获取系统配置
-   */
-  function getSystemConf() {
-    return systemConf.value
-  }
-
-  /**
-   * 设置注册配置
-   */
-  function setRegisterConf(conf: any) {
-    registerConf.value = conf
-  }
-
-  /**
-   * 获取注册配置
-   */
-  function getRegisterConf() {
-    return registerConf.value
-  }
-
-  // ==================== 初始化 ====================
-
-  /**
-   * 初始化 Store
-   */
-  async function init() {
-    // 恢复 token
-    const storedToken = getToken()
-    if (storedToken) {
-      // 设置 axios 默认 header
-      if (api.defaults?.headers) {
-        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`
-      }
-
-      // 尝试获取最新用户信息
-      await getMeForApi()
-    }
-  }
-
-  // 返回所有方法和状态
   return {
     // 状态
-    loginShow,
-    systemConf,
-    registerConf,
-    me,
-
-    // 加载状态
-    loading,
-    stopLoad,
-    forceStopLoad,
+    token,
+    userInfo,
 
     // Token 管理
-    getToken,
     setToken,
     clearToken,
 
-    // 用户管理
-    getUser,
-    setUser,
-    clearUser,
-    getMeForApi,
-    updateUserBalance,
+    // 用户信息
+    setUserInfo,
+    clearUserInfo,
+    fetchUserInfo,
 
     // 登录状态
     isLogin,
+    login,
     logout,
-    checkLogin,
 
-    // 系统配置
-    setSystemConf,
-    getSystemConf,
-    setRegisterConf,
-    getRegisterConf,
-
-    // 初始化
-    init
+    // Loading
+    showLoading,
+    hideLoading
   }
 })
