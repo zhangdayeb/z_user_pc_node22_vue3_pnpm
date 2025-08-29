@@ -10,8 +10,11 @@
 
           <div class="user-details">
             <div v-if="!isLoggedIn" class="login-prompt">
-              <el-button type="primary" @click="showLogin">
-                {{ $t('mine.loginRegister') }}
+              <el-button type="primary" @click="goToLogin">
+                {{ $t('user.login') }}
+              </el-button>
+              <el-button @click="goToRegister">
+                {{ $t('user.register') }}
               </el-button>
             </div>
 
@@ -23,7 +26,7 @@
                 </el-tag>
               </div>
               <p class="welcome-text">
-                {{ $t('mine.welcomeTo') }} {{ configStore.siteName }}
+                {{ $t('mine.welcomeTo') }} {{ siteName }}
               </p>
             </div>
           </div>
@@ -174,7 +177,7 @@
     </div>
 
     <!-- 底部操作 -->
-    <div class="account-footer">
+    <div v-if="isLoggedIn" class="account-footer">
       <el-button @click="showSettings">
         <el-icon><Setting /></el-icon>
         {{ $t('user.settings') }}
@@ -251,10 +254,16 @@ const activeMenu = ref('')
 
 // 计算属性
 const isLoggedIn = computed(() => appStore.isLogin())
-const userInfo = computed(() => appStore.getUser())
+const userInfo = computed(() => appStore.userInfo)
 const avatarUrl = computed(() => userInfo.value?.avatar || '')
+const siteName = computed(() => configStore.siteName || 'ATB')
+
+// 修复：正确访问 configStore 的数据
 const shouldShowRebate = computed(() => {
-  const value = configStore.getConfigValue('default_user_fanshui', 0)
+  // 尝试多种访问方式
+  const value = configStore.getConfigValue?.('default_user_fanshui') ||
+                configStore.configs?.default_user_fanshui ||
+                0
   return Number(value) > 0
 })
 
@@ -264,15 +273,20 @@ function formatMoney(amount: number | string): string {
   return isNaN(num) ? '0.00' : num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')
 }
 
-// 显示登录
-function showLogin() {
-  appStore.loginShow = true
+// 跳转到登录页
+function goToLogin() {
+  router.push('/login')
+}
+
+// 跳转到注册页
+function goToRegister() {
+  router.push('/register')
 }
 
 // 刷新余额
 async function refreshBalance() {
   if (!isLoggedIn.value) {
-    showLogin()
+    goToLogin()
     return
   }
 
@@ -283,7 +297,7 @@ async function refreshBalance() {
     const response = await userApi.getUserInfo()
 
     if (response?.code === 200 && response.data) {
-      appStore.setUser(response.data)
+      appStore.setUserInfo(response.data)
       ElMessage.success('余额已更新')
     } else {
       ElMessage.error('刷新失败，请重试')
@@ -298,7 +312,7 @@ async function refreshBalance() {
 // 充值
 function handleDeposit() {
   if (!isLoggedIn.value) {
-    showLogin()
+    goToLogin()
     return
   }
   router.push('/deposit')
@@ -307,7 +321,7 @@ function handleDeposit() {
 // 提现
 function handleWithdraw() {
   if (!isLoggedIn.value) {
-    showLogin()
+    goToLogin()
     return
   }
   router.push('/withdraw')
@@ -316,7 +330,7 @@ function handleWithdraw() {
 // 页面跳转
 function goToPage(name: string) {
   if (!isLoggedIn.value) {
-    showLogin()
+    goToLogin()
     return
   }
 
@@ -347,7 +361,7 @@ function handleMenuSelect(index: string) {
 // 显示设置
 function showSettings() {
   if (!isLoggedIn.value) {
-    showLogin()
+    goToLogin()
     return
   }
   settingsVisible.value = true
@@ -378,24 +392,28 @@ async function handleLogout() {
       }
     )
 
-    appStore.loading()
+    appStore.showLoading('正在退出...')
     const resp = await api.logout()
 
-    if (resp?.code === 200) {
+    // 修复：检查响应的 code 字段
+    if (resp && (resp.code === 200 || resp.code === 0 || resp.code === 1)) {
       appStore.logout()
       ElMessage.success('已退出登录')
       router.push('/')
+    } else {
+      ElMessage.error('退出失败，请重试')
     }
   } catch (error) {
-    // 用户取消
+    // 用户取消或其他错误
+    console.error('退出登录失败:', error)
   } finally {
-    appStore.stopLoad()
+    appStore.hideLoading()
   }
 }
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    appStore.getMeForApi()
+    appStore.fetchUserInfo()
   }
 })
 </script>
@@ -417,6 +435,8 @@ onMounted(() => {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
 
       .user-info {
         display: flex;
@@ -429,12 +449,28 @@ onMounted(() => {
 
         .user-details {
           .login-prompt {
-            .el-button {
-              background: rgba(255, 255, 255, 0.2);
-              border-color: white;
+            display: flex;
+            gap: 10px;
 
-              &:hover {
-                background: rgba(255, 255, 255, 0.3);
+            .el-button {
+              &:first-child {
+                background: rgba(255, 255, 255, 0.2);
+                border-color: white;
+                color: white;
+
+                &:hover {
+                  background: rgba(255, 255, 255, 0.3);
+                }
+              }
+
+              &:last-child {
+                background: transparent;
+                border-color: white;
+                color: white;
+
+                &:hover {
+                  background: rgba(255, 255, 255, 0.1);
+                }
               }
             }
           }
@@ -471,6 +507,7 @@ onMounted(() => {
         display: flex;
         gap: 30px;
         align-items: center;
+        flex-wrap: wrap;
 
         .wallet-item {
           cursor: pointer;
@@ -519,7 +556,7 @@ onMounted(() => {
 
   .account-content {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
     margin-bottom: 20px;
 
@@ -596,5 +633,33 @@ onMounted(() => {
 .card-header {
   font-size: 16px;
   font-weight: 600;
+}
+
+// 响应式布局
+@media (max-width: 768px) {
+  .account-content {
+    grid-template-columns: 1fr;
+  }
+
+  .account-header {
+    .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .wallet-info {
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+
+        .wallet-actions {
+          width: 100%;
+
+          .el-button {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
 }
 </style>
