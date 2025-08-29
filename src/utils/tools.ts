@@ -1,4 +1,3 @@
-import dayjs from 'dayjs'
 import api from '@/api'
 import { useAppStore } from '@/stores/app'
 import { showToast } from 'vant'
