@@ -1,141 +1,187 @@
 <template>
-  <div class="top-up-record">
-    <van-nav-bar
-      left-arrow
-      :title="$t('rechargeRecord')"
-      @click-left="onClickLeft"
-      class="nav-bar"
-    />
-
-    <!-- 状态筛选 -->
-    <div class="filter-bar">
-      <van-tabs v-model:active="activeStatus" @click-tab="onTabChange" sticky>
-        <van-tab :title="$t('all')" name=""></van-tab>
-        <van-tab :title="$t('pending')" name="0"></van-tab>
-        <van-tab :title="$t('approved')" name="1"></van-tab>
-        <van-tab :title="$t('rejected')" name="2"></van-tab>
-      </van-tabs>
+  <div class="top-up-record-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <el-button
+        @click="onClickLeft"
+        :icon="ArrowLeft"
+        circle
+        size="small"
+        class="back-btn"
+      />
+      <h2 class="page-title">{{ $t('rechargeRecord') }}</h2>
+      <el-button
+        @click="onRefresh"
+        :icon="Refresh"
+        circle
+        size="small"
+        class="refresh-btn"
+      />
     </div>
 
+    <!-- 状态筛选标签页 -->
+    <el-card class="filter-card" shadow="never">
+      <el-tabs v-model="activeStatus" @tab-change="onTabChange">
+        <el-tab-pane :label="$t('all')" name=""></el-tab-pane>
+        <el-tab-pane :label="$t('pending')" name="0"></el-tab-pane>
+        <el-tab-pane :label="$t('approved')" name="1"></el-tab-pane>
+        <el-tab-pane :label="$t('rejected')" name="2"></el-tab-pane>
+      </el-tabs>
+    </el-card>
+
     <!-- 充值记录列表 -->
-    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        :finished-text="$t('noMore')"
-        @load="onLoad"
-        class="record-list"
-      >
+    <el-card class="record-list-card" shadow="never" v-loading="loading">
+      <div class="record-list">
         <div
           v-for="item in list"
           :key="item.id"
           class="record-item"
           @click="showRecordDetail(item)"
         >
-          <div class="record-header">
-            <div class="record-title">
-              <span class="amount" :class="getAmountClass(item.status)">
-                ¥{{ item.amount }}
-              </span>
-              <van-tag
-                :type="getStatusTagType(item.status)"
-                size="small"
-                class="status-tag"
-              >
-                {{ getStatusText(item.status) }}
-              </van-tag>
+          <div class="record-main">
+            <div class="record-left">
+              <div class="amount-row">
+                <span class="amount" :class="getAmountClass(item.status)">
+                  ¥{{ item.amount }}
+                </span>
+                <el-tag
+                  :type="getStatusTagType(item.status)"
+                  size="small"
+                  effect="dark"
+                >
+                  {{ getStatusText(item.status) }}
+                </el-tag>
+              </div>
+              <div class="info-row">
+                <span class="label">{{ $t('orderNumber') }}:</span>
+                <span class="value">{{ item.id }}</span>
+              </div>
+            </div>
+            <div class="record-right">
+              <div class="time-info">
+                <div class="time-row">
+                  <span class="label">{{ $t('applyTime') }}:</span>
+                  <span class="value">{{ formatTime(item.create_time) }}</span>
+                </div>
+                <div class="time-row" v-if="item.success_time">
+                  <span class="label">{{ $t('completeTime') }}:</span>
+                  <span class="value">{{ formatTime(item.success_time) }}</span>
+                </div>
+              </div>
+              <div class="bank-info" v-if="item.u_bank_name">
+                <span class="label">{{ $t('transferBankName') }}:</span>
+                <span class="value">{{ item.u_bank_name }}</span>
+              </div>
             </div>
           </div>
-          <div class="record-info">
-            <div class="info-row">
-              <span class="label">{{ $t('applyTime') }}：</span>
-              <span class="value">{{ formatTime(item.create_time) }}</span>
-            </div>
-            <div class="info-row" v-if="item.success_time">
-              <span class="label">{{ $t('completeTime') }}：</span>
-              <span class="value">{{ formatTime(item.success_time) }}</span>
-            </div>
-            <div class="info-row" v-if="item.u_bank_name">
-              <span class="label">{{ $t('transferBankName') }}：</span>
-              <span class="value">{{ item.u_bank_name }}</span>
-            </div>
-          </div>
+          <el-button
+            type="primary"
+            link
+            :icon="View"
+            class="view-detail-btn"
+          >
+            {{ $t('viewDetail') }}
+          </el-button>
         </div>
-      </van-list>
-    </van-pull-refresh>
 
-    <!-- 详情弹窗 -->
-    <van-popup
-      v-model:show="showDetail"
-      position="bottom"
-      round
-      :style="{ height: '60%' }"
-      class="detail-popup"
+        <!-- 空状态 -->
+        <el-empty
+          v-if="!loading && list.length === 0"
+          :description="$t('noData')"
+          class="empty-state"
+        />
+      </div>
+
+      <!-- 分页 -->
+      <el-pagination
+        v-if="list.length > 0"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        class="pagination"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-card>
+
+    <!-- 详情对话框 -->
+    <el-dialog
+      v-model="showDetail"
+      :title="$t('rechargeDetail')"
+      width="600px"
+      class="detail-dialog"
     >
       <div class="detail-content" v-if="selectedRecord">
-        <div class="detail-header">
-          <h3>{{ $t('rechargeDetail') }}</h3>
-          <van-icon name="cross" @click="showDetail = false" />
-        </div>
-
-        <div class="detail-body">
+        <!-- 金额和状态 -->
+        <div class="detail-header-info">
           <div class="detail-amount">
-            <span class="amount-label">{{ $t('rechargeAmount') }}</span>
+            <label>{{ $t('rechargeAmount') }}</label>
             <span class="amount-value" :class="getAmountClass(selectedRecord.status)">
               ¥{{ selectedRecord.amount }}
             </span>
           </div>
-
-          <div class="detail-status">
-            <van-tag
-              :type="getStatusTagType(selectedRecord.status)"
-              size="large"
-            >
-              {{ getStatusText(selectedRecord.status) }}
-            </van-tag>
-          </div>
-
-          <van-cell-group class="detail-info">
-            <van-cell :title="$t('orderNumber')" :value="selectedRecord.id" />
-            <van-cell :title="$t('applyTime')" :value="formatTime(selectedRecord.create_time)" />
-            <van-cell
-              v-if="selectedRecord.success_time"
-              :title="$t('completeTime')"
-              :value="formatTime(selectedRecord.success_time)"
-            />
-            <van-cell
-              v-if="selectedRecord.u_bank_name"
-              :title="$t('transferBankName')"
-              :value="selectedRecord.u_bank_name"
-            />
-            <van-cell
-              v-if="selectedRecord.u_bank_user_name"
-              :title="$t('bankAccountName')"
-              :value="selectedRecord.u_bank_user_name"
-            />
-            <van-cell
-              v-if="selectedRecord.u_bank_card"
-              :title="$t('bankCardNumber')"
-              :value="formatBankCard(selectedRecord.u_bank_card)"
-            />
-          </van-cell-group>
+          <el-tag
+            :type="getStatusTagType(selectedRecord.status)"
+            size="large"
+            effect="dark"
+          >
+            {{ getStatusText(selectedRecord.status) }}
+          </el-tag>
         </div>
+
+        <!-- 详细信息 -->
+        <el-descriptions :column="1" border class="detail-descriptions">
+          <el-descriptions-item :label="$t('orderNumber')">
+            {{ selectedRecord.id }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('applyTime')">
+            {{ formatTime(selectedRecord.create_time) }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.success_time"
+            :label="$t('completeTime')"
+          >
+            {{ formatTime(selectedRecord.success_time) }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.u_bank_name"
+            :label="$t('transferBankName')"
+          >
+            {{ selectedRecord.u_bank_name }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.u_bank_user_name"
+            :label="$t('bankAccountName')"
+          >
+            {{ selectedRecord.u_bank_user_name }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.u_bank_card"
+            :label="$t('bankCardNumber')"
+          >
+            {{ formatBankCard(selectedRecord.u_bank_card) }}
+          </el-descriptions-item>
+        </el-descriptions>
       </div>
-    </van-popup>
+
+      <template #footer>
+        <el-button @click="showDetail = false">{{ $t('close') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
-import { invokeApi } from '@/utils/tools'
-import { showToast } from 'vant'
+import { onMounted, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft, Refresh, View } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { invokeApi } from '@/utils/tools'
 
-defineOptions({ name: 'TopUpRecord' })
-
-const { t, locale } = useI18n()
-const router = useRouter()
+defineOptions({ name: 'PcTopUpRecord' })
 
 interface TopUpRecordItem {
   id: number
@@ -150,11 +196,17 @@ interface TopUpRecordItem {
   sys_bank_id?: number
 }
 
-const page = ref(0)
+const { t, locale } = useI18n()
+const router = useRouter()
+
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+
+// 数据相关
 const list = ref<TopUpRecordItem[]>([])
 const loading = ref(false)
-const refreshing = ref(false)
-const finished = ref(false)
 const activeStatus = ref('')
 const showDetail = ref(false)
 const selectedRecord = ref<TopUpRecordItem | null>(null)
@@ -173,7 +225,7 @@ function getAmountClass(status: number): string {
 }
 
 // 获取状态标签类型
-function getStatusTagType(status: number): string {
+function getStatusTagType(status: number): 'success' | 'danger' | 'warning' {
   switch (status) {
     case 1: // 已通过
       return 'success'
@@ -264,24 +316,27 @@ function showRecordDetail(record: TopUpRecordItem) {
 }
 
 // 标签切换
-function onTabChange(event: { name: string }) {
-  activeStatus.value = event.name
-  onRefresh()
+function onTabChange() {
+  currentPage.value = 1
+  getTopUpRecords()
 }
 
-// 下拉刷新
+// 刷新
 const onRefresh = async () => {
-  finished.value = false
-  loading.value = true
-  page.value = 0
-  list.value = []
+  currentPage.value = 1
   await getTopUpRecords()
-  refreshing.value = false
+  ElMessage.success(t('refreshSuccess'))
 }
 
-// 加载更多
-const onLoad = async () => {
-  await getTopUpRecords()
+// 分页大小改变
+function handleSizeChange() {
+  currentPage.value = 1
+  getTopUpRecords()
+}
+
+// 页码改变
+function handleCurrentChange() {
+  getTopUpRecords()
 }
 
 // 返回上一页
@@ -291,10 +346,12 @@ function onClickLeft() {
 
 // 获取充值记录
 async function getTopUpRecords() {
+  loading.value = true
+
   try {
     const params: any = {
-      page: page.value + 1,
-      limit: 20
+      page: currentPage.value,
+      limit: pageSize.value
     }
 
     // 添加状态筛选
@@ -311,252 +368,309 @@ async function getTopUpRecords() {
 
     if (resp.data) {
       const data = resp.data
-      page.value = data.pagination?.current_page ?? 1
-      const newList = data.list ?? []
+      list.value = data.list ?? []
+      total.value = data.pagination?.total ?? 0
 
-      if (page.value === 1) {
-        list.value = newList
-      } else {
-        list.value = list.value.concat(newList)
+      // 更新当前页码（处理超出范围的情况）
+      if (data.pagination?.current_page) {
+        currentPage.value = data.pagination.current_page
       }
-
-      // 判断是否还有更多数据
-      finished.value = !data.pagination?.has_more
     }
   } catch (error) {
     console.error('获取充值记录失败:', error)
-    showToast(t('getRechargeRecordFailed'))
+    ElMessage.error(t('getRechargeRecordFailed'))
+  } finally {
+    loading.value = false
   }
-
-  loading.value = false
 }
 
-onMounted(async () => {
-  await getTopUpRecords()
+// 监听状态变化
+watch(activeStatus, () => {
+  currentPage.value = 1
+})
+
+onMounted(() => {
+  getTopUpRecords()
 })
 </script>
 
-<style scoped>
-.top-up-record {
-  min-height: 100vh;
-  background-color: #f7f8fa;
-}
-
-.nav-bar {
-  background-color: #fff;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.filter-bar {
-  background-color: #fff;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.record-list {
-  padding: 10px;
-}
-
-.record-item {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.record-item:active {
-  transform: scale(0.98);
-  background-color: #f8f9fa;
-}
-
-.record-header .record-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.record-header .record-title .amount {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.record-header .record-title .amount.amount-success {
-  color: #07c160;
-}
-
-.record-header .record-title .amount.amount-error {
-  color: #fa5151;
-}
-
-.record-header .record-title .amount.amount-pending {
-  color: #ff8f00;
-}
-
-.record-header .record-title .status-tag {
-  border-radius: 12px;
-}
-
-.record-info .info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.record-info .info-row:last-child {
-  margin-bottom: 0;
-}
-
-.record-info .info-row .label {
-  color: #969799;
-  min-width: 80px;
-}
-
-.record-info .info-row .value {
-  color: #323233;
-  text-align: right;
-  flex: 1;
-}
-
-.detail-popup .detail-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-popup .detail-content .detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.detail-popup .detail-content .detail-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #323233;
-}
-
-.detail-popup .detail-content .detail-header .van-icon {
-  font-size: 20px;
-  color: #969799;
-  cursor: pointer;
-}
-
-.detail-popup .detail-content .detail-body {
-  flex: 1;
+<style scoped lang="scss">
+.top-up-record-container {
   padding: 20px;
-  overflow-y: auto;
-}
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 40px);
 
-.detail-popup .detail-content .detail-body .detail-amount {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-label {
-  display: block;
-  font-size: 14px;
-  color: #969799;
-  margin-bottom: 8px;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value {
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-success {
-  color: #07c160;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-error {
-  color: #fa5151;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-pending {
-  color: #ff8f00;
-}
-
-.detail-popup .detail-content .detail-body .detail-status {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.detail-popup .detail-content .detail-body .detail-info {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-/* PC端适配样式 */
-@media (min-width: 768px) {
-  .top-up-record {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .nav-bar {
-    border-radius: 8px 8px 0 0;
-  }
-
-  .record-list {
-    padding: 16px 24px;
-  }
-
-  .record-item {
-    margin-bottom: 16px;
-    padding: 20px 24px;
-    border: 1px solid #ebedf0;
-    transition: all 0.3s ease;
-  }
-
-  .record-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    border-color: #d0d0d0;
-  }
-
-  .record-header .record-title .amount {
-    font-size: 20px;
-  }
-
-  .record-info .info-row {
-    font-size: 16px;
-  }
-}
-
-/* 大屏PC端适配 */
-@media (min-width: 1200px) {
-  .top-up-record {
-    max-width: 1000px;
-  }
-
-  .record-list {
-    padding: 24px 32px;
-  }
-
-  .record-item {
-    padding: 24px 32px;
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
+    padding: 0 20px;
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .back-btn,
+    .refresh-btn {
+      flex-shrink: 0;
+    }
   }
 
-  .record-header .record-title .amount {
-    font-size: 22px;
+  .filter-card {
+    margin-bottom: 20px;
+
+    :deep(.el-card__body) {
+      padding: 10px 20px;
+    }
+
+    :deep(.el-tabs__header) {
+      margin-bottom: 0;
+    }
+  }
+
+  .record-list-card {
+    :deep(.el-card__body) {
+      padding: 20px;
+    }
+  }
+
+  .record-list {
+    .record-item {
+      padding: 20px;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid #e4e7ed;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        border-color: #c0c4cc;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .record-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+
+        .record-left {
+          .amount-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+
+            .amount {
+              font-size: 24px;
+              font-weight: 600;
+
+              &.amount-success {
+                color: #67c23a;
+              }
+
+              &.amount-error {
+                color: #f56c6c;
+              }
+
+              &.amount-pending {
+                color: #e6a23c;
+              }
+            }
+          }
+
+          .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+
+            .label {
+              color: #909399;
+            }
+
+            .value {
+              color: #606266;
+              font-family: monospace;
+            }
+          }
+        }
+
+        .record-right {
+          flex: 1;
+
+          .time-info {
+            margin-bottom: 8px;
+
+            .time-row {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-bottom: 6px;
+              font-size: 14px;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+
+              .label {
+                color: #909399;
+                min-width: 80px;
+              }
+
+              .value {
+                color: #606266;
+              }
+            }
+          }
+
+          .bank-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+
+            .label {
+              color: #909399;
+            }
+
+            .value {
+              color: #606266;
+            }
+          }
+        }
+      }
+
+      .view-detail-btn {
+        font-size: 14px;
+      }
+    }
+
+    .empty-state {
+      padding: 60px 0;
+    }
+  }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
   }
 }
 
-/* 超大屏适配 */
-@media (min-width: 1600px) {
-  .top-up-record {
-    max-width: 1200px;
+.detail-dialog {
+  :deep(.el-dialog__body) {
+    padding: 20px 30px;
+  }
+
+  .detail-content {
+    .detail-header-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+
+      .detail-amount {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        label {
+          font-size: 14px;
+          color: #909399;
+        }
+
+        .amount-value {
+          font-size: 32px;
+          font-weight: 600;
+
+          &.amount-success {
+            color: #67c23a;
+          }
+
+          &.amount-error {
+            color: #f56c6c;
+          }
+
+          &.amount-pending {
+            color: #e6a23c;
+          }
+        }
+      }
+    }
+
+    .detail-descriptions {
+      :deep(.el-descriptions__label) {
+        width: 140px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 1200px) {
+  .top-up-record-container {
+    padding: 16px;
+
+    .record-list {
+      .record-item {
+        .record-main {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .top-up-record-container {
+    padding: 12px;
+
+    .page-header {
+      padding: 0 12px;
+
+      .page-title {
+        font-size: 20px;
+      }
+    }
+
+    .record-list {
+      .record-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+
+        .view-detail-btn {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+
+  .detail-dialog {
+    width: 90% !important;
+    max-width: 500px;
   }
 }
 </style>
