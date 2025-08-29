@@ -74,11 +74,13 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, FormInstance } from 'element-plus'
 import { useI18n } from 'vue-i18n'
+import { useAppStore } from '@/stores/app'
 import api from '@/api'
 
 const router = useRouter()
 const route = useRoute()
 const { t } = useI18n()
+const appStore = useAppStore()
 
 // 表单ref
 const loginFormRef = ref<FormInstance>()
@@ -131,9 +133,12 @@ const handleLogin = async () => {
     if (!valid) return
 
     loading.value = true
+    appStore.loading(t('user.loggingIn'))
+
     try {
+      // 使用移动端验证过的参数格式
       const params: any = {
-        username: loginForm.username,
+        name: loginForm.username,    // 注意：使用 'name' 而不是 'username'
         password: loginForm.password
       }
 
@@ -146,12 +151,36 @@ const handleLogin = async () => {
       const res: any = await api.login(params)
 
       if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
-        // 保存token
-        localStorage.setItem('access_token', res.data.token)
+        // 使用移动端验证过的数据结构处理
+        const { access_token, user_info } = res.data || {}
 
-        // 保存用户信息
-        if (res.data.user) {
-          localStorage.setItem('userInfo', JSON.stringify(res.data.user))
+        if (!access_token) {
+          ElMessage.error('登录失败：未获取到访问令牌')
+          return
+        }
+
+        // 使用 Store 方法设置 token - 关键修改点
+        appStore.setToken(access_token)
+        console.log('Token 设置成功:', access_token)
+
+        // 使用 Store 方法设置用户信息 - 关键修改点
+        if (user_info) {
+          // 转换用户信息格式以匹配 store 期望的格式
+          const userForStore: any = {
+            id: user_info.id,
+            name: user_info.name,
+            nick_name: user_info.nick_name,
+            money: user_info.money,
+            money_rebate: user_info.money_rebate || 0,
+            level: user_info.vip_grade, // 将 vip_grade 映射为 level
+            vip_grade: user_info.vip_grade || 0,
+            status: user_info.status || 1,
+            created_at: user_info.created_at || '',
+            updated_at: user_info.updated_at || ''
+          }
+
+          appStore.setUser(userForStore)
+          console.log('用户信息设置成功:', userForStore)
         }
 
         ElMessage.success(t('user.loginSuccess'))
@@ -161,15 +190,24 @@ const handleLogin = async () => {
         router.push(redirect || '/')
       } else {
         // 登录失败，刷新验证码
+        ElMessage.error(res?.message || '登录失败')
+        if (captchaUrl.value) {
+          getCaptcha()
+          loginForm.captcha = ''
+        }
+      }
+    } catch (error: any) {
+      console.error('登录过程中发生错误:', error)
+      ElMessage.error(error?.message || '登录过程中发生错误')
+
+      // 登录失败，刷新验证码
+      if (captchaUrl.value) {
         getCaptcha()
         loginForm.captcha = ''
       }
-    } catch (error) {
-      // 登录失败，刷新验证码
-      getCaptcha()
-      loginForm.captcha = ''
     } finally {
       loading.value = false
+      appStore.stopLoad()
     }
   })
 }
