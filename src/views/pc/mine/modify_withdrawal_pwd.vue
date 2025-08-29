@@ -1,239 +1,406 @@
 <template>
-  <div class="m-login-pwd">
-    <!-- 移动端导航栏 -->
-    <van-nav-bar
-      v-if="isMobile"
-      left-arrow
-      :title="
-        isModify === false
-          ? $t('mine.settingWithdrawalPwd')
-          : $t('mine.modifyWithdrawalPwd')
-      "
-      @click-left="onClickLeft"
-    />
-
-    <!-- PC端标题 -->
-    <div v-else class="pc-header">
-      <div class="pc-header-inner">
-        <button class="back-btn" @click="onClickLeft">
-          <span class="back-icon"></span>
-          {{ $t('common.back') }}
-        </button>
-        <h2 class="page-title">
-          {{ isModify === false
-            ? $t('mine.settingWithdrawalPwd')
-            : $t('mine.modifyWithdrawalPwd')
-          }}
-        </h2>
-      </div>
-    </div>
-
-    <van-form @submit="onSubmit" class="m-frm" :class="{ 'pc-form': !isMobile }">
-      <template v-if="isModify">
-        <van-field
-          v-model="frm.oldPassword"
-          autocomplete="current-password"
-          type="password"
-          :name="$t('mine.currPwd')"
-          :label="$t('mine.currPwd')"
-          :placeholder="$t('mine.inputCurrPwd')"
-          :rules="[{ required: true, message: $t('mine.inputCurrPwd') }]"
-        />
-        <van-field
-          v-model="frm.password"
-          autocomplete="new-password"
-          type="password"
-          :name="$t('mine.newPwd')"
-          :label="$t('mine.newPwd')"
-          :placeholder="$t('mine.inputNewPwd')"
-          :rules="[
-            { required: true, message: $t('mine.inputNewPwd') },
-            { validator: passwordValidator, message: $t('mine.passwordTooShort') }
-          ]"
-        />
-        <van-field
-          v-model="frm.rePassword"
-          autocomplete="new-password"
-          type="password"
-          :name="$t('mine.confrmNewPwd')"
-          :label="$t('mine.confrmNewPwd')"
-          :placeholder="$t('mine.inputNewPwdAgain')"
-          :rules="[
-            { required: true, message: $t('mine.inputNewPwdAgain') },
-            { validator: confirmPasswordValidator, message: $t('mine.newPwdDiff') },
-          ]"
-        />
+  <div class="withdraw-password-container">
+    <el-card class="password-card">
+      <template #header>
+        <div class="card-header">
+          <el-button
+            :icon="ArrowLeft"
+            @click="handleBack"
+            text
+          >
+            {{ $t('common.back') }}
+          </el-button>
+          <h2>{{ pageTitle }}</h2>
+        </div>
       </template>
-      <template v-else>
-        <van-field
-          v-model="frm.password"
-          autocomplete="new-password"
-          type="password"
-          :name="$t('mine.qknewPwd')"
-          :label="$t('mine.qknewPwd')"
-          :placeholder="$t('mine.inputPlz')"
-          :rules="[
-            { required: true, message: $t('mine.inputPlz') },
-            { validator: passwordValidator, message: $t('mine.passwordTooShort') }
-          ]"
-        />
-        <van-field
-          v-model="frm.rePassword"
-          autocomplete="new-password"
-          type="password"
-          :name="$t('mine.confrmqkPwd')"
-          :label="$t('mine.confrmqkPwd')"
-          :placeholder="$t('mine.inputPlzAgain')"
-          :rules="[
-            { required: true, message: $t('mine.inputPlzAgain') },
-            { validator: confirmPasswordValidator, message: $t('mine.inputTisDiff') },
-          ]"
-        />
-      </template>
-      <div class="form-actions" :class="{ 'pc-actions': !isMobile }">
-        <van-button
-          round
-          block
-          type="primary"
-          native-type="submit"
-          size="large"
-          class="m-btn"
-          :loading="isSubmitting"
+
+      <!-- 安全提示 -->
+      <el-alert
+        v-if="!isModify"
+        :title="$t('mine.withdrawPasswordImportant')"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="security-alert"
+      >
+        <template #default>
+          <ul class="security-tips">
+            <li>{{ $t('mine.withdrawPwdTip1') }}</li>
+            <li>{{ $t('mine.withdrawPwdTip2') }}</li>
+            <li>{{ $t('mine.withdrawPwdTip3') }}</li>
+          </ul>
+        </template>
+      </el-alert>
+
+      <el-form
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="formRules"
+        label-width="140px"
+        class="password-form"
+        @submit.prevent="handleSubmit"
+      >
+        <!-- 当前密码（仅修改时显示） -->
+        <el-form-item
+          v-if="isModify"
+          :label="$t('mine.currWithdrawPwd')"
+          prop="oldPassword"
         >
-          {{ $t('submit') }}
-        </van-button>
-      </div>
-    </van-form>
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            :placeholder="$t('mine.inputCurrWithdrawPwd')"
+            show-password
+            clearable
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
 
-    <!-- PC端提示信息 -->
-    <div v-if="!isMobile && !isModify" class="pc-tips">
-      <div class="tip-icon">
-        <span class="info-icon"></span>
+        <!-- 新密码 -->
+        <el-form-item
+          :label="isModify ? $t('mine.newWithdrawPwd') : $t('mine.setWithdrawPwd')"
+          prop="newPassword"
+        >
+          <el-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            :placeholder="isModify ? $t('mine.inputNewWithdrawPwd') : $t('mine.inputWithdrawPwd')"
+            show-password
+            clearable
+            @input="validatePasswordStrength"
+          >
+            <template #prefix>
+              <el-icon><Key /></el-icon>
+            </template>
+          </el-input>
+
+          <!-- 密码强度提示 -->
+          <div v-if="passwordForm.newPassword" class="password-info">
+            <el-progress
+              :percentage="passwordStrength.percent"
+              :color="passwordStrength.color"
+              :show-text="false"
+            />
+            <span class="strength-text" :style="{ color: passwordStrength.color }">
+              {{ passwordStrength.text }}
+            </span>
+          </div>
+        </el-form-item>
+
+        <!-- 确认密码 -->
+        <el-form-item
+          :label="$t('mine.confirmWithdrawPwd')"
+          prop="confirmPassword"
+        >
+          <el-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            :placeholder="$t('mine.inputWithdrawPwdAgain')"
+            show-password
+            clearable
+            @paste.prevent
+          >
+            <template #prefix>
+              <el-icon><CircleCheck /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 密码格式要求 -->
+        <el-form-item>
+          <div class="password-requirements">
+            <h4>{{ $t('mine.passwordFormat') }}:</h4>
+            <div class="requirement-list">
+              <div class="requirement-item" :class="{ valid: requirements.length }">
+                <el-icon>
+                  <SuccessFilled v-if="requirements.length" />
+                  <CircleClose v-else />
+                </el-icon>
+                <span>{{ $t('mine.withdrawPwdLength') }}</span>
+              </div>
+              <div class="requirement-item" :class="{ valid: requirements.onlyNumbers }">
+                <el-icon>
+                  <SuccessFilled v-if="requirements.onlyNumbers" />
+                  <CircleClose v-else />
+                </el-icon>
+                <span>{{ $t('mine.withdrawPwdOnlyNumbers') }}</span>
+              </div>
+              <div class="requirement-item" :class="{ valid: requirements.notSameAsLogin }">
+                <el-icon>
+                  <Warning v-if="!requirements.notSameAsLogin" />
+                  <SuccessFilled v-else />
+                </el-icon>
+                <span>{{ $t('mine.withdrawPwdNotSameAsLogin') }}</span>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
+
+        <!-- 操作按钮 -->
+        <el-form-item>
+          <div class="form-actions">
+            <el-button
+              type="primary"
+              size="large"
+              :loading="isSubmitting"
+              @click="handleSubmit"
+            >
+              {{ submitButtonText }}
+            </el-button>
+            <el-button
+              size="large"
+              @click="handleReset"
+            >
+              {{ $t('common.reset') }}
+            </el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <!-- 安全建议 -->
+      <div class="security-suggestions">
+        <el-divider content-position="left">
+          <el-icon><InfoFilled /></el-icon>
+          {{ $t('mine.securitySuggestions') }}
+        </el-divider>
+        <ul>
+          <li>{{ $t('mine.suggestion1') }}</li>
+          <li>{{ $t('mine.suggestion2') }}</li>
+          <li>{{ $t('mine.suggestion3') }}</li>
+        </ul>
       </div>
-      <div class="tip-content">
-        <h4>{{ $t('sweetWarning') }}</h4>
-        <p>{{ $t('withdrawPwdTip1', '提现密码用于保护您的资金安全') }}</p>
-        <p>{{ $t('withdrawPwdTip2', '请牢记您的提现密码，避免资金损失') }}</p>
-      </div>
-    </div>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAppStore } from '@/stores/app'
-import { showToast } from 'vant'
 import { useI18n } from 'vue-i18n'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import {
+  ArrowLeft,
+  Lock,
+  Key,
+  CircleCheck,
+  CircleClose,
+  SuccessFilled,
+  Warning,
+  InfoFilled
+} from '@element-plus/icons-vue'
+import { useAppStore } from '@/stores/app'
 import api from '@/api'
 
-defineOptions({ name: 'ModifyWithdrawalPwd' })
+defineOptions({ name: 'WithdrawPassword' })
 
-const router = useRouter()
-const store = useAppStore()
 const { t } = useI18n()
-const isModify = ref(false)
+const router = useRouter()
+const appStore = useAppStore()
+
+// 状态
+const passwordFormRef = ref<FormInstance>()
 const isSubmitting = ref(false)
+const isModify = ref(false)
 
-// 响应式检测
-const isMobile = computed(() => {
-  return window.innerWidth < 768
-})
-
-const frm = ref({
+// 表单数据
+const passwordForm = reactive({
   oldPassword: '',
-  password: '',
-  rePassword: '',
+  newPassword: '',
+  confirmPassword: ''
 })
 
-// 密码强度验证器
-const passwordValidator = (val: string) => {
-  if (!val || val.trim().length === 0) return false
-  // 提现密码长度验证（6-20位）
-  if (val.length < 6 || val.length > 20) return false
-  return true
+// 密码要求检查
+const requirements = reactive({
+  length: false,
+  onlyNumbers: false,
+  notSameAsLogin: true
+})
+
+// 页面标题
+const pageTitle = computed(() =>
+  isModify.value ? t('mine.modifyWithdrawPwd') : t('mine.settingWithdrawPwd')
+)
+
+// 提交按钮文字
+const submitButtonText = computed(() =>
+  isSubmitting.value
+    ? t('common.submitting')
+    : (isModify.value ? t('mine.confirmModify') : t('mine.confirmSet'))
+)
+
+// 密码强度计算
+const passwordStrength = computed(() => {
+  const pwd = passwordForm.newPassword
+  if (!pwd) return { percent: 0, text: '', color: '#909399' }
+
+  let strength = 0
+  if (pwd.length >= 6) strength += 25
+  if (pwd.length >= 8) strength += 25
+  if (/^\d+$/.test(pwd)) strength += 25  // 纯数字
+  if (pwd.length <= 20) strength += 25
+
+  const levels = [
+    { percent: 25, text: t('mine.passwordWeak'), color: '#F56C6C' },
+    { percent: 50, text: t('mine.passwordMedium'), color: '#E6A23C' },
+    { percent: 75, text: t('mine.passwordStrong'), color: '#67C23A' },
+    { percent: 100, text: t('mine.passwordVeryStrong'), color: '#409EFF' }
+  ]
+
+  const index = Math.floor((strength - 1) / 25)
+  return levels[Math.min(index, 3)]
+})
+
+// 验证规则
+const validateOldPassword = (rule: any, value: any, callback: any) => {
+  if (isModify.value && !value) {
+    callback(new Error(t('mine.inputCurrWithdrawPwd')))
+  } else {
+    callback()
+  }
 }
 
-// 确认密码验证器
-const confirmPasswordValidator = (val: string) => {
-  if (!val || val.trim().length === 0) return false
-  // 确认密码必须与新密码一致
-  return val === frm.value.password
+const validateNewPassword = (rule: any, value: any, callback: any) => {
+  if (!value) {
+    callback(new Error(isModify.value ? t('mine.inputNewWithdrawPwd') : t('mine.inputWithdrawPwd')))
+  } else if (value.length < 6 || value.length > 20) {
+    callback(new Error(t('mine.withdrawPwdLength')))
+  } else if (!/^\d+$/.test(value)) {
+    callback(new Error(t('mine.withdrawPwdOnlyNumbers')))
+  } else {
+    callback()
+  }
 }
 
-function onClickLeft() {
+const validateConfirmPassword = (rule: any, value: any, callback: any) => {
+  if (!value) {
+    callback(new Error(t('mine.inputWithdrawPwdAgain')))
+  } else if (value !== passwordForm.newPassword) {
+    callback(new Error(t('mine.passwordNotMatch')))
+  } else {
+    callback()
+  }
+}
+
+// 表单验证规则
+const formRules = reactive<FormRules>({
+  oldPassword: [
+    { validator: validateOldPassword, trigger: 'blur' }
+  ],
+  newPassword: [
+    { validator: validateNewPassword, trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { validator: validateConfirmPassword, trigger: 'blur' }
+  ]
+})
+
+// 验证密码强度和要求
+function validatePasswordStrength() {
+  const pwd = passwordForm.newPassword
+  requirements.length = pwd.length >= 6 && pwd.length <= 20
+  requirements.onlyNumbers = /^\d+$/.test(pwd)
+  requirements.notSameAsLogin = true // 这里应该比对登录密码
+}
+
+// 返回
+function handleBack() {
   router.back()
 }
 
-async function onSubmit() {
-  // 防止重复提交
-  if (isSubmitting.value) return
-
-  if (isModify.value) {
-    // 修改提现密码
-    await updateWithdrawPassword()
-  } else {
-    // 设置提现密码（使用空字符串作为旧密码）
-    await updateWithdrawPassword(true)
-  }
-}
-
-function init() {
-  const user = store.getUser()
-  // 检查用户是否已设置提现密码
-  if (user && user.has_qk_pwd === false) {
-    isModify.value = false // 首次设置
-  } else {
-    isModify.value = true // 修改密码
-  }
-}
-
-// 修改/设置提现密码
-async function updateWithdrawPassword(isFirstSet = false) {
-  try {
-    isSubmitting.value = true
-    store.loading()
-
-    // 准备请求参数，匹配后端期望的字段名
-    const requestData = {
-      old_withdraw_pwd: isFirstSet ? '' : frm.value.oldPassword, // 首次设置时旧密码为空
-      new_withdraw_pwd: frm.value.password,
-      confirm_withdraw_pwd: frm.value.rePassword,
+// 重置表单
+function handleReset() {
+  passwordFormRef.value?.resetFields()
+  Object.keys(requirements).forEach(key => {
+    if (key !== 'notSameAsLogin') {
+      requirements[key as keyof typeof requirements] = false
     }
+  })
+}
 
-    // 使用正确的API方法名
-    const resp = await api.updateWithdrawPassword(requestData)
+// 提交表单
+async function handleSubmit() {
+  if (!passwordFormRef.value) return
 
-    if (resp && resp.code === 200) {
-      store.stopLoad()
-      showToast({
-        message: resp.message || (isFirstSet ? t('mine.setSuccess') : t('mine.modifySuccess')),
-        onClose: () => {
-          // 如果是首次设置，更新用户状态
-          if (!isModify.value) {
-            const user = store.getUser()
-            if (user) {
-              user.has_qk_pwd = true
-              store.setUser(user)
-            }
+  await passwordFormRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    if (isSubmitting.value) return
+
+    try {
+      const confirmText = isModify.value
+        ? t('mine.confirmModifyWithdrawPwd')
+        : t('mine.confirmSetWithdrawPwd')
+
+      await ElMessageBox.confirm(
+        confirmText,
+        t('common.confirm'),
+        {
+          confirmButtonText: t('common.confirm'),
+          cancelButtonText: t('common.cancel'),
+          type: 'warning'
+        }
+      )
+
+      isSubmitting.value = true
+      appStore.loading()
+
+      const requestData = {
+        old_withdraw_pwd: isModify.value ? passwordForm.oldPassword : '',
+        new_withdraw_pwd: passwordForm.newPassword,
+        confirm_withdraw_pwd: passwordForm.confirmPassword
+      }
+
+      const resp = await api.updateWithdrawPassword(requestData)
+
+      if (resp && resp.code === 200) {
+        const successMsg = isModify.value
+          ? t('mine.withdrawPwdModifySuccess')
+          : t('mine.withdrawPwdSetSuccess')
+
+        ElMessage.success(resp.message || successMsg)
+
+        // 更新用户状态
+        if (!isModify.value) {
+          const user = appStore.getUser()
+          if (user) {
+            user.has_qk_pwd = true
+            appStore.setUser(user)
           }
+        }
+
+        setTimeout(() => {
           router.back()
-        },
-      })
-    } else {
-      throw new Error(resp?.message || t('mine.operationFailed'))
+        }, 1500)
+      } else {
+        throw new Error(resp?.message || t('mine.operationFailed'))
+      }
+    } catch (error: any) {
+      if (error !== 'cancel') {
+        ElMessage.error(error.message || t('mine.operationFailed'))
+      }
+    } finally {
+      isSubmitting.value = false
+      appStore.stopLoad()
     }
-  } catch (err) {
-    store.stopLoad()
-    const errorMessage = (err as Error).message || t('mine.operationFailed')
-    showToast({
-      type: 'fail',
-      message: errorMessage
-    })
-  } finally {
-    isSubmitting.value = false
-  }
+  })
 }
+
+// 初始化
+function init() {
+  const user = appStore.getUser()
+  isModify.value = !!(user && user.has_qk_pwd)
+}
+
+// 监听密码变化
+watch(() => passwordForm.newPassword, () => {
+  if (passwordForm.confirmPassword) {
+    passwordFormRef.value?.validateField('confirmPassword')
+  }
+})
 
 onMounted(() => {
   init()
@@ -241,209 +408,113 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
-.m-login-pwd {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: #f5f5f5;
+.withdraw-password-container {
+  min-height: calc(100vh - 60px);
+  padding: 20px;
+  background-color: #f5f7fa;
 
-  // PC端头部样式
-  .pc-header {
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    margin-bottom: 20px;
+  .password-card {
+    max-width: 800px;
+    margin: 0 auto;
 
-    .pc-header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
+    .card-header {
       display: flex;
       align-items: center;
       gap: 20px;
 
-      .back-btn {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 16px;
-        background: transparent;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        cursor: pointer;
-        color: #333;
-        font-size: 14px;
-        transition: all 0.3s;
-
-        &:hover {
-          background: #f5f5f5;
-          border-color: #999;
-        }
-
-        .back-icon {
-          display: inline-block;
-          width: 0;
-          height: 0;
-          border-style: solid;
-          border-width: 6px 8px 6px 0;
-          border-color: transparent #666 transparent transparent;
-        }
-      }
-
-      .page-title {
-        font-size: 24px;
-        font-weight: 500;
-        color: #333;
+      h2 {
         margin: 0;
-      }
-    }
-  }
-
-  .m-frm {
-    margin-top: 10px;
-    background: #fff;
-
-    // PC端表单样式
-    &.pc-form {
-      max-width: 600px;
-      margin: 20px auto;
-      padding: 40px;
-      border-radius: 8px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-
-      :deep(.van-cell) {
-        padding: 16px 20px;
-
-        .van-field__label {
-          width: 120px;
-          color: #333;
-          font-weight: 500;
-        }
-
-        .van-field__control {
-          font-size: 15px;
-        }
-      }
-    }
-  }
-
-  .form-actions {
-    margin: 16px;
-
-    &.pc-actions {
-      margin: 40px 0 0 0;
-      display: flex;
-      justify-content: center;
-
-      .van-button {
-        width: 300px;
-        height: 48px;
-        font-size: 16px;
-      }
-    }
-  }
-
-  .m-btn {
-    margin-top: 40px;
-  }
-
-  // PC端提示信息
-  .pc-tips {
-    max-width: 600px;
-    margin: 30px auto;
-    padding: 24px;
-    background: #f0f8ff;
-    border-radius: 8px;
-    border-left: 4px solid #1890ff;
-    display: flex;
-    gap: 16px;
-
-    .tip-icon {
-      flex-shrink: 0;
-
-      .info-icon {
-        display: inline-block;
-        width: 24px;
-        height: 24px;
-        position: relative;
-
-        &::before {
-          content: '';
-          position: absolute;
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          background: #1890ff;
-        }
-
-        &::after {
-          content: 'i';
-          position: absolute;
-          width: 24px;
-          height: 24px;
-          color: #fff;
-          font-size: 16px;
-          font-weight: bold;
-          text-align: center;
-          line-height: 24px;
-          font-style: normal;
-        }
+        font-size: 20px;
+        color: #303133;
       }
     }
 
-    .tip-content {
-      flex: 1;
+    .security-alert {
+      margin-bottom: 30px;
 
-      h4 {
-        margin: 0 0 12px 0;
-        font-size: 16px;
-        font-weight: 500;
-        color: #333;
-      }
-
-      p {
-        margin: 8px 0;
-        font-size: 14px;
-        color: #666;
-        line-height: 1.6;
-      }
-    }
-  }
-}
-
-// 移动端优化
-@media (max-width: 768px) {
-  .m-login-pwd {
-    .pc-header {
-      display: none;
-    }
-
-    .pc-tips {
-      display: none;
-    }
-
-    .m-frm {
-      &.pc-form {
-        max-width: 100%;
+      .security-tips {
         margin: 10px 0 0 0;
-        padding: 0;
-        border-radius: 0;
-        box-shadow: none;
+        padding-left: 20px;
+
+        li {
+          line-height: 1.8;
+          color: #e6a23c;
+        }
       }
     }
-  }
-}
 
-// 平板端优化
-@media (min-width: 768px) and (max-width: 1024px) {
-  .m-login-pwd {
-    .m-frm.pc-form {
-      margin: 20px;
-      max-width: calc(100% - 40px);
+    .password-form {
+      padding: 20px 40px;
+
+      .password-info {
+        margin-top: 10px;
+
+        .el-progress {
+          margin-bottom: 5px;
+        }
+
+        .strength-text {
+          font-size: 12px;
+        }
+      }
+
+      .password-requirements {
+        background-color: #f4f4f5;
+        padding: 20px;
+        border-radius: 4px;
+
+        h4 {
+          margin: 0 0 15px 0;
+          color: #606266;
+          font-size: 14px;
+        }
+
+        .requirement-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          .requirement-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #909399;
+            transition: color 0.3s;
+
+            .el-icon {
+              font-size: 16px;
+            }
+
+            &.valid {
+              color: #67c23a;
+            }
+          }
+        }
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 20px;
+
+        .el-button {
+          min-width: 120px;
+        }
+      }
     }
 
-    .pc-tips {
-      margin: 30px 20px;
-      max-width: calc(100% - 40px);
+    .security-suggestions {
+      padding: 0 40px 20px;
+
+      ul {
+        margin: 15px 0 0 0;
+        padding-left: 20px;
+        color: #909399;
+
+        li {
+          line-height: 1.8;
+          font-size: 13px;
+        }
+      }
     }
   }
 }
