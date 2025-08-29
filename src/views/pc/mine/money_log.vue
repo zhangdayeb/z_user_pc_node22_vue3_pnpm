@@ -37,13 +37,13 @@
           <el-form-item :label="$t('mine.recordType')">
             <el-select
               v-model="filterForm.type"
-              :placeholder="$t('common.all')"
+              :placeholder="$t('all')"
               clearable
               @change="handleFilterChange"
             >
-              <el-option :label="$t('common.all')" value="" />
-              <el-option :label="$t('mine.income')" value="income" />
-              <el-option :label="$t('mine.expense')" value="expense" />
+              <el-option :label="$t('all')" value="" />
+              <el-option :label="$t('mine.totalIncome')" value="income" />
+              <el-option :label="$t('mine.totalExpense')" value="expense" />
             </el-select>
           </el-form-item>
           <el-form-item :label="$t('mine.dateRange')">

@@ -73,7 +73,7 @@ export async function invokeApi(
     }
 
     // 处理响应
-    if (resp && resp.data?.code === 200) {
+    if (resp && resp?.code === 200) {
       if (isLoad) {
         store.stopLoad()
       }

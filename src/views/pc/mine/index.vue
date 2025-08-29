@@ -96,6 +96,14 @@
             <el-icon :size="32" color="#F56C6C"><Share /></el-icon>
             <span>{{ $t('mine.pullMoney') }}</span>
           </div>
+          <div v-if="isLoggedIn" class="function-item" @click="showSettings">
+            <el-icon :size="32" color="#909399"><Setting /></el-icon>
+            <span>{{ $t('user.settings') }}</span>
+          </div>
+          <div v-if="isLoggedIn" class="function-item" @click="handleLogout">
+            <el-icon :size="32" color="#F56C6C"><SwitchButton /></el-icon>
+            <span>{{ $t('user.logout') }}</span>
+          </div>
         </div>
       </el-card>
 
@@ -174,18 +182,6 @@
           </el-menu-item>
         </el-menu>
       </el-card>
-    </div>
-
-    <!-- 底部操作 -->
-    <div v-if="isLoggedIn" class="account-footer">
-      <el-button @click="showSettings">
-        <el-icon><Setting /></el-icon>
-        {{ $t('user.settings') }}
-      </el-button>
-      <el-button type="danger" @click="handleLogout">
-        <el-icon><SwitchButton /></el-icon>
-        {{ $t('user.logout') }}
-      </el-button>
     </div>
 
     <!-- 设置对话框 -->
@@ -556,12 +552,11 @@ onMounted(() => {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 20px;
-    margin-bottom: 20px;
 
     .function-card {
       .function-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 20px;
 
         .function-item {
@@ -603,14 +598,6 @@ onMounted(() => {
     }
   }
 
-  .account-footer {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    padding: 20px;
-    border-top: 1px solid #ebeef5;
-  }
-
   .settings-content {
     padding: 20px;
 
@@ -633,31 +620,5 @@ onMounted(() => {
   font-weight: 600;
 }
 
-// 响应式布局
-@media (max-width: 768px) {
-  .account-content {
-    grid-template-columns: 1fr;
-  }
-
-  .account-header {
-    .header-content {
-      flex-direction: column;
-      align-items: flex-start;
-
-      .wallet-info {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-
-        .wallet-actions {
-          width: 100%;
-
-          .el-button {
-            flex: 1;
-          }
-        }
-      }
-    }
-  }
-}
+// PC端专用样式，移除响应式布局
 </style>
