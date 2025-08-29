@@ -11,19 +11,16 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import 'element-plus/dist/index.css'
 import './styles/index.less' // 自定义全局样式
 
-import { useConfigStore } from '@/stores/config'
-import { setPageTitle } from '@/utils/tools'
-
 /**
  * 应用初始化
  */
 async function bootstrap() {
   const app = createApp(App)
 
-  // 注册核心插件
+  // 注册核心插件（顺序很重要）
   app.use(createPinia()) // 必须在其他 store 使用前注册
   app.use(router)
-  app.use(i18n)
+  app.use(i18n) // 注册 i18n
   app.use(ElementPlus, {
     size: 'default',
     zIndex: 3000,
@@ -63,26 +60,6 @@ async function bootstrap() {
     }
   }
 
-  try {
-    // 初始化配置
-    const configStore = useConfigStore()
-    await configStore.loadSiteConfig()
-
-    // 设置页面标题
-    if (configStore.siteName) {
-      setPageTitle(configStore.siteName)
-    }
-
-    console.log('✅ 应用配置初始化完成', {
-      siteName: configStore.siteName,
-      apiUrl: import.meta.env.VITE_API_BASE_URL,
-      mode: import.meta.env.MODE
-    })
-  } catch (error) {
-    console.error('❌ 配置初始化失败:', error)
-    // 配置加载失败不阻止应用启动，让应用内部处理错误
-  }
-
   // 挂载应用
   app.mount('#app')
 
@@ -90,13 +67,14 @@ async function bootstrap() {
   if (import.meta.env.DEV) {
     console.log('🚀 应用已启动 (开发模式)')
     console.log('📝 Vue:', app.version)
+    console.log('🔗 API:', import.meta.env.VITE_API_BASE_URL)
   }
 }
 
 // 启动应用
 bootstrap().catch(err => {
   console.error('❌ 应用启动失败:', err)
-  // 可以在这里显示一个错误页面
+  // 显示错误页面
   document.getElementById('app')!.innerHTML = `
     <div style="
       display: flex;

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { ElConfigProvider } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import { useConfigStore } from '@/stores/config'
@@ -14,13 +14,12 @@ const configStore = useConfigStore()
 const locale = ref(getElementLocale())
 
 // 监听语言变化事件
-window.addEventListener('language-change', (event: any) => {
+window.addEventListener('language-change', () => {
   locale.value = getElementLocale()
 })
 
 // 主题配置
 const themeConfig = computed(() => ({
-  // Element Plus 主题变量
   '--el-color-primary': configStore.primaryColor || '#409EFF',
   '--el-color-success': '#67C23A',
   '--el-color-warning': '#E6A23C',
@@ -32,12 +31,12 @@ const themeConfig = computed(() => ({
 const initApp = async () => {
   try {
     // 加载系统配置
-    await configStore.loadConfig()
+    await configStore.loadSiteConfig()
 
     // 检查用户登录状态
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('access_token')
     if (token) {
-      await appStore.getMeForApi()
+      await appStore.fetchUserInfo()
     }
 
     // 初始化语言设置
