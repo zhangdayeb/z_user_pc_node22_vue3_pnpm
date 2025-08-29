@@ -390,7 +390,7 @@ async function submitRegisterHandler() {
       }
 
       ElMessage.success(resp.message || t('login.loginSuccess'))
-      router.replace({ name: 'main' })
+      router.replace({ name: 'login' })
     } else {
       ElMessage.error(resp?.message || t('login.loginFailed'))
     }
