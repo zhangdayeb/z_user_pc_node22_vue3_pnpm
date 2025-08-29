@@ -1,152 +1,236 @@
 <template>
-  <div class="withdraw-record">
-    <van-nav-bar
-      left-arrow
-      :title="$t('withdrawRecord')"
-      @click-left="onClickLeft"
-      class="nav-bar"
-    />
-
-    <!-- 状态筛选 -->
-    <div class="filter-bar">
-      <van-tabs v-model:active="activeStatus" @click-tab="onTabChange" sticky>
-        <van-tab :title="$t('all')" name=""></van-tab>
-        <van-tab :title="$t('pending')" name="0"></van-tab>
-        <van-tab :title="$t('approved')" name="1"></van-tab>
-        <van-tab :title="$t('rejected')" name="2"></van-tab>
-      </van-tabs>
+  <div class="withdraw-record-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <el-button
+        @click="onClickLeft"
+        :icon="ArrowLeft"
+        circle
+        size="small"
+        class="back-btn"
+      />
+      <h2 class="page-title">{{ $t('withdrawRecord') }}</h2>
+      <el-button
+        @click="onRefresh"
+        :icon="Refresh"
+        circle
+        size="small"
+        class="refresh-btn"
+      />
     </div>
 
+    <!-- 状态筛选标签页 -->
+    <el-card class="filter-card" shadow="never">
+      <el-tabs v-model="activeStatus" @tab-change="onTabChange">
+        <el-tab-pane :label="$t('all')" name=""></el-tab-pane>
+        <el-tab-pane :label="$t('pending')" name="0"></el-tab-pane>
+        <el-tab-pane :label="$t('approved')" name="1"></el-tab-pane>
+        <el-tab-pane :label="$t('rejected')" name="2"></el-tab-pane>
+      </el-tabs>
+    </el-card>
+
     <!-- 提现记录列表 -->
-    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
-      <van-list
-        v-model:loading="loading"
-        :finished="finished"
-        :finished-text="$t('noMore')"
-        @load="onLoad"
-        class="record-list"
-      >
+    <el-card class="record-list-card" shadow="never" v-loading="loading">
+      <div class="record-list">
         <div
           v-for="item in list"
           :key="item.id"
           class="record-item"
           @click="showRecordDetail(item)"
         >
-          <div class="record-header">
-            <div class="record-title">
-              <span class="amount" :class="getAmountClass(item.status)">
-                ¥{{ item.amount }}
-              </span>
-              <van-tag
-                :type="getStatusTagType(item.status)"
-                size="small"
-                class="status-tag"
-              >
-                {{ item.status_text }}
-              </van-tag>
+          <div class="record-main">
+            <div class="record-left">
+              <div class="amount-row">
+                <span class="amount" :class="getAmountClass(item.status)">
+                  ¥{{ item.amount }}
+                </span>
+                <el-tag
+                  :type="getStatusTagType(item.status)"
+                  size="small"
+                  effect="dark"
+                >
+                  {{ item.status_text }}
+                </el-tag>
+              </div>
+              <div class="fee-info">
+                <span class="label">{{ $t('actualAmount') }}:</span>
+                <span class="actual-amount">¥{{ item.actual_amount }}</span>
+                <el-tooltip
+                  v-if="item.fee && parseFloat(item.fee) > 0"
+                  :content="`${$t('handlingFee')}: ¥${item.fee}`"
+                  placement="top"
+                >
+                  <el-icon class="fee-icon"><InfoFilled /></el-icon>
+                </el-tooltip>
+              </div>
             </div>
-          </div>
-          <div class="record-info">
-            <div class="info-row">
-              <span class="label">{{ $t('applyTime') }}：</span>
-              <span class="value">{{ formatTime(item.create_time) }}</span>
-            </div>
-            <div class="info-row" v-if="item.success_time">
-              <span class="label">{{ $t('completeTime') }}：</span>
-              <span class="value">{{ formatTime(item.success_time) }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">{{ $t('actualAmount') }}：</span>
-              <span class="value">¥{{ item.actual_amount }}</span>
-            </div>
-            <div class="info-row" v-if="item.bank_name">
-              <span class="label">{{ $t('withdrawMethod') }}：</span>
-              <span class="value">{{ item.pay_type_text }}</span>
-            </div>
-          </div>
-        </div>
-      </van-list>
-    </van-pull-refresh>
 
-    <!-- 详情弹窗 -->
-    <van-popup
-      v-model:show="showDetail"
-      position="bottom"
-      round
-      :style="{ height: '70%' }"
-      class="detail-popup"
+            <div class="record-center">
+              <div class="info-row">
+                <span class="label">{{ $t('orderNumber') }}:</span>
+                <span class="value">{{ item.id }}</span>
+              </div>
+              <div class="info-row" v-if="item.pay_type_text">
+                <span class="label">{{ $t('withdrawMethod') }}:</span>
+                <span class="value">{{ item.pay_type_text }}</span>
+              </div>
+            </div>
+
+            <div class="record-right">
+              <div class="time-info">
+                <div class="time-row">
+                  <span class="label">{{ $t('applyTime') }}:</span>
+                  <span class="value">{{ formatTime(item.create_time) }}</span>
+                </div>
+                <div class="time-row" v-if="item.success_time">
+                  <span class="label">{{ $t('completeTime') }}:</span>
+                  <span class="value">{{ formatTime(item.success_time) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <el-button
+            type="primary"
+            link
+            :icon="View"
+            class="view-detail-btn"
+          >
+            {{ $t('viewDetail') }}
+          </el-button>
+        </div>
+
+        <!-- 空状态 -->
+        <el-empty
+          v-if="!loading && list.length === 0"
+          :description="$t('noData')"
+          class="empty-state"
+        />
+      </div>
+
+      <!-- 分页 -->
+      <el-pagination
+        v-if="list.length > 0"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :total="total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        class="pagination"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </el-card>
+
+    <!-- 详情对话框 -->
+    <el-dialog
+      v-model="showDetail"
+      :title="$t('withdrawDetail')"
+      width="650px"
+      class="detail-dialog"
     >
       <div class="detail-content" v-if="selectedRecord">
-        <div class="detail-header">
-          <h3>{{ $t('withdrawDetail') }}</h3>
-          <van-icon name="cross" @click="showDetail = false" />
+        <!-- 金额和状态 -->
+        <div class="detail-header-info">
+          <div class="detail-amounts">
+            <div class="amount-item">
+              <label>{{ $t('withdrawAmount') }}</label>
+              <span class="amount-value" :class="getAmountClass(selectedRecord.status)">
+                ¥{{ selectedRecord.amount }}
+              </span>
+            </div>
+            <div class="amount-item">
+              <label>{{ $t('actualAmount') }}</label>
+              <span class="actual-value">¥{{ selectedRecord.actual_amount }}</span>
+            </div>
+          </div>
+          <el-tag
+            :type="getStatusTagType(selectedRecord.status)"
+            size="large"
+            effect="dark"
+          >
+            {{ selectedRecord.status_text }}
+          </el-tag>
         </div>
 
-        <div class="detail-body">
-          <div class="detail-amount">
-            <span class="amount-label">{{ $t('withdrawAmount') }}</span>
-            <span class="amount-value" :class="getAmountClass(selectedRecord.status)">
-              ¥{{ selectedRecord.amount }}
-            </span>
-          </div>
-
-          <div class="detail-status">
-            <van-tag
-              :type="getStatusTagType(selectedRecord.status)"
-              size="large"
-            >
-              {{ selectedRecord.status_text }}
-            </van-tag>
-          </div>
-
-          <van-cell-group class="detail-info">
-            <van-cell :title="$t('orderNumber')" :value="selectedRecord.id" />
-            <van-cell :title="$t('applyTime')" :value="formatTime(selectedRecord.create_time)" />
-            <van-cell
-              v-if="selectedRecord.success_time"
-              :title="$t('completeTime')"
-              :value="formatTime(selectedRecord.success_time)"
-            />
-            <van-cell :title="$t('withdrawAmount')" :value="`¥${selectedRecord.amount}`" />
-            <van-cell :title="$t('handlingFee')" :value="`¥${selectedRecord.fee}`" />
-            <van-cell :title="$t('actualAmount')" :value="`¥${selectedRecord.actual_amount}`" />
-            <van-cell :title="$t('withdrawMethod')" :value="selectedRecord.pay_type_text" />
-            <van-cell
-              v-if="selectedRecord.bank_name"
-              :title="$t('bankName')"
-              :value="selectedRecord.bank_name"
-            />
-            <van-cell
-              v-if="selectedRecord.account"
-              :title="$t('receivingAccount')"
-              :value="selectedRecord.account"
-            />
-            <van-cell
-              v-if="selectedRecord.account_name"
-              :title="$t('mine.accountHolder')"
-              :value="selectedRecord.account_name"
-            />
-            <van-cell
-              v-if="selectedRecord.remark"
-              :title="$t('remark')"
-              :value="selectedRecord.remark"
-              class="remark-cell"
-            />
-          </van-cell-group>
+        <!-- 费用明细 -->
+        <div class="fee-detail" v-if="selectedRecord.fee && parseFloat(selectedRecord.fee) > 0">
+          <el-alert
+            :title="$t('feeDetail')"
+            type="info"
+            :closable="false"
+            show-icon
+          >
+            <div class="fee-breakdown">
+              <span>{{ $t('withdrawAmount') }}: ¥{{ selectedRecord.amount }}</span>
+              <span class="minus">-</span>
+              <span>{{ $t('handlingFee') }}: ¥{{ selectedRecord.fee }}</span>
+              <span class="equals">=</span>
+              <span class="result">{{ $t('actualAmount') }}: ¥{{ selectedRecord.actual_amount }}</span>
+            </div>
+          </el-alert>
         </div>
+
+        <!-- 详细信息 -->
+        <el-descriptions :column="1" border class="detail-descriptions">
+          <el-descriptions-item :label="$t('orderNumber')">
+            {{ selectedRecord.id }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('applyTime')">
+            {{ formatTime(selectedRecord.create_time) }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.success_time"
+            :label="$t('completeTime')"
+          >
+            {{ formatTime(selectedRecord.success_time) }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="$t('withdrawMethod')">
+            {{ selectedRecord.pay_type_text }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.bank_name"
+            :label="$t('bankName')"
+          >
+            {{ selectedRecord.bank_name }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.account"
+            :label="$t('receivingAccount')"
+          >
+            {{ formatAccount(selectedRecord.account) }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.account_name"
+            :label="$t('mine.accountHolder')"
+          >
+            {{ selectedRecord.account_name }}
+          </el-descriptions-item>
+          <el-descriptions-item
+            v-if="selectedRecord.remark"
+            :label="$t('remark')"
+          >
+            <div class="remark-content">{{ selectedRecord.remark }}</div>
+          </el-descriptions-item>
+        </el-descriptions>
       </div>
-    </van-popup>
+
+      <template #footer>
+        <el-button @click="showDetail = false">{{ $t('close') }}</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
-import { invokeApi } from '@/utils/tools'
-import { showToast } from 'vant'
+import { onMounted, ref, watch } from 'vue'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft, Refresh, View, InfoFilled } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
+import { invokeApi } from '@/utils/tools'
 
-defineOptions({ name: 'WithdrawRecord' })
+defineOptions({ name: 'PcWithdrawRecord' })
 
 interface WithdrawRecordItem {
   id: number
@@ -169,11 +253,14 @@ interface WithdrawRecordItem {
 const router = useRouter()
 const { t, locale } = useI18n()
 
-const page = ref(0)
+// 分页相关
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+
+// 数据相关
 const list = ref<WithdrawRecordItem[]>([])
 const loading = ref(false)
-const refreshing = ref(false)
-const finished = ref(false)
 const activeStatus = ref('')
 const showDetail = ref(false)
 const selectedRecord = ref<WithdrawRecordItem | null>(null)
@@ -192,7 +279,7 @@ function getAmountClass(status: number): string {
 }
 
 // 获取状态标签类型
-function getStatusTagType(status: number): string {
+function getStatusTagType(status: number): 'success' | 'danger' | 'warning' {
   switch (status) {
     case 1: // 已通过
       return 'success'
@@ -250,6 +337,17 @@ function formatTime(timeStr: string): string {
   }
 }
 
+// 格式化账号（隐藏中间部分）
+function formatAccount(account: string): string {
+  if (!account || account.length < 8) return account
+
+  const start = account.substring(0, 4)
+  const end = account.substring(account.length - 4)
+  const middle = '*'.repeat(Math.min(account.length - 8, 8))
+
+  return `${start}${middle}${end}`
+}
+
 // 显示详情
 function showRecordDetail(record: WithdrawRecordItem) {
   selectedRecord.value = record
@@ -257,24 +355,27 @@ function showRecordDetail(record: WithdrawRecordItem) {
 }
 
 // 标签切换
-function onTabChange(event: { name: string }) {
-  activeStatus.value = event.name
-  onRefresh()
+function onTabChange() {
+  currentPage.value = 1
+  getWithdrawRecords()
 }
 
-// 下拉刷新
+// 刷新
 const onRefresh = async () => {
-  finished.value = false
-  loading.value = true
-  page.value = 0
-  list.value = []
+  currentPage.value = 1
   await getWithdrawRecords()
-  refreshing.value = false
+  ElMessage.success(t('refreshSuccess'))
 }
 
-// 加载更多
-const onLoad = async () => {
-  await getWithdrawRecords()
+// 分页大小改变
+function handleSizeChange() {
+  currentPage.value = 1
+  getWithdrawRecords()
+}
+
+// 页码改变
+function handleCurrentChange() {
+  getWithdrawRecords()
 }
 
 // 返回上一页
@@ -284,10 +385,12 @@ function onClickLeft() {
 
 // 获取提现记录
 async function getWithdrawRecords() {
+  loading.value = true
+
   try {
     const params: any = {
-      page: page.value + 1,
-      limit: 20
+      page: currentPage.value,
+      limit: pageSize.value
     }
 
     // 添加状态筛选
@@ -304,257 +407,407 @@ async function getWithdrawRecords() {
 
     if (resp.data) {
       const data = resp.data
-      page.value = data.pagination?.current_page ?? 1
-      const newList = data.list ?? []
+      list.value = data.list ?? []
+      total.value = data.pagination?.total ?? 0
 
-      if (page.value === 1) {
-        list.value = newList
-      } else {
-        list.value = list.value.concat(newList)
+      // 更新当前页码（处理超出范围的情况）
+      if (data.pagination?.current_page) {
+        currentPage.value = data.pagination.current_page
       }
-
-      // 判断是否还有更多数据
-      finished.value = !data.pagination?.has_more
     }
   } catch (error) {
     console.error('获取提现记录失败:', error)
-    showToast(t('getWithdrawRecordFailed'))
+    ElMessage.error(t('getWithdrawRecordFailed'))
+  } finally {
+    loading.value = false
   }
-
-  loading.value = false
 }
 
-onMounted(async () => {
-  await getWithdrawRecords()
+// 监听状态变化
+watch(activeStatus, () => {
+  currentPage.value = 1
+})
+
+onMounted(() => {
+  getWithdrawRecords()
 })
 </script>
 
-<style scoped>
-.withdraw-record {
-  min-height: 100vh;
-  background-color: #f7f8fa;
-}
-
-.nav-bar {
-  background-color: #fff;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.filter-bar {
-  background-color: #fff;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.record-list {
-  padding: 10px;
-}
-
-.record-item {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.record-item:active {
-  transform: scale(0.98);
-  background-color: #f8f9fa;
-}
-
-.record-header .record-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.record-header .record-title .amount {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.record-header .record-title .amount.amount-success {
-  color: #07c160;
-}
-
-.record-header .record-title .amount.amount-error {
-  color: #fa5151;
-}
-
-.record-header .record-title .amount.amount-pending {
-  color: #ff8f00;
-}
-
-.record-header .record-title .status-tag {
-  border-radius: 12px;
-}
-
-.record-info .info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 14px;
-}
-
-.record-info .info-row:last-child {
-  margin-bottom: 0;
-}
-
-.record-info .info-row .label {
-  color: #969799;
-  min-width: 80px;
-}
-
-.record-info .info-row .value {
-  color: #323233;
-  text-align: right;
-  flex: 1;
-}
-
-.detail-popup .detail-content {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-popup .detail-content .detail-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #ebedf0;
-}
-
-.detail-popup .detail-content .detail-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #323233;
-}
-
-.detail-popup .detail-content .detail-header .van-icon {
-  font-size: 20px;
-  color: #969799;
-  cursor: pointer;
-}
-
-.detail-popup .detail-content .detail-body {
-  flex: 1;
+<style scoped lang="scss">
+.withdraw-record-container {
   padding: 20px;
-  overflow-y: auto;
-}
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 40px);
 
-.detail-popup .detail-content .detail-body .detail-amount {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-label {
-  display: block;
-  font-size: 14px;
-  color: #969799;
-  margin-bottom: 8px;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value {
-  font-size: 28px;
-  font-weight: 600;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-success {
-  color: #07c160;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-error {
-  color: #fa5151;
-}
-
-.detail-popup .detail-content .detail-body .detail-amount .amount-value.amount-pending {
-  color: #ff8f00;
-}
-
-.detail-popup .detail-content .detail-body .detail-status {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.detail-popup .detail-content .detail-body .detail-info {
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.detail-popup .detail-content .detail-body .detail-info .remark-cell :deep(.van-cell__value) {
-  word-break: break-all;
-  white-space: pre-wrap;
-}
-
-/* PC端适配样式 */
-@media (min-width: 768px) {
-  .withdraw-record {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .nav-bar {
-    border-radius: 8px 8px 0 0;
-  }
-
-  .record-list {
-    padding: 16px 24px;
-  }
-
-  .record-item {
-    margin-bottom: 16px;
-    padding: 20px 24px;
-    border: 1px solid #ebedf0;
-    transition: all 0.3s ease;
-  }
-
-  .record-item:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    border-color: #d0d0d0;
-  }
-
-  .record-header .record-title .amount {
-    font-size: 20px;
-  }
-
-  .record-info .info-row {
-    font-size: 16px;
-  }
-}
-
-/* 大屏PC端适配 */
-@media (min-width: 1200px) {
-  .withdraw-record {
-    max-width: 1000px;
-  }
-
-  .record-list {
-    padding: 24px 32px;
-  }
-
-  .record-item {
-    padding: 24px 32px;
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 20px;
+    padding: 0 20px;
+
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0;
+      flex: 1;
+      text-align: center;
+    }
+
+    .back-btn,
+    .refresh-btn {
+      flex-shrink: 0;
+    }
   }
 
-  .record-header .record-title .amount {
-    font-size: 22px;
+  .filter-card {
+    margin-bottom: 20px;
+
+    :deep(.el-card__body) {
+      padding: 10px 20px;
+    }
+
+    :deep(.el-tabs__header) {
+      margin-bottom: 0;
+    }
+  }
+
+  .record-list-card {
+    :deep(.el-card__body) {
+      padding: 20px;
+    }
+  }
+
+  .record-list {
+    .record-item {
+      padding: 20px;
+      margin-bottom: 16px;
+      background: #fff;
+      border: 1px solid #e4e7ed;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+        border-color: #c0c4cc;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .record-main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 40px;
+
+        .record-left {
+          min-width: 200px;
+
+          .amount-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+
+            .amount {
+              font-size: 24px;
+              font-weight: 600;
+
+              &.amount-success {
+                color: #67c23a;
+              }
+
+              &.amount-error {
+                color: #f56c6c;
+              }
+
+              &.amount-pending {
+                color: #e6a23c;
+              }
+            }
+          }
+
+          .fee-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+
+            .label {
+              color: #909399;
+            }
+
+            .actual-amount {
+              color: #303133;
+              font-weight: 500;
+            }
+
+            .fee-icon {
+              color: #909399;
+              cursor: help;
+            }
+          }
+        }
+
+        .record-center {
+          flex: 1;
+
+          .info-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+
+            &:last-child {
+              margin-bottom: 0;
+            }
+
+            .label {
+              color: #909399;
+            }
+
+            .value {
+              color: #606266;
+            }
+          }
+        }
+
+        .record-right {
+          min-width: 240px;
+
+          .time-info {
+            .time-row {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              margin-bottom: 6px;
+              font-size: 14px;
+
+              &:last-child {
+                margin-bottom: 0;
+              }
+
+              .label {
+                color: #909399;
+                min-width: 80px;
+              }
+
+              .value {
+                color: #606266;
+              }
+            }
+          }
+        }
+      }
+
+      .view-detail-btn {
+        font-size: 14px;
+      }
+    }
+
+    .empty-state {
+      padding: 60px 0;
+    }
+  }
+
+  .pagination {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
   }
 }
 
-/* 超大屏适配 */
-@media (min-width: 1600px) {
-  .withdraw-record {
-    max-width: 1200px;
+.detail-dialog {
+  :deep(.el-dialog__body) {
+    padding: 20px 30px;
+  }
+
+  .detail-content {
+    .detail-header-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px;
+      background: #f5f7fa;
+      border-radius: 8px;
+      margin-bottom: 20px;
+
+      .detail-amounts {
+        display: flex;
+        gap: 40px;
+
+        .amount-item {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+
+          label {
+            font-size: 14px;
+            color: #909399;
+          }
+
+          .amount-value {
+            font-size: 28px;
+            font-weight: 600;
+
+            &.amount-success {
+              color: #67c23a;
+            }
+
+            &.amount-error {
+              color: #f56c6c;
+            }
+
+            &.amount-pending {
+              color: #e6a23c;
+            }
+          }
+
+          .actual-value {
+            font-size: 24px;
+            font-weight: 500;
+            color: #303133;
+          }
+        }
+      }
+    }
+
+    .fee-detail {
+      margin-bottom: 20px;
+
+      .fee-breakdown {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        margin-top: 8px;
+
+        span {
+          color: #606266;
+        }
+
+        .minus,
+        .equals {
+          color: #909399;
+          font-weight: bold;
+        }
+
+        .result {
+          font-weight: 500;
+          color: #303133;
+        }
+      }
+    }
+
+    .detail-descriptions {
+      :deep(.el-descriptions__label) {
+        width: 140px;
+        font-weight: 500;
+      }
+
+      .remark-content {
+        word-break: break-all;
+        white-space: pre-wrap;
+        line-height: 1.6;
+      }
+    }
+  }
+}
+
+// 响应式适配
+@media (max-width: 1400px) {
+  .withdraw-record-container {
+    .record-list {
+      .record-item {
+        .record-main {
+          gap: 20px;
+
+          .record-left {
+            min-width: 180px;
+          }
+
+          .record-right {
+            min-width: 200px;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1200px) {
+  .withdraw-record-container {
+    padding: 16px;
+
+    .record-list {
+      .record-item {
+        .record-main {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 16px;
+
+          .record-left,
+          .record-center,
+          .record-right {
+            width: 100%;
+            min-width: unset;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .withdraw-record-container {
+    padding: 12px;
+
+    .page-header {
+      padding: 0 12px;
+
+      .page-title {
+        font-size: 20px;
+      }
+    }
+
+    .record-list {
+      .record-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+
+        .view-detail-btn {
+          align-self: flex-end;
+        }
+      }
+    }
+  }
+
+  .detail-dialog {
+    width: 90% !important;
+    max-width: 550px;
+
+    .detail-content {
+      .detail-header-info {
+        flex-direction: column;
+        gap: 16px;
+
+        .detail-amounts {
+          flex-direction: column;
+          gap: 16px;
+          width: 100%;
+        }
+      }
+    }
   }
 }
 </style>

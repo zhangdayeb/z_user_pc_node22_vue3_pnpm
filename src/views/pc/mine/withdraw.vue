@@ -1,154 +1,214 @@
 <template>
-  <div class="m-withdraw">
-    <van-nav-bar
-      left-arrow
-      :title="$t('mine.sunmitWithdraw')"
-      @click-left="onClickLeft"
-      class="nav-bar"
-    />
-    <!-- form -->
-    <van-form @submit="onSubmit" class="m-frm">
-      <van-field
-        v-model="frm.name"
-        type="text"
-        readonly
-        :label="$t('mine.name')"
-      >
-        <template #left-icon>
-          <div class="icon-user"></div>
-        </template>
-      </van-field>
+  <div class="withdraw-apply-container">
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <el-button
+        @click="onClickLeft"
+        :icon="ArrowLeft"
+        circle
+        size="small"
+        class="back-btn"
+      />
+      <h2 class="page-title">{{ $t('mine.sunmitWithdraw') }}</h2>
+    </div>
 
-      <van-field
-        :model-value="store.getUser()?.money ?? 0"
-        type="text"
-        readonly
-        :label="$t('mine.canDrawMoney')"
+    <!-- 提现表单 -->
+    <el-card class="withdraw-card" shadow="never">
+      <el-form
+        ref="withdrawFormRef"
+        :model="frm"
+        :rules="rules"
+        label-width="140px"
+        @submit.prevent="onSubmit"
+        class="withdraw-form"
       >
-        <template #left-icon>
-          <div class="icon-wallet"></div>
-        </template>
-      </van-field>
+        <!-- 用户信息 -->
+        <el-form-item :label="$t('mine.name')">
+          <el-input
+            v-model="frm.name"
+            readonly
+            :prefix-icon="User"
+            class="readonly-input"
+          />
+        </el-form-item>
 
-      <van-field readonly :label="$t('mine.shouChannel')">
-        <template #left-icon>
-          <div class="icon-bank"></div>
-        </template>
-        <template #input>
-          <van-dropdown-menu>
-            <van-dropdown-item
-              v-model="frm.account_id"
-              :options="accountList"
-              :title="
-                frm.account_id === '' ? $t('selected') : getAccountDisplayName(frm.account_id)
-              "
-              @change="changeAccountHandler"
-            />
-          </van-dropdown-menu>
-        </template>
-        <template #button>
-          <van-button
-            size="small"
-            plain
-            hairline
-            type="primary"
-            @click.stop="goAddAccount"
+        <!-- 可提现余额 -->
+        <el-form-item :label="$t('mine.canDrawMoney')">
+          <el-input
+            :model-value="store.getUser()?.money ?? 0"
+            readonly
+            :prefix-icon="Wallet"
+            class="readonly-input"
           >
-            <div class="icon-plus"></div>
+            <template #append>
+              <span class="currency-unit">{{ $t('yuan') }}</span>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <!-- 收款账户 -->
+        <el-form-item :label="$t('mine.shouChannel')" prop="account_id">
+          <el-select
+            v-model="frm.account_id"
+            :placeholder="$t('selected')"
+            class="account-select"
+            @change="changeAccountHandler"
+          >
+            <el-option
+              v-for="account in accountList"
+              :key="account.value"
+              :label="account.text"
+              :value="account.value"
+            >
+              <div class="account-option">
+                <span class="account-name">{{ account.text }}</span>
+                <el-tag v-if="account.isDefault" type="success" size="small">
+                  {{ $t('default') }}
+                </el-tag>
+              </div>
+            </el-option>
+          </el-select>
+          <el-button
+            type="primary"
+            :icon="Plus"
+            @click="goAddAccount"
+            class="add-account-btn"
+          >
             {{ $t('add') }}
-          </van-button>
-        </template>
-      </van-field>
+          </el-button>
+        </el-form-item>
 
-      <van-field
-        :model-value="selectedAccount?.account_name || ''"
-        type="text"
-        readonly
-        :label="$t('mine.cardName')"
-      >
-        <template #left-icon>
-          <div class="icon-card"></div>
-        </template>
-      </van-field>
+        <!-- 账户名称 -->
+        <el-form-item :label="$t('mine.cardName')" v-if="selectedAccount">
+          <el-input
+            :model-value="selectedAccount?.account_name || ''"
+            readonly
+            :prefix-icon="CreditCard"
+            class="readonly-input"
+          />
+        </el-form-item>
 
-      <van-field
-        :model-value="selectedAccount?.display_info || ''"
-        type="text"
-        readonly
-        :label="$t('mine.cardAccount')"
-      >
-        <template #left-icon>
-          <div class="icon-info"></div>
-        </template>
-      </van-field>
+        <!-- 账户信息 -->
+        <el-form-item :label="$t('mine.cardAccount')" v-if="selectedAccount">
+          <el-input
+            :model-value="selectedAccount?.display_info || ''"
+            readonly
+            :prefix-icon="InfoFilled"
+            class="readonly-input"
+          />
+        </el-form-item>
 
-      <van-field
-        v-model="frm.amount"
-        type="digit"
-        :placeholder="$t('mine.inputPlz')"
-        :label="$t('mine.drawMoney')"
-        :rules="[
-          { required: true, message: $t('mine.inputPlz') },
-          { validator: validateAmount, message: '请输入有效金额' }
-        ]"
-      >
-        <template #left-icon>
-          <div class="icon-money"></div>
-        </template>
-        <template #button>
-          <van-button
-            size="small"
-            type="primary"
-            plain
-            hairline
-            @click="allMoney"
+        <!-- 提现金额 -->
+        <el-form-item :label="$t('mine.drawMoney')" prop="amount">
+          <el-input
+            v-model="frm.amount"
+            type="number"
+            :placeholder="$t('mine.inputPlz')"
+            :prefix-icon="Money"
+            @input="handleAmountInput"
+            class="amount-input"
           >
-            <div class="icon-all"></div>
-            {{ $t('mine.allMoney') }}
-          </van-button>
-        </template>
-      </van-field>
+            <template #append>
+              <el-button
+                type="primary"
+                @click="allMoney"
+                class="all-money-btn"
+              >
+                {{ $t('mine.allMoney') }}
+              </el-button>
+            </template>
+          </el-input>
+          <div class="amount-tips" v-if="frm.amount">
+            <el-text type="info" size="small">
+              {{ $t('withdrawAmount') }}: ¥{{ frm.amount }}
+            </el-text>
+          </div>
+        </el-form-item>
 
-      <van-field
-        v-model="frm.withdraw_pwd"
-        type="password"
-        :label="$t('mine.drawingPwd')"
-        :placeholder="$t('mine.inputPlz')"
-        :rules="[{ required: true, message: $t('mine.inputPlz') }]"
-      >
-        <template #left-icon>
-          <div class="icon-password"></div>
-        </template>
-      </van-field>
+        <!-- 提现密码 -->
+        <el-form-item :label="$t('mine.drawingPwd')" prop="withdraw_pwd">
+          <el-input
+            v-model="frm.withdraw_pwd"
+            type="password"
+            :placeholder="$t('mine.inputPlz')"
+            :prefix-icon="Lock"
+            show-password
+            @keyup.enter="onSubmit"
+          />
+        </el-form-item>
 
-      <div class="submit-container">
-        <van-button
-          round
-          block
-          type="primary"
-          native-type="submit"
-          size="large"
-          class="m-btn"
-          :loading="submitting"
+        <!-- 提交按钮 -->
+        <el-form-item class="submit-item">
+          <el-button
+            type="primary"
+            size="large"
+            :loading="submitting"
+            @click="onSubmit"
+            class="submit-btn"
+            :icon="Check"
+          >
+            {{ submitting ? $t('submitting') : $t('submit') }}
+          </el-button>
+          <el-button
+            size="large"
+            @click="resetForm"
+            class="reset-btn"
+          >
+            {{ $t('reset') }}
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 提现说明 -->
+    <el-card class="info-card" shadow="never">
+      <template #header>
+        <div class="card-header">
+          <el-icon><InfoFilled /></el-icon>
+          <span>{{ $t('withdrawNotice') }}</span>
+        </div>
+      </template>
+      <div class="info-content">
+        <el-alert
+          :title="$t('importantNotice')"
+          type="warning"
+          :closable="false"
+          show-icon
         >
-          <div class="icon-submit"></div>
-          {{ $t('submit') }}
-        </van-button>
+          <template #default>
+            <ul class="notice-list">
+              <li>{{ $t('withdrawNotice1') }}</li>
+              <li>{{ $t('withdrawNotice2') }}</li>
+              <li>{{ $t('withdrawNotice3') }}</li>
+              <li>{{ $t('withdrawNotice4') }}</li>
+            </ul>
+          </template>
+        </el-alert>
       </div>
-    </van-form>
+    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
-import { showToast, type DropdownItemOption } from 'vant'
-import { ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
+import {
+  ArrowLeft,
+  User,
+  Wallet,
+  CreditCard,
+  InfoFilled,
+  Money,
+  Lock,
+  Check,
+  Plus
+} from '@element-plus/icons-vue'
 import { moneyApi } from '@/api'
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 
-defineOptions({ name: 'WithdrawVue' })
+defineOptions({ name: 'PcWithdrawApply' })
 
 // 定义账户接口类型
 interface UserAccount {
@@ -170,22 +230,61 @@ interface AccountListResponse {
   list: UserAccount[]
 }
 
+interface AccountOption {
+  text: string
+  value: number
+  isDefault?: boolean
+}
+
 const { t } = useI18n()
 const router = useRouter()
 const store = useAppStore()
 
+// 表单引用
+const withdrawFormRef = ref<FormInstance>()
+
 // 响应式数据
-const accountList = ref<DropdownItemOption[]>([])
+const accountList = ref<AccountOption[]>([])
 const accounts = ref<UserAccount[]>([])
 const selectedAccount = ref<UserAccount | null>(null)
 const submitting = ref(false)
 
 // 表单数据
-const frm = ref({
+const frm = reactive({
   name: store.getUser()?.name ?? '',
   account_id: '',
   amount: '',
   withdraw_pwd: '',
+})
+
+// 验证规则
+const rules = reactive<FormRules>({
+  account_id: [
+    { required: true, message: t('selectWithdrawAccount'), trigger: 'change' }
+  ],
+  amount: [
+    { required: true, message: t('mine.inputPlz'), trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        const amount = parseFloat(value)
+        if (isNaN(amount) || amount <= 0) {
+          callback(new Error(t('enterValidAmount')))
+        } else {
+          const userMoney = store.getUser()?.money ?? 0
+          if (amount > userMoney) {
+            callback(new Error(t('insufficientBalance')))
+          } else {
+            callback()
+          }
+        }
+      },
+      trigger: 'blur'
+    }
+  ],
+  withdraw_pwd: [
+    { required: true, message: t('mine.inputPlz'), trigger: 'blur' },
+    { min: 6, message: t('passwordMinLength'), trigger: 'blur' }
+  ]
 })
 
 // 方法
@@ -199,96 +298,83 @@ function goAddAccount() {
 
 function allMoney() {
   const userMoney = store.getUser()?.money ?? 0
-  frm.value.amount = userMoney.toString()
+  frm.amount = userMoney.toString()
 }
 
-// 账户选择变化处理
-function changeAccountHandler(accountId: string | number) {
-  const account = accounts.value.find(acc => acc.id === Number(accountId))
-  if (account) {
-    selectedAccount.value = account
-    frm.value.account_id = accountId.toString()
+// 处理金额输入
+function handleAmountInput(value: string) {
+  // 限制只能输入数字和小数点
+  const formatted = value.replace(/[^\d.]/g, '')
+  // 限制小数点后两位
+  const parts = formatted.split('.')
+  if (parts.length > 1) {
+    frm.amount = parts[0] + '.' + parts[1].slice(0, 2)
+  } else {
+    frm.amount = formatted
   }
 }
 
-// 获取账户显示名称
-function getAccountDisplayName(accountId: string | number): string {
-  const account = accounts.value.find(acc => acc.id === Number(accountId))
-  return account ? account.remark_name : t('selected')
-}
-
-// 金额验证
-function validateAmount(value: string): boolean {
-  const amount = parseFloat(value)
-  return !isNaN(amount) && amount > 0
-}
-
-// 提交提现申请
-async function onSubmit() {
-  try {
-    // 验证表单
-    if (!frm.value.account_id) {
-      showToast('请选择提现账户')
-      return
-    }
-    if (!frm.value.amount || parseFloat(frm.value.amount) <= 0) {
-      showToast('请输入有效的提现金额')
-      return
-    }
-    if (!frm.value.withdraw_pwd) {
-      showToast('请输入提现密码')
-      return
-    }
-
-    const userMoney = store.getUser()?.money ?? 0
-    if (parseFloat(frm.value.amount) > userMoney) {
-      showToast('提现金额不能超过可用余额')
-      return
-    }
-
-    submitting.value = true
-
-    // 调用提现接口
-    const resp = await moneyApi.withdraw({
-      account_id: parseInt(frm.value.account_id),
-      amount: parseFloat(frm.value.amount),
-      withdraw_pwd: frm.value.withdraw_pwd,
-    })
-
-    if (resp && resp.code === 200) {
-      showToast(resp.message || '提现申请成功')
-
-      // 更新用户余额
-      const user = store.getUser()
-      if (user && resp.data?.balance !== undefined) {
-        user.money = resp.data.balance
-        store.setUser(user)
-      }
-
-      // 清空表单
-      resetForm()
-
-      // 提现成功后跳转到 mine 页面
-      setTimeout(() => {
-        router.push('/mine')
-      }, 1500) // 延迟1.5秒让用户看到成功提示
-
-    } else {
-      throw new Error(resp?.message || '提现申请失败')
-    }
-  } catch (error) {
-    console.error('提现申请错误:', error)
-    const message = (error as Error).message || '提现申请失败，请稍后重试'
-    showToast(message)
-  } finally {
-    submitting.value = false
+// 账户选择变化处理
+function changeAccountHandler(accountId: number) {
+  const account = accounts.value.find(acc => acc.id === accountId)
+  if (account) {
+    selectedAccount.value = account
   }
 }
 
 // 重置表单
 function resetForm() {
-  frm.value.amount = ''
-  frm.value.withdraw_pwd = ''
+  frm.amount = ''
+  frm.withdraw_pwd = ''
+  withdrawFormRef.value?.clearValidate()
+}
+
+// 提交提现申请
+async function onSubmit() {
+  if (!withdrawFormRef.value) return
+
+  await withdrawFormRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    try {
+      submitting.value = true
+
+      // 调用提现接口
+      const resp = await moneyApi.withdraw({
+        account_id: parseInt(frm.account_id),
+        amount: parseFloat(frm.amount),
+        withdraw_pwd: frm.withdraw_pwd,
+      })
+
+      if (resp && resp.code === 200) {
+        ElMessage.success(resp.message || t('withdrawApplySuccess'))
+
+        // 更新用户余额
+        const user = store.getUser()
+        if (user && resp.data?.balance !== undefined) {
+          user.money = resp.data.balance
+          store.setUser(user)
+        }
+
+        // 清空表单
+        resetForm()
+
+        // 提现成功后跳转
+        setTimeout(() => {
+          router.push('/mine')
+        }, 1500)
+
+      } else {
+        throw new Error(resp?.message || t('withdrawApplyFailed'))
+      }
+    } catch (error) {
+      console.error('提现申请错误:', error)
+      const message = (error as Error).message || t('withdrawApplyFailed')
+      ElMessage.error(message)
+    } finally {
+      submitting.value = false
+    }
+  })
 }
 
 // 获取用户账户列表
@@ -304,28 +390,27 @@ async function loadAccountList() {
       accountList.value = accounts.value.map(account => ({
         text: account.remark_name,
         value: account.id,
+        isDefault: account.is_default === 1
       }))
 
       // 自动选择默认账户
       const defaultAccount = accounts.value.find(acc => acc.is_default === 1)
       if (defaultAccount && accountList.value.length > 0) {
-        frm.value.account_id = defaultAccount.id.toString()
+        frm.account_id = defaultAccount.id.toString()
         selectedAccount.value = defaultAccount
       }
     } else {
-      throw new Error(resp?.message || '获取账户列表失败')
+      throw new Error(resp?.message || t('getAccountListFailed'))
     }
   } catch (error) {
     console.error('获取账户列表错误:', error)
-    showToast('获取账户列表失败')
+    ElMessage.error(t('getAccountListFailed'))
   }
 }
 
 // 检查提现条件
 function checkWithdrawConditions() {
-  // 检查是否有账户
   if (accounts.value.length === 0) {
-    // 使用Element Plus的MessageBox
     ElMessageBox.alert(
       t('mine.bindDrawingAddress'),
       t('common.tip'),
@@ -334,7 +419,6 @@ function checkWithdrawConditions() {
         type: 'warning',
         center: true,
         showClose: false,
-        customClass: 'withdraw-alert-box',
         callback: () => {
           router.push({ name: 'card' })
         }
@@ -342,7 +426,6 @@ function checkWithdrawConditions() {
     )
     return false
   }
-
   return true
 }
 
@@ -362,569 +445,261 @@ onMounted(() => {
 })
 </script>
 
-<style lang="less" scoped>
-.m-withdraw {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #f7f8fa;
+<style scoped lang="scss">
+.withdraw-apply-container {
+  padding: 20px;
+  background-color: #f5f7fa;
+  min-height: calc(100vh - 40px);
+  max-width: 900px;
+  margin: 0 auto;
 
-  .nav-bar {
-    background-color: #fff;
-    border-bottom: 1px solid #ebedf0;
-  }
-
-  .m-frm {
-    margin-top: 10px;
-    padding: 0 16px;
-
-    .submit-container {
-      margin: 16px 0;
-
-      .m-btn {
-        margin-top: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-      }
-    }
-  }
-
-  /* CSS图标样式 */
-  .icon-user,
-  .icon-wallet,
-  .icon-bank,
-  .icon-card,
-  .icon-info,
-  .icon-money,
-  .icon-password,
-  .icon-plus,
-  .icon-all,
-  .icon-submit {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
+  .page-header {
     display: flex;
     align-items: center;
-    justify-content: center;
-    position: relative;
-    margin-right: 8px;
-  }
+    margin-bottom: 20px;
+    padding: 0 20px;
 
-  .icon-user {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 8px;
-      background: #fff;
-      border-radius: 50%;
-      margin-bottom: 2px;
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #303133;
+      margin: 0 0 0 20px;
+      flex: 1;
     }
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 12px;
-      height: 8px;
-      background: #fff;
-      border-radius: 6px 6px 0 0;
-      bottom: 3px;
+    .back-btn {
+      flex-shrink: 0;
     }
   }
 
-  .icon-wallet {
-    background: linear-gradient(135deg, #667eea, #764ba2);
+  .withdraw-card {
+    margin-bottom: 20px;
 
-    &::before {
-      content: '';
-      width: 12px;
-      height: 8px;
-      background: #fff;
-      border-radius: 2px;
-      border: 1px solid #667eea;
+    :deep(.el-card__body) {
+      padding: 30px;
     }
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 8px;
-      height: 2px;
-      background: #667eea;
-      top: 9px;
-    }
-  }
+    .withdraw-form {
+      :deep(.el-form-item) {
+        margin-bottom: 24px;
 
-  .icon-bank {
-    background: linear-gradient(135deg, #f093fb, #f5576c);
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
 
-    &::before {
-      content: '';
-      width: 12px;
-      height: 10px;
-      background: #fff;
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      margin-bottom: 1px;
-    }
+      .readonly-input {
+        :deep(.el-input__wrapper) {
+          background-color: #f5f7fa;
+        }
+      }
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 14px;
-      height: 2px;
-      background: #fff;
-      bottom: 3px;
-    }
-  }
+      .account-select {
+        flex: 1;
+        margin-right: 12px;
+      }
 
-  .icon-card {
-    background: linear-gradient(135deg, #fa709a, #fee140);
+      .account-option {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
 
-    &::before {
-      content: '';
-      width: 12px;
-      height: 8px;
-      background: #fff;
-      border-radius: 2px;
-    }
+        .account-name {
+          flex: 1;
+        }
+      }
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 8px;
-      height: 1px;
-      background: #fa709a;
-      top: 7px;
-    }
-  }
+      .add-account-btn {
+        flex-shrink: 0;
+      }
 
-  .icon-info {
-    background: linear-gradient(135deg, #00c9ff, #92fe9d);
+      .amount-input {
+        :deep(.el-input-group__append) {
+          padding: 0;
+          background-color: transparent;
+          border: none;
 
-    &::before {
-      content: '';
-      width: 2px;
-      height: 8px;
-      background: #fff;
-      border-radius: 1px;
-    }
+          .all-money-btn {
+            border-radius: 0 4px 4px 0;
+            border-left: 1px solid #dcdfe6;
+          }
+        }
+      }
 
-    &::after {
-      content: '';
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #fff;
-      border-radius: 50%;
-      top: 4px;
-    }
-  }
+      .amount-tips {
+        margin-top: 8px;
+        padding-left: 4px;
+      }
 
-  .icon-money {
-    background: linear-gradient(135deg, #ff6b6b, #ffa500);
+      .currency-unit {
+        font-weight: 500;
+        color: #606266;
+      }
 
-    &::before {
-      content: '$';
-      color: #fff;
-      font-size: 12px;
-      font-weight: bold;
-    }
-  }
+      .submit-item {
+        :deep(.el-form-item__content) {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          margin-top: 20px;
+        }
 
-  .icon-password {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 10px;
-      border: 2px solid #fff;
-      border-radius: 2px;
-      border-top: 3px solid #fff;
-      border-bottom: 3px solid #fff;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border: 2px solid #fff;
-      border-radius: 50% 50% 0 0;
-      border-bottom: none;
-      top: 4px;
-    }
-  }
-
-  .icon-plus {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 2px;
-      background: #fff;
-      position: absolute;
-    }
-
-    &::after {
-      content: '';
-      width: 2px;
-      height: 8px;
-      background: #fff;
-      position: absolute;
-    }
-  }
-
-  .icon-all {
-    background: linear-gradient(135deg, #ff9800, #f57c00);
-    width: 16px;
-    height: 16px;
-    margin-right: 4px;
-
-    &::before {
-      content: '';
-      width: 10px;
-      height: 8px;
-      border: 2px solid #fff;
-      border-radius: 2px;
-      background: transparent;
-    }
-  }
-
-  .icon-submit {
-    background: linear-gradient(135deg, #4caf50, #45a049);
-    width: 18px;
-    height: 18px;
-    margin-right: 6px;
-
-    &::before {
-      content: '';
-      width: 6px;
-      height: 10px;
-      border: 2px solid #fff;
-      border-left: none;
-      border-top: none;
-      transform: rotate(45deg);
-      margin-left: -2px;
-    }
-  }
-
-  /* 移动端表单样式 */
-  .m-withdraw :deep(.van-field) {
-    background-color: #fff;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    padding: 16px;
-  }
-
-  .m-withdraw :deep(.van-field__label) {
-    font-size: 14px;
-    color: #333;
-    font-weight: 500;
-  }
-
-  .m-withdraw :deep(.van-field__control) {
-    font-size: 16px;
-    color: #333;
-  }
-
-  .m-withdraw :deep(.van-button--small) {
-    height: 28px;
-    padding: 0 8px;
-    font-size: 12px;
-  }
-}
-
-/* PC端适配样式 */
-@media (min-width: 768px) {
-  .m-withdraw {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-
-    .nav-bar {
-      border-radius: 8px 8px 0 0;
-    }
-
-    .m-frm {
-      margin-top: 0;
-      padding: 24px 32px;
-
-      .submit-container {
-        margin: 32px 0;
-
-        .m-btn {
-          margin-top: 40px;
+        .submit-btn,
+        .reset-btn {
+          min-width: 140px;
           height: 48px;
           font-size: 16px;
-          gap: 10px;
+        }
+
+        .submit-btn {
+          background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%);
+          border: none;
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%);
+          }
         }
       }
     }
+  }
 
-    .m-withdraw :deep(.van-field) {
-      margin-bottom: 16px;
-      padding: 20px 24px;
-      border: 1px solid #ebedf0;
-      transition: all 0.3s ease;
-    }
-
-    .m-withdraw :deep(.van-field:hover) {
-      border-color: #d0d0d0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .m-withdraw :deep(.van-field:focus-within) {
-      border-color: #1989fa;
-      box-shadow: 0 0 0 2px rgba(25, 137, 250, 0.2);
-    }
-
-    .m-withdraw :deep(.van-field__label) {
+  .info-card {
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
       font-size: 16px;
-      min-width: 120px;
+      font-weight: 500;
+      color: #303133;
+
+      .el-icon {
+        font-size: 20px;
+        color: #409eff;
+      }
     }
 
-    .m-withdraw :deep(.van-field__control) {
-      font-size: 16px;
-    }
+    .info-content {
+      .notice-list {
+        margin: 12px 0 0 0;
+        padding-left: 20px;
+        list-style: none;
 
-    .m-withdraw :deep(.van-button--small) {
-      height: 32px;
-      padding: 0 12px;
-      font-size: 14px;
-    }
+        li {
+          position: relative;
+          margin-bottom: 8px;
+          line-height: 1.6;
+          color: #606266;
+          font-size: 14px;
 
-    /* PC端图标尺寸调整 */
-    .icon-user,
-    .icon-wallet,
-    .icon-bank,
-    .icon-card,
-    .icon-info,
-    .icon-money,
-    .icon-password {
-      width: 24px;
-      height: 24px;
-      margin-right: 12px;
-    }
+          &:before {
+            content: '•';
+            position: absolute;
+            left: -16px;
+            color: #e6a23c;
+          }
 
-    .icon-plus,
-    .icon-all {
-      width: 18px;
-      height: 18px;
-      margin-right: 6px;
-    }
-
-    .icon-submit {
-      width: 20px;
-      height: 20px;
-      margin-right: 8px;
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+      }
     }
   }
 }
 
-/* 大屏PC端适配 */
+// 响应式适配
+@media (max-width: 768px) {
+  .withdraw-apply-container {
+    padding: 12px;
+
+    .page-header {
+      padding: 0 12px;
+      margin-bottom: 16px;
+
+      .page-title {
+        font-size: 20px;
+        margin-left: 12px;
+      }
+    }
+
+    .withdraw-card {
+      :deep(.el-card__body) {
+        padding: 20px;
+      }
+
+      .withdraw-form {
+        :deep(.el-form) {
+          .el-form-item__label {
+            width: 100px !important;
+          }
+        }
+
+        .submit-item {
+          :deep(.el-form-item__content) {
+            flex-direction: column;
+
+            .submit-btn,
+            .reset-btn {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 大屏优化
 @media (min-width: 1200px) {
-  .m-withdraw {
+  .withdraw-apply-container {
     max-width: 1000px;
 
-    .m-frm {
-      padding: 32px 48px;
+    .withdraw-card {
+      :deep(.el-card__body) {
+        padding: 40px;
+      }
 
-      .submit-container {
-        margin: 40px 0;
+      .withdraw-form {
+        :deep(.el-form-item) {
+          margin-bottom: 28px;
+        }
 
-        .m-btn {
-          margin-top: 50px;
-          height: 52px;
-          font-size: 18px;
+        :deep(.el-form-item__label) {
+          font-size: 15px;
+        }
+
+        :deep(.el-input) {
+          font-size: 15px;
+        }
+
+        .submit-item {
+          .submit-btn,
+          .reset-btn {
+            min-width: 160px;
+            height: 52px;
+            font-size: 17px;
+          }
         }
       }
     }
 
-    .m-withdraw :deep(.van-field) {
-      margin-bottom: 20px;
-      padding: 24px 32px;
-    }
-
-    .m-withdraw :deep(.van-field__label) {
-      font-size: 18px;
-      min-width: 140px;
-    }
-
-    .m-withdraw :deep(.van-field__control) {
-      font-size: 18px;
-    }
-
-    .m-withdraw :deep(.van-button--small) {
-      height: 36px;
-      padding: 0 16px;
-      font-size: 15px;
-    }
-
-    /* 大屏图标尺寸调整 */
-    .icon-user,
-    .icon-wallet,
-    .icon-bank,
-    .icon-card,
-    .icon-info,
-    .icon-money,
-    .icon-password {
-      width: 28px;
-      height: 28px;
-      margin-right: 16px;
-    }
-
-    .icon-plus,
-    .icon-all {
-      width: 20px;
-      height: 20px;
-      margin-right: 8px;
-    }
-
-    .icon-submit {
-      width: 22px;
-      height: 22px;
-      margin-right: 10px;
-    }
-  }
-}
-
-/* 超大屏适配 */
-@media (min-width: 1600px) {
-  .m-withdraw {
-    max-width: 1200px;
-  }
-}
-</style>
-
-<style lang="less">
-@import url('@/views/mobile/common.less');
-
-.m-withdraw {
-  .van-dropdown-menu {
-    min-width: 30px;
-
-    .van-dropdown-menu__bar {
-      box-shadow: none;
-      height: 20px;
-      .van-dropdown-menu__title {
-        padding-left: 0px;
-      }
-    }
-  }
-
-  /* PC端下拉菜单优化 */
-  @media (min-width: 768px) {
-    .van-dropdown-menu {
-      .van-dropdown-menu__bar {
-        height: 24px;
-      }
-
-      .van-dropdown-menu__title {
-        font-size: 16px;
-      }
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .van-dropdown-menu {
-      .van-dropdown-menu__title {
-        font-size: 18px;
-      }
-    }
-  }
-}
-
-/* Element Plus MessageBox 样式定制 */
-.withdraw-alert-box {
-  width: 420px;
-  border-radius: 12px;
-  padding: 0;
-
-  .el-message-box__header {
-    padding: 20px 20px 15px;
-    border-bottom: 1px solid #ebedf0;
-
-    .el-message-box__title {
-      font-size: 18px;
-      font-weight: 500;
-      color: #323233;
-    }
-  }
-
-  .el-message-box__content {
-    padding: 25px 20px;
-
-    .el-message-box__message {
-      font-size: 16px;
-      color: #646566;
-      line-height: 24px;
-      text-align: center;
-    }
-
-    .el-message-box__status {
-      font-size: 48px;
-
-      &.el-message-box__status--warning {
-        color: #ff976a;
-      }
-    }
-  }
-
-  .el-message-box__btns {
-    padding: 15px 20px 20px;
-
-    .el-button--primary {
-      width: 100%;
-      height: 44px;
-      font-size: 16px;
-      border-radius: 22px;
-      background: linear-gradient(135deg, #1989fa, #1570d6);
-      border: none;
-
-      &:hover {
-        background: linear-gradient(135deg, #1570d6, #1460b8);
-      }
-    }
-  }
-}
-
-/* 大屏优化 */
-@media (min-width: 1200px) {
-  .withdraw-alert-box {
-    width: 460px;
-
-    .el-message-box__header {
-      padding: 24px 24px 16px;
-
-      .el-message-box__title {
-        font-size: 20px;
-      }
-    }
-
-    .el-message-box__content {
-      padding: 30px 24px;
-
-      .el-message-box__message {
+    .info-card {
+      .card-header {
         font-size: 17px;
-        line-height: 26px;
+
+        .el-icon {
+          font-size: 22px;
+        }
       }
-    }
 
-    .el-message-box__btns {
-      padding: 16px 24px 24px;
-
-      .el-button--primary {
-        height: 48px;
-        font-size: 17px;
-        border-radius: 24px;
+      .info-content {
+        .notice-list {
+          li {
+            font-size: 15px;
+            margin-bottom: 10px;
+          }
+        }
       }
     }
   }
