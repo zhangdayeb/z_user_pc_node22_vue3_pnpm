@@ -26,7 +26,7 @@
                 </el-tag>
               </div>
               <p class="welcome-text">
-                {{ $t('mine.welcomeTo') }} {{ siteName }}
+                {{ $t('mine.welcomeTo') }}
               </p>
             </div>
           </div>
@@ -48,7 +48,7 @@
             </div>
           </div>
 
-          <div v-if="shouldShowRebate" class="wallet-item">
+          <div v-if="shouldShowFanshui" class="wallet-item">
             <div class="wallet-label">{{ $t('mine.fsWallet') }}</div>
             <div class="wallet-amount">
               ¥{{ formatMoney(userInfo?.money_rebate || 0) }}
@@ -144,7 +144,7 @@
             <el-icon><List /></el-icon>
             <span>{{ $t('mine.moneyLog') }}</span>
           </el-menu-item>
-          <el-menu-item v-if="shouldShowRebate" index="rebateLog">
+          <el-menu-item v-if="shouldShowFanshui" index="rebateLog">
             <el-icon><PriceTag /></el-icon>
             <span>{{ $t('rebateRecord') }}</span>
           </el-menu-item>
@@ -256,15 +256,13 @@ const activeMenu = ref('')
 const isLoggedIn = computed(() => appStore.isLogin())
 const userInfo = computed(() => appStore.userInfo)
 const avatarUrl = computed(() => userInfo.value?.avatar || '')
-const siteName = computed(() => configStore.siteName || 'ATB')
 
-// 修复：正确访问 configStore 的数据
-const shouldShowRebate = computed(() => {
-  // 尝试多种访问方式
-  const value = configStore.getConfigValue?.('default_user_fanshui') ||
-                configStore.configs?.default_user_fanshui ||
-                0
-  return Number(value) > 0
+
+// 计算属性：判断是否显示返水金额
+const shouldShowFanshui = computed(() => {
+  const fanshuiConfig = configStore.getConfigValue('default_user_fanshui', '0')
+  const value = typeof fanshuiConfig === 'string' ? parseFloat(fanshuiConfig) : fanshuiConfig
+  return value > 0
 })
 
 // 格式化金额
@@ -294,7 +292,7 @@ async function refreshBalance() {
 
   try {
     balanceLoading.value = true
-    const response = await userApi.getUserInfo()
+    const response:any = await userApi.getUserInfo()
 
     if (response?.code === 200 && response.data) {
       appStore.setUserInfo(response.data)
@@ -392,8 +390,8 @@ async function handleLogout() {
       }
     )
 
-    appStore.showLoading('正在退出...')
-    const resp = await api.logout()
+    appStore.loading('正在退出...')
+    const resp:any = await api.logout()
 
     // 修复：检查响应的 code 字段
     if (resp && (resp.code === 200 || resp.code === 0 || resp.code === 1)) {
@@ -407,7 +405,7 @@ async function handleLogout() {
     // 用户取消或其他错误
     console.error('退出登录失败:', error)
   } finally {
-    appStore.hideLoading()
+    appStore.stopLoad()
   }
 }
 
