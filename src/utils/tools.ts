@@ -1,89 +1,53 @@
 import api from '@/api'
 import { useAppStore } from '@/stores/app'
-import { showToast } from 'vant'
+import { ElMessage } from 'element-plus'
 import type { AxiosResponse } from 'axios'
 
 const domain = location.origin
 
-// ==================== 设备检测功能 ====================
-
-export function mobileFunc(): boolean {
-  // return false
-  const urlParams = new URLSearchParams(window.location.search)
-
-  // 1. URL 参数强制设置（最高优先级）
-  if (urlParams.get('is_mobile') === '1') {
-    return true
-  }
-
-  if (urlParams.get('pc') === '1') {
-    return false
-  }
-
-  // 2. Telegram Web App 检测（第二优先级）
-  const tgUserData = getTelegramUserData();
-  if (tgUserData?.tg_id) {
-    console.log('✅ Telegram 环境检测到，使用移动端模板')
-    return true
-  }
-
-  // 3. 简化的设备检测
-  const userAgent = navigator.userAgent
-
-  // 明确的移动设备检测（移除 Telegram，因为已经在上面单独处理）
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i
-  const isMobileDevice = mobileRegex.test(userAgent)
-
-  // 如果明确检测到移动设备，直接返回 true
-  if (isMobileDevice) {
-    return true
-  }
-
-  // 屏幕尺寸检测
-  const isSmallScreen = window.innerWidth < 768
-
-  // 检测触摸设备
-  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-
-  // PC端检测：如果不是移动设备且屏幕足够大，就是PC端
-  const isLargeScreen = window.innerWidth >= 768
-  if (!isMobileDevice && isLargeScreen) {
-    return false
-  }
-
-  // 只有在小屏幕+触摸设备的情况下才判断为移动端
-  console.log('🔍 设备检测结果:', {
-    isMobileDevice,
-    isSmallScreen,
-    isTouchDevice,
-    isLargeScreen,
-  })
-  return isSmallScreen && isTouchDevice
-}
-
 // ==================== 图片和域名相关 ====================
 
+/**
+ * 获取图片完整URL
+ */
 export function getImgUrl(url: string): string {
-  if (url.trim().length <= 0) {
+  if (!url || url.trim().length <= 0) {
     return ''
   }
-  return url
+
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('//')) {
+    return url
+  }
+
+  // 如果是相对路径，拼接域名
+  return `${domain}${url.startsWith('/') ? '' : '/'}${url}`
 }
 
+/**
+ * 获取当前域名
+ */
 export function getDomain(): string {
   return domain
 }
 
-
 // ==================== API 调用相关 ====================
 
+/**
+ * 统一的API调用方法
+ * @param method API方法名
+ * @param data 请求数据
+ * @param id 可选的ID参数
+ * @param isLoad 是否显示加载状态
+ */
 export async function invokeApi(
   method: string,
-  d: object = {},
+  data: object = {},
   id: string | number = '',
   isLoad: boolean = true,
 ): Promise<AxiosResponse<any> | null> {
   const store = useAppStore()
+
   if (isLoad) {
     store.loading()
   }
@@ -91,51 +55,67 @@ export async function invokeApi(
   try {
     let resp: AxiosResponse<any> | null = null
 
+    // 检查方法是否存在
     if (typeof (api as any)[method] === 'function') {
+      // 根据是否有ID参数调用不同的方法签名
       if (id !== '') {
-        resp = await (api as any)[method](id, d)
+        resp = await (api as any)[method](id, data)
       } else {
-        resp = await (api as any)[method](d)
+        resp = await (api as any)[method](data)
       }
     } else {
+      console.error(`API方法 ${method} 不存在`)
       if (isLoad) {
         store.stopLoad()
       }
+      ElMessage.error('系统错误：接口不存在')
       return null
     }
 
-    if (resp && (resp.data as any)?.code === 200) {
+    // 处理响应
+    if (resp && resp.data?.code === 200) {
       if (isLoad) {
         store.stopLoad()
       }
       return resp
     } else {
-      if (resp) {
-        if (isLoad) {
-          store.stopLoad()
-        }
-        const msg = (resp.data as any)?.message ?? ''
-        if (msg.length > 0) {
-          showToast(msg)
-        }
-      }
       if (isLoad) {
         store.stopLoad()
       }
+
+      // 显示错误消息
+      const msg = resp?.data?.message || '操作失败'
+      ElMessage.error(msg)
       return resp
     }
   } catch (err) {
-    console.error('❌ invokeApi 错误:', err)
+    console.error('API调用错误:', err)
     if (isLoad) {
       store.stopLoad()
     }
-    showToast('网络请求失败')
+
+    // 根据错误类型显示不同的消息
+    if (err instanceof Error) {
+      if (err.message.includes('Network')) {
+        ElMessage.error('网络连接失败，请检查网络设置')
+      } else if (err.message.includes('timeout')) {
+        ElMessage.error('请求超时，请稍后重试')
+      } else {
+        ElMessage.error('系统错误，请稍后重试')
+      }
+    } else {
+      ElMessage.error('未知错误')
+    }
+
+    return null
   }
-  return null
 }
 
 // ==================== 语言转换功能 ====================
 
+/**
+ * 前端语言代码到后端语言代码的映射
+ */
 const FRONTEND_TO_BACKEND_LANG_MAP: Record<string, string> = {
   'zh-CN': 'zh',
   'zh-TW': 'hk',
@@ -145,125 +125,228 @@ const FRONTEND_TO_BACKEND_LANG_MAP: Record<string, string> = {
   'ko-KR': 'ko',
 }
 
+/**
+ * 后端语言代码到前端语言代码的映射
+ */
+const BACKEND_TO_FRONTEND_LANG_MAP: Record<string, string> = {
+  'zh': 'zh-CN',
+  'hk': 'zh-TW',
+  'en': 'en-US',
+  'th': 'th-TH',
+  'vi': 'vi-VN',
+  'ko': 'ko-KR',
+}
+
+/**
+ * 转换前端语言代码为后端语言代码
+ */
 export function convertFrontendToBackendLang(frontendLang: string): string {
   const backendLang = FRONTEND_TO_BACKEND_LANG_MAP[frontendLang]
   if (backendLang) {
     return backendLang
   }
 
-  const supportedBackendLangs = ['de', 'en', 'es', 'fr', 'hi', 'hk', 'id', 'it', 'ja', 'ko', 'my', 'pt', 'ru', 'th', 'tl', 'tr', 'vi', 'zh']
+  // 支持的后端语言代码列表
+  const supportedBackendLangs = [
+    'de', 'en', 'es', 'fr', 'hi', 'hk', 'id',
+    'it', 'ja', 'ko', 'my', 'pt', 'ru', 'th',
+    'tl', 'tr', 'vi', 'zh'
+  ]
+
   if (supportedBackendLangs.includes(frontendLang)) {
     return frontendLang
   }
 
+  // 默认返回英文
   return 'en'
 }
 
-// ==================== Telegram Mini App 功能 ====================
+/**
+ * 转换后端语言代码为前端语言代码
+ */
+export function convertBackendToFrontendLang(backendLang: string): string {
+  const frontendLang = BACKEND_TO_FRONTEND_LANG_MAP[backendLang]
+  if (frontendLang) {
+    return frontendLang
+  }
+
+  // 默认返回英文
+  return 'en-US'
+}
+
+// ==================== 实用工具函数 ====================
 
 /**
- * 简化的 Telegram 用户数据获取 - 优先使用 URL fragment 方案
+ * 格式化金额显示
+ * @param amount 金额
+ * @param currency 货币符号
+ * @param decimals 小数位数
  */
-export function getTelegramUserData() {
-  try {
-    console.log('🔄 获取 Telegram 用户数据...');
-    console.log('🔍 当前完整URL:', window.location.href);
+export function formatMoney(
+  amount: number | string,
+  currency: string = '¥',
+  decimals: number = 2
+): string {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount
+  if (isNaN(num)) return `${currency}0.00`
 
+  return `${currency}${num.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
+}
 
-    // 方法1: 标准 Telegram WebApp API (官方推荐)
-    if (typeof window !== 'undefined' && (window as any).Telegram?.WebApp) {
-      const tg = (window as any).Telegram.WebApp;
+/**
+ * 格式化日期时间
+ * @param date 日期
+ * @param format 格式
+ */
+export function formatDateTime(
+  date: Date | string | number,
+  format: string = 'YYYY-MM-DD HH:mm:ss'
+): string {
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return ''
 
-      // 确保 WebApp 已初始化
-      if (typeof tg.ready === 'function') {
-        tg.ready();
-      }
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  const seconds = String(d.getSeconds()).padStart(2, '0')
 
-      console.log('🔍 Telegram WebApp 检测成功');
+  return format
+    .replace('YYYY', String(year))
+    .replace('MM', month)
+    .replace('DD', day)
+    .replace('HH', hours)
+    .replace('mm', minutes)
+    .replace('ss', seconds)
+}
 
-      // 方式 A: 从 initDataUnsafe 获取 (推荐)
-      if (tg.initDataUnsafe?.user?.id) {
-        const tg_id = tg.initDataUnsafe.user.id.toString();
-        console.log('📱 从 initDataUnsafe 获取 tg_id:', tg_id);
-        return { tg_id };
-      }
+/**
+ * 防抖函数
+ * @param func 要防抖的函数
+ * @param wait 等待时间
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null
 
-      // 方式 B: 解析 initData 字符串
-      if (tg.initData) {
-        try {
-          const params = new URLSearchParams(tg.initData);
-          const userStr = params.get('user');
-          if (userStr) {
-            const user = JSON.parse(userStr);
-            if (user.id) {
-              const tg_id = user.id.toString();
-              console.log('📱 从 initData 解析 tg_id:', tg_id);
-              return { tg_id };
-            }
-          }
-        } catch (parseError) {
-          console.error('❌ 解析 initData 失败:', parseError);
-        }
-      }
+  return function (this: any, ...args: Parameters<T>) {
+    const context = this
 
-      console.log('❌ Telegram WebApp 存在但无用户数据');
-      return null;
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId)
     }
 
-  } catch (error) {
-    console.error('❌ 获取 Telegram 用户数据出错:', error);
-    return null;
+    timeoutId = setTimeout(() => {
+      func.apply(context, args)
+    }, wait)
   }
 }
 
 /**
- * Telegram 自动登录 - 使用简化的数据获取方式
+ * 节流函数
+ * @param func 要节流的函数
+ * @param limit 时间限制
  */
-export async function handleTelegramAutoLogin(): Promise<boolean> {
-  try {
-    console.log('🔄 开始 Telegram 自动登录...');
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean = false
 
-    const store = useAppStore();
+  return function (this: any, ...args: Parameters<T>) {
+    const context = this
 
-    // 检查是否已登录
-    if (store.getUser() && store.getToken()) {
-      console.log('✅ 用户已登录');
-      return true;
+    if (!inThrottle) {
+      func.apply(context, args)
+      inThrottle = true
+      setTimeout(() => {
+        inThrottle = false
+      }, limit)
     }
-
-    // 获取 tg_id
-    const tgUserData = getTelegramUserData();
-    if (!tgUserData?.tg_id) {
-      console.log('❌ 无法获取 tg_id');
-      return false;
-    }
-
-    console.log('📱 准备登录，tg_id:', tgUserData.tg_id);
-
-    // 调用登录接口
-    const response = await api.tglogin({ tg_id: tgUserData.tg_id });
-
-    if (response?.code === 200) {
-      const loginData = response.data;
-
-      // 保存 token
-      store.setToken(loginData.access_token);
-      console.log('✅ Token 已保存');
-
-      const user_info = loginData.user_info;
-      console.log('✅ 用户信息:', user_info);
-
-      store.setUser(user_info);
-      showToast('自动登录成功');
-      console.log('✅ Telegram 自动登录成功!');
-
-      return true;
-    } else {
-      console.log('❌ 登录失败:', response);
-      return false;
-    }
-  } catch (error) {
-    console.error('❌ 自动登录出错:', error);
-    return false;
   }
+}
+
+/**
+ * 深拷贝对象
+ * @param obj 要拷贝的对象
+ */
+export function deepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== 'object') {
+    return obj
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj.getTime()) as any
+  }
+
+  if (obj instanceof Array) {
+    const clonedArr: any[] = []
+    for (const item of obj) {
+      clonedArr.push(deepClone(item))
+    }
+    return clonedArr as any
+  }
+
+  if (obj instanceof Object) {
+    const clonedObj: any = {}
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        clonedObj[key] = deepClone(obj[key])
+      }
+    }
+    return clonedObj
+  }
+
+  return obj
+}
+
+/**
+ * 获取URL参数
+ * @param name 参数名
+ */
+export function getUrlParam(name: string): string | null {
+  const urlParams = new URLSearchParams(window.location.search)
+  return urlParams.get(name)
+}
+
+/**
+ * 设置页面标题
+ * @param title 标题
+ */
+export function setPageTitle(title: string): void {
+  document.title = title ? `${title} - 个人中心` : '个人中心'
+}
+
+/**
+ * 校验邮箱格式
+ * @param email 邮箱地址
+ */
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return emailRegex.test(email)
+}
+
+/**
+ * 校验手机号格式（中国大陆）
+ * @param phone 手机号
+ */
+export function isValidPhone(phone: string): boolean {
+  const phoneRegex = /^1[3-9]\d{9}$/
+  return phoneRegex.test(phone)
+}
+
+/**
+ * 生成随机字符串
+ * @param length 长度
+ */
+export function generateRandomString(length: number = 8): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
 }
