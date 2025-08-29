@@ -2,17 +2,17 @@
   <div class="not-found-container">
     <div class="not-found-content">
       <div class="error-code">404</div>
-      <div class="error-message">页面不存在</div>
-      <div class="error-desc">抱歉，您访问的页面不存在或已被删除</div>
+      <div class="error-message">{{ $t('common.pageNotFound') }}</div>
+      <div class="error-desc">{{ $t('common.pageNotFoundDesc') }}</div>
 
       <div class="actions">
         <el-button type="primary" @click="goHome">
           <el-icon><HomeFilled /></el-icon>
-          返回首页
+          {{ $t('common.backToHome') }}
         </el-button>
         <el-button @click="goBack">
           <el-icon><ArrowLeft /></el-icon>
-          返回上一页
+          {{ $t('common.backToPrevious') }}
         </el-button>
       </div>
     </div>

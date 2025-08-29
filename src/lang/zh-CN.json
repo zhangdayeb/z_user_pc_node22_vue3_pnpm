@@ -556,5 +556,58 @@
   "bankName": "银行名称",
   "receivingAccount": "收款账户",
   "remark": "备注",
-  "getWithdrawRecordFailed": "获取提现记录失败"
+  "getWithdrawRecordFailed": "获取提现记录失败",
+    "common": {
+    "pageNotFound": "页面不存在",
+    "pageNotFoundDesc": "抱歉，您访问的页面不存在或已被删除",
+    "backToHome": "返回首页",
+    "backToPrevious": "返回上一页",
+    "sort": "排序",
+    "loading": "加载中..."
+  },
+  "gift": {
+    "subtitle": "精彩活动，优惠不断",
+    "newest": "最新发布",
+    "hottest": "最热门",
+    "ending": "即将结束"
+  },
+  "activity": {
+    "detail": "活动详情",
+    "tableOfContents": "目录",
+    "author": "作者",
+    "views": "浏览",
+    "share": "分享活动",
+    "collect": "收藏",
+    "collected": "已收藏",
+    "relatedActivities": "相关活动推荐",
+    "fontSize": "字体",
+    "small": "小",
+    "medium": "中",
+    "large": "大",
+        "detail": "活动详情",
+    "views": "次浏览",
+    "share": "分享活动",
+    "collect": "收藏",
+    "collected": "已收藏"
+  },
+  "common": {
+    "reset": "重置",
+    "search": "搜索",
+    "viewDetails": "查看详情"
+  },
+  "gift": {
+    "subtitle": "精彩活动，优惠不断"
+  },
+  "activity": {
+
+  }
+}
+
+{
+  "common": {
+    "pageNotFound": "页面不存在",
+    "pageNotFoundDesc": "抱歉，您访问的页面不存在或已被删除",
+    "backToHome": "返回首页",
+    "backToPrevious": "返回上一页"
+  }
 }

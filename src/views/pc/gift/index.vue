@@ -6,16 +6,16 @@
         <div class="header-content">
           <h1 class="page-title">
             <el-icon class="title-icon"><Present /></el-icon>
-            {{ $t('youhuihuodong') || '优惠活动' }}
+            {{ $t('youhuihuodong') }}
           </h1>
-          <p class="page-subtitle">{{ $t('gift.subtitle') || '精彩活动，优惠不断' }}</p>
+          <p class="page-subtitle">{{ $t('gift.subtitle') }}</p>
         </div>
 
         <!-- 搜索和筛选 -->
         <div class="header-actions">
           <el-input
             v-model="searchKeyword"
-            :placeholder="$t('common.search') || '搜索活动'"
+            :placeholder="$t('common.search')"
             class="search-input"
             clearable
             @clear="handleSearch"
@@ -25,17 +25,6 @@
               <el-icon><Search /></el-icon>
             </template>
           </el-input>
-
-          <el-select
-            v-model="sortBy"
-            :placeholder="$t('common.sort') || '排序'"
-            class="sort-select"
-            @change="handleSort"
-          >
-            <el-option label="最新发布" value="newest" />
-            <el-option label="最热门" value="hottest" />
-            <el-option label="即将结束" value="ending" />
-          </el-select>
         </div>
       </div>
     </div>
@@ -52,7 +41,7 @@
             @click="handleTabChange(idx)"
           >
             <span class="tab-label">
-              {{ tab.title === 'all' ? $t('all') || '全部' : tab.title }}
+              {{ tab.title === 'all' ? $t('all') : tab.title }}
             </span>
             <span class="tab-count" v-if="getTabCount(tab.value) > 0">
               {{ getTabCount(tab.value) }}
@@ -63,29 +52,17 @@
 
       <!-- 活动列表 -->
       <div class="activities-content" v-if="filteredList.length > 0">
-        <!-- 网格布局 -->
-        <div class="activities-grid" v-if="viewMode === 'grid'">
+        <div class="activities-grid">
           <div
             v-for="activity in paginatedList"
             :key="activity.id"
             class="activity-card"
             @click="goToDetail(activity)"
           >
-            <!-- 活动标签 -->
-            <div class="card-badges">
-              <span class="badge badge-hot" v-if="activity.is_hot">
-                <el-icon><Sunny /></el-icon>
-                热门
-              </span>
-              <span class="badge badge-new" v-if="isNewActivity(activity.created_at)">
-                NEW
-              </span>
-            </div>
-
             <!-- 活动图片 -->
             <div class="card-image">
               <el-image
-                :src="getImgUrl(activity.thumb_url || '')"
+                :src="activity.thumb_url || ''"
                 fit="cover"
                 lazy
                 class="activity-img"
@@ -105,7 +82,7 @@
               <!-- 悬浮遮罩 -->
               <div class="image-overlay">
                 <el-button type="primary" size="default">
-                  查看详情
+                  {{ $t('common.viewDetails') }}
                   <el-icon class="el-icon--right"><ArrowRight /></el-icon>
                 </el-button>
               </div>
@@ -126,91 +103,6 @@
                   <span class="activity-date" v-if="activity.created_at">
                     {{ formatDate(activity.created_at) }}
                   </span>
-                </div>
-                <div class="footer-right">
-                  <el-button
-                    type="text"
-                    class="action-btn"
-                    @click.stop="handleCollect(activity)"
-                  >
-                    <el-icon :color="activity.collected ? '#f56c6c' : ''">
-                      <Star />
-                    </el-icon>
-                  </el-button>
-                  <el-button
-                    type="text"
-                    class="action-btn"
-                    @click.stop="handleShare(activity)"
-                  >
-                    <el-icon><Share /></el-icon>
-                  </el-button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 列表布局 -->
-        <div class="activities-list" v-else>
-          <div
-            v-for="activity in paginatedList"
-            :key="activity.id"
-            class="activity-item"
-            @click="goToDetail(activity)"
-          >
-            <div class="item-image">
-              <el-image
-                :src="getImgUrl(activity.thumb_url || '')"
-                fit="cover"
-                lazy
-                class="activity-img"
-              >
-                <template #error>
-                  <div class="image-error">
-                    <el-icon><Picture /></el-icon>
-                  </div>
-                </template>
-              </el-image>
-            </div>
-
-            <div class="item-content">
-              <div class="content-header">
-                <h3 class="activity-title">
-                  {{ activity.title }}
-                  <span class="badge badge-hot" v-if="activity.is_hot">
-                    <el-icon><Sunny /></el-icon>
-                    热门
-                  </span>
-                </h3>
-                <span class="activity-type">
-                  {{ getActivityTypeName(activity.type) }}
-                </span>
-              </div>
-
-              <p class="activity-description">
-                {{ activity.description || '暂无描述' }}
-              </p>
-
-              <div class="content-footer">
-                <div class="footer-left">
-                  <span class="footer-item" v-if="activity.author">
-                    <el-icon><User /></el-icon>
-                    {{ activity.author }}
-                  </span>
-                  <span class="footer-item">
-                    <el-icon><Calendar /></el-icon>
-                    {{ formatDate(activity.created_at) }}
-                  </span>
-                  <span class="footer-item">
-                    <el-icon><View /></el-icon>
-                    {{ activity.views || Math.floor(Math.random() * 10000) }} 次浏览
-                  </span>
-                </div>
-                <div class="footer-right">
-                  <el-button type="primary" size="small">
-                    查看详情
-                    <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-                  </el-button>
                 </div>
               </div>
             </div>
@@ -233,28 +125,12 @@
 
       <!-- 空状态 -->
       <div class="empty-state" v-else>
-        <el-empty :description="$t('noRecord') || '暂无活动'">
+        <el-empty :description="$t('noRecord')">
           <el-button type="primary" @click="resetFilters">
-            重置筛选条件
+            {{ $t('common.reset') }}
           </el-button>
         </el-empty>
       </div>
-    </div>
-
-    <!-- 悬浮工具栏 -->
-    <div class="floating-toolbar">
-      <el-tooltip content="切换视图" placement="left">
-        <el-button
-          type="primary"
-          circle
-          @click="toggleViewMode"
-        >
-          <el-icon>
-            <Grid v-if="viewMode === 'list'" />
-            <List v-else />
-          </el-icon>
-        </el-button>
-      </el-tooltip>
     </div>
 
     <!-- 返回顶部 -->
@@ -263,25 +139,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Present,
   Search,
   ArrowRight,
-  Star,
-  Share,
   Picture,
-  Loading,
-  Sunny,
-  User,
-  Calendar,
-  View,
-  Grid,
-  List
+  Loading
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { invokeApi, getImgUrl } from '@/utils/tools'
+import api from '@/api'
 import { useAppStore } from '@/stores/app'
 
 defineOptions({ name: 'PcGiftIndex' })
@@ -297,12 +165,8 @@ interface ActivityInfo {
   title: string
   description: string
   thumb_url: string
-  author: string
   created_at: string
   updated_at: string
-  is_hot?: boolean
-  collected?: boolean
-  views?: number
 }
 
 interface TabInfo {
@@ -318,8 +182,6 @@ const activeTab = ref(0)
 const tabs = ref<TabInfo[]>([])
 const list = ref<ActivityInfo[]>([])
 const searchKeyword = ref('')
-const sortBy = ref('newest')
-const viewMode = ref<'grid' | 'list'>('grid')
 const currentPage = ref(1)
 const pageSize = ref(12)
 
@@ -344,13 +206,6 @@ const filteredList = computed(() => {
     )
   }
 
-  // 排序
-  if (sortBy.value === 'newest') {
-    result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-  } else if (sortBy.value === 'hottest') {
-    result.sort((a, b) => (b.views || 0) - (a.views || 0))
-  }
-
   return result
 })
 
@@ -364,15 +219,12 @@ const paginatedList = computed(() => {
 // 获取活动类型列表
 async function getActivityTypes() {
   try {
-    const resp = await invokeApi('activityTypeList')
-    console.log('activity types resp:', resp)
-
-    if (resp && resp.data) {
-      const types = resp.data.list || resp.data || []
+    const resp: any = await api.activityTypeList()
+    if (resp?.code === 200 || resp?.code === 1 || resp?.code === 0) {
+      const types = resp.data?.list || resp.data || []
 
       // 构建标签页
       const tmp: TabInfo[] = [{ value: -1, title: 'all' }]
-
       types.forEach((type: ActivityType) => {
         tmp.push({
           title: type.name,
@@ -381,39 +233,26 @@ async function getActivityTypes() {
       })
 
       tabs.value = tmp
-      console.log('构建的标签页:', tabs.value)
     }
   } catch (err) {
     console.error('获取活动类型失败:', err)
-    ElMessage.error('获取活动类型失败')
   }
 }
 
 // 获取活动列表
 async function getActivities() {
   try {
-    const resp = await invokeApi('activityList', {
+    const resp: any = await api.activityList({
       page: 1,
       limit: 100
     })
-    console.log('activities resp:', resp)
 
-    if (resp && resp.data) {
-      const activities = resp.data.list || resp.data || []
-
-      // 添加一些模拟数据以增强展示效果
-      list.value = activities.map((item: ActivityInfo) => ({
-        ...item,
-        is_hot: Math.random() > 0.7,
-        collected: false,
-        views: Math.floor(Math.random() * 10000) + 1000
-      }))
-
-      console.log('活动列表:', list.value)
+    if (resp?.code === 200 || resp?.code === 1 || resp?.code === 0) {
+      const activities = resp.data?.list || resp.data || []
+      list.value = activities
     }
   } catch (err) {
     console.error('获取活动列表失败:', err)
-    ElMessage.error('获取活动列表失败')
   }
 }
 
@@ -428,36 +267,14 @@ function getTabCount(tabValue: number): number {
 // 获取活动类型名称
 function getActivityTypeName(type: number): string {
   const tab = tabs.value.find(t => t.value === type)
-  return tab ? tab.title : '其他'
-}
-
-// 判断是否为新活动（7天内）
-function isNewActivity(createdAt: string): boolean {
-  if (!createdAt) return false
-  const createDate = new Date(createdAt)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - createDate.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-  return diffDays <= 7
+  return tab ? tab.title : ''
 }
 
 // 格式化日期
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  const now = new Date()
-  const diffTime = Math.abs(now.getTime() - date.getTime())
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) {
-    return '今天'
-  } else if (diffDays === 1) {
-    return '昨天'
-  } else if (diffDays <= 7) {
-    return `${diffDays}天前`
-  } else {
-    return date.toLocaleDateString('zh-CN')
-  }
+  return date.toLocaleDateString('zh-CN')
 }
 
 // 切换标签
@@ -469,16 +286,6 @@ function handleTabChange(index: number) {
 // 搜索
 function handleSearch() {
   currentPage.value = 1
-}
-
-// 排序
-function handleSort() {
-  currentPage.value = 1
-}
-
-// 切换视图模式
-function toggleViewMode() {
-  viewMode.value = viewMode.value === 'grid' ? 'list' : 'grid'
 }
 
 // 分页大小改变
@@ -493,26 +300,6 @@ function handlePageChange(val: number) {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 收藏活动
-function handleCollect(activity: ActivityInfo) {
-  activity.collected = !activity.collected
-  if (activity.collected) {
-    ElMessage.success('收藏成功')
-  } else {
-    ElMessage.info('已取消收藏')
-  }
-}
-
-// 分享活动
-function handleShare(activity: ActivityInfo) {
-  const url = `${window.location.origin}/activity/${activity.id}`
-  navigator.clipboard.writeText(url).then(() => {
-    ElMessage.success('链接已复制到剪贴板')
-  }).catch(() => {
-    ElMessage.error('复制失败，请手动复制')
-  })
-}
-
 // 跳转详情
 function goToDetail(activity: ActivityInfo) {
   router.push({ name: 'activity', params: { id: activity.id } })
@@ -521,31 +308,19 @@ function goToDetail(activity: ActivityInfo) {
 // 重置筛选
 function resetFilters() {
   searchKeyword.value = ''
-  sortBy.value = 'newest'
   activeTab.value = 0
   currentPage.value = 1
 }
 
-// 监听路由变化，支持从URL恢复状态
-watch(() => router.currentRoute.value.query, (query) => {
-  if (query.type) {
-    const typeIndex = tabs.value.findIndex(t => t.value === Number(query.type))
-    if (typeIndex > -1) {
-      activeTab.value = typeIndex
-    }
-  }
-}, { immediate: true })
-
 onMounted(async () => {
-  store.loading()
+  store.showLoading()
   try {
-    // 并行请求
     await Promise.all([
       getActivityTypes(),
       getActivities()
     ])
   } finally {
-    store.stopLoad()
+    store.hideLoading()
   }
 })
 </script>
@@ -559,26 +334,11 @@ onMounted(async () => {
   .gift-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 60px 0;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -10%;
-      width: 500px;
-      height: 500px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 50%;
-    }
 
     .header-container {
       max-width: 1200px;
       margin: 0 auto;
       padding: 0 20px;
-      position: relative;
-      z-index: 1;
 
       .header-content {
         text-align: center;
@@ -608,20 +368,9 @@ onMounted(async () => {
       .header-actions {
         display: flex;
         justify-content: center;
-        gap: 20px;
 
         .search-input {
           width: 400px;
-
-          :deep(.el-input__wrapper) {
-            background: rgba(255, 255, 255, 0.95);
-            border: none;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-          }
-        }
-
-        .sort-select {
-          width: 150px;
 
           :deep(.el-input__wrapper) {
             background: rgba(255, 255, 255, 0.95);
@@ -728,35 +477,6 @@ onMounted(async () => {
             }
           }
 
-          .card-badges {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 2;
-            display: flex;
-            gap: 8px;
-
-            .badge {
-              padding: 4px 10px;
-              border-radius: 15px;
-              font-size: 12px;
-              font-weight: 500;
-              display: flex;
-              align-items: center;
-              gap: 4px;
-
-              &.badge-hot {
-                background: linear-gradient(135deg, #ff6b6b, #ff8e53);
-                color: #fff;
-              }
-
-              &.badge-new {
-                background: #52c41a;
-                color: #fff;
-              }
-            }
-          }
-
           .card-image {
             position: relative;
             height: 180px;
@@ -765,7 +485,6 @@ onMounted(async () => {
             .activity-img {
               width: 100%;
               height: 100%;
-              transition: transform 0.3s;
             }
 
             .image-loading,
@@ -839,135 +558,6 @@ onMounted(async () => {
                   border-radius: 4px;
                 }
               }
-
-              .footer-right {
-                display: flex;
-                gap: 5px;
-
-                .action-btn {
-                  padding: 4px;
-
-                  &:hover {
-                    color: #409eff;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // 列表布局
-      .activities-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        margin-bottom: 40px;
-
-        .activity-item {
-          background: #fff;
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-          display: flex;
-          gap: 24px;
-          cursor: pointer;
-          transition: all 0.3s;
-
-          &:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-          }
-
-          .item-image {
-            width: 240px;
-            height: 135px;
-            flex-shrink: 0;
-            border-radius: 8px;
-            overflow: hidden;
-
-            .activity-img {
-              width: 100%;
-              height: 100%;
-            }
-
-            .image-error {
-              width: 100%;
-              height: 100%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: #f5f7fa;
-              color: #c0c4cc;
-              font-size: 40px;
-            }
-          }
-
-          .item-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-
-            .content-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 10px;
-
-              .activity-title {
-                font-size: 20px;
-                font-weight: 500;
-                color: #303133;
-                margin: 0;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-              }
-
-              .activity-type {
-                padding: 4px 12px;
-                background: #f4f4f5;
-                border-radius: 4px;
-                font-size: 14px;
-                color: #606266;
-              }
-            }
-
-            .activity-description {
-              font-size: 14px;
-              color: #606266;
-              line-height: 1.6;
-              margin-bottom: 15px;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              display: -webkit-box;
-              -webkit-line-clamp: 2;
-              -webkit-box-orient: vertical;
-            }
-
-            .content-footer {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-
-              .footer-left {
-                display: flex;
-                align-items: center;
-                gap: 20px;
-
-                .footer-item {
-                  display: flex;
-                  align-items: center;
-                  gap: 5px;
-                  font-size: 13px;
-                  color: #909399;
-
-                  .el-icon {
-                    font-size: 14px;
-                  }
-                }
-              }
             }
           }
         }
@@ -989,14 +579,6 @@ onMounted(async () => {
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
     }
   }
-
-  // 悬浮工具栏
-  .floating-toolbar {
-    position: fixed;
-    right: 40px;
-    bottom: 150px;
-    z-index: 99;
-  }
 }
 
 // 响应式设计
@@ -1013,9 +595,6 @@ onMounted(async () => {
         }
 
         .header-actions {
-          flex-direction: column;
-          width: 100%;
-
           .search-input {
             width: 100%;
           }
@@ -1027,17 +606,6 @@ onMounted(async () => {
       .activities-content {
         .activities-grid {
           grid-template-columns: 1fr;
-        }
-
-        .activities-list {
-          .activity-item {
-            flex-direction: column;
-
-            .item-image {
-              width: 100%;
-              height: 180px;
-            }
-          }
         }
       }
     }

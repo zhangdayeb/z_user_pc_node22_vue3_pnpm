@@ -49,13 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ArrowRight, Loading } from '@element-plus/icons-vue'
-import { useAppStore } from '@/stores/app'
 import { useI18n } from 'vue-i18n'
-import { invokeApi } from '@/utils/tools'
+import api from '@/api'
 
 defineOptions({ name: 'PcSupport' })
 
@@ -82,9 +80,6 @@ interface GameConfigResponse {
   }>
 }
 
-const store = useAppStore()
-const route = useRoute()
-const router = useRouter()
 const { t, locale } = useI18n()
 
 // 响应式数据
@@ -104,7 +99,7 @@ function getConfigName(config: ConfigItem): string {
   const i18nKeyMap: { [key: string]: string } = {
     '客服地址': 'customerService',
     '财务地址': 'financeAddress',
-    '热线电话': 'hotline',
+    '热线电话': 'main.hotline',
     '在线客服': 'support.onlineService',
     'VIP客服': 'support.vipService',
     '代理合作': 'support.agentCooperation',
@@ -134,8 +129,6 @@ function openConfigUrl(config: ConfigItem) {
     return
   }
 
-  console.log('打开配置链接:', config.name, '->', config.value)
-
   try {
     window.open(config.value, '_blank')
   } catch (error) {
@@ -149,13 +142,9 @@ async function getConfigList() {
   loading.value = true
 
   try {
-    console.log('开始获取配置数据...')
+    const resp: any = await api.gameConfig()
 
-    const resp = await invokeApi('gameConfig')
-
-    console.log('配置响应:', resp)
-
-    if (resp && resp.code === 200 && resp.data) {
+    if (resp?.code === 200 || resp?.code === 1 || resp?.code === 0) {
       const configData = resp.data as GameConfigResponse
       const tempList: ConfigItem[] = []
 
@@ -180,7 +169,6 @@ async function getConfigList() {
             })
           }
         })
-        console.log('从 configs 获取到配置项:', tempList.length)
       }
 
       // 方式2：如果 configs 为空，从 raw_configs 获取
@@ -204,17 +192,9 @@ async function getConfigList() {
             })
           }
         })
-        console.log('从 raw_configs 获取到配置项:', tempList.length)
       }
 
       configList.value = tempList
-
-      if (tempList.length === 0) {
-        console.warn('没有找到有效的配置项')
-      } else {
-        console.log('配置加载成功，共', tempList.length, '项:', tempList)
-      }
-
     } else {
       throw new Error(resp?.message || '获取配置失败')
     }
@@ -226,14 +206,9 @@ async function getConfigList() {
   }
 }
 
-// 监听语言变化
-watch(locale, () => {
-  // 语言变化时不需要重新加载配置，因为名称会自动更新
-})
-
 // 组件挂载时获取配置
-onMounted(async () => {
-  await getConfigList()
+onMounted(() => {
+  getConfigList()
 })
 </script>
 
