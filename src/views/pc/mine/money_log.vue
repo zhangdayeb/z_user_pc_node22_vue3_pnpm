@@ -1,36 +1,20 @@
 <template>
   <div class="money-records-container">
-    <el-card class="records-card">
-      <template #header>
-        <div class="card-header">
-          <div class="header-left">
-            <el-button
-              :icon="ArrowLeft"
-              @click="handleBack"
-              text
-            >
-              {{ $t('common.back') }}
-            </el-button>
-            <h2>{{ $t('mine.moneyLog') }}</h2>
-          </div>
-          <div class="header-right">
-            <el-button
-              :icon="Refresh"
-              @click="handleRefresh"
-              :loading="refreshing"
-            >
-              {{ $t('common.refresh') }}
-            </el-button>
-            <el-button
-              :icon="Download"
-              @click="handleExport"
-            >
-              {{ $t('common.export') }}
-            </el-button>
-          </div>
-        </div>
-      </template>
+    <!-- PC端头部 -->
+    <div class="pc-header">
+      <el-button
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
+      >
+        {{ $t('common.back') }}
+      </el-button>
+      <h2 class="page-title">{{ $t('mine.moneyLog') }}</h2>
+    </div>
 
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
       <!-- 筛选条件 -->
       <div class="filter-section">
         <el-form :inline="true" :model="filterForm" class="filter-form">
@@ -69,38 +53,6 @@
         </el-form>
       </div>
 
-      <!-- 统计信息 -->
-      <div class="statistics-section">
-        <el-row :gutter="20">
-          <el-col :span="8">
-            <el-statistic :title="$t('mine.totalIncome')" :value="statistics.totalIncome">
-              <template #prefix>
-                <el-icon color="#67c23a"><TrendCharts /></el-icon>
-              </template>
-              <template #suffix>{{ $t('common.yuan') }}</template>
-            </el-statistic>
-          </el-col>
-          <el-col :span="8">
-            <el-statistic :title="$t('mine.totalExpense')" :value="statistics.totalExpense">
-              <template #prefix>
-                <el-icon color="#f56c6c"><TrendCharts /></el-icon>
-              </template>
-              <template #suffix>{{ $t('common.yuan') }}</template>
-            </el-statistic>
-          </el-col>
-          <el-col :span="8">
-            <el-statistic :title="$t('mine.currentBalance')" :value="statistics.currentBalance">
-              <template #prefix>
-                <el-icon color="#409eff"><Wallet /></el-icon>
-              </template>
-              <template #suffix>{{ $t('common.yuan') }}</template>
-            </el-statistic>
-          </el-col>
-        </el-row>
-      </div>
-
-      <el-divider />
-
       <!-- 记录列表 -->
       <div class="records-table">
         <el-table
@@ -108,13 +60,12 @@
           :data="recordList"
           :empty-text="$t('noMoneyRecord')"
           style="width: 100%"
-          @sort-change="handleSortChange"
+          stripe
         >
           <el-table-column
             prop="create_time"
             :label="$t('mine.time')"
             width="180"
-            sortable="custom"
           >
             <template #default="{ row }">
               {{ formatDateTime(row.create_time) }}
@@ -137,7 +88,6 @@
             prop="amount"
             :label="$t('mine.amount')"
             width="150"
-            sortable="custom"
           >
             <template #default="{ row }">
               <span :class="getAmountClass(row.type)">
@@ -172,18 +122,6 @@
             min-width="200"
             show-overflow-tooltip
           />
-
-          <el-table-column
-            fixed="right"
-            :label="$t('common.operation')"
-            width="100"
-          >
-            <template #default="{ row }">
-              <el-button link type="primary" @click="handleDetail(row)">
-                {{ $t('common.detail') }}
-              </el-button>
-            </template>
-          </el-table-column>
         </el-table>
 
         <!-- 分页 -->
@@ -198,54 +136,16 @@
           @current-change="handlePageChange"
         />
       </div>
-    </el-card>
-
-    <!-- 详情对话框 -->
-    <el-dialog
-      v-model="detailVisible"
-      :title="$t('mine.recordDetail')"
-      width="500px"
-    >
-      <el-descriptions :column="1" border>
-        <el-descriptions-item :label="$t('mine.time')">
-          {{ formatDateTime(currentRecord?.create_time) }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="$t('mine.type')">
-          <el-tag :type="getTypeTagType(currentRecord?.type)">
-            {{ currentRecord?.type_text }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item :label="$t('mine.amount')">
-          <span :class="getAmountClass(currentRecord?.type)">
-            {{ formatAmount(currentRecord?.amount, currentRecord?.type) }}
-          </span>
-        </el-descriptions-item>
-        <el-descriptions-item :label="$t('mine.balanceBefore')">
-          ¥{{ formatMoney(currentRecord?.money_before) }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="$t('mine.balanceAfter')">
-          ¥{{ formatMoney(currentRecord?.money_after) }}
-        </el-descriptions-item>
-        <el-descriptions-item :label="$t('mine.remark')">
-          {{ currentRecord?.remark || '-' }}
-        </el-descriptions-item>
-      </el-descriptions>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
-import {
-  ArrowLeft,
-  Refresh,
-  Download,
-  TrendCharts,
-  Wallet
-} from '@element-plus/icons-vue'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import api from '@/api'
 
 defineOptions({ name: 'MoneyRecords' })
@@ -263,36 +163,20 @@ interface RecordItem {
   remark: string
 }
 
-interface Statistics {
-  totalIncome: number
-  totalExpense: number
-  currentBalance: number
-}
-
 const { t } = useI18n()
 const router = useRouter()
 
 // 状态
 const loading = ref(false)
-const refreshing = ref(false)
 const recordList = ref<RecordItem[]>([])
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
-const detailVisible = ref(false)
-const currentRecord = ref<RecordItem | null>(null)
 
 // 筛选表单
 const filterForm = reactive({
   type: '',
   dateRange: null as [string, string] | null
-})
-
-// 统计数据
-const statistics = reactive<Statistics>({
-  totalIncome: 0,
-  totalExpense: 0,
-  currentBalance: 0
 })
 
 // 格式化日期时间
@@ -328,19 +212,6 @@ function handleBack() {
   router.back()
 }
 
-// 刷新
-async function handleRefresh() {
-  refreshing.value = true
-  await fetchRecords()
-  refreshing.value = false
-  ElMessage.success(t('common.refreshSuccess'))
-}
-
-// 导出
-function handleExport() {
-  ElMessage.info(t('common.exportDeveloping'))
-}
-
 // 搜索
 function handleSearch() {
   currentPage.value = 1
@@ -361,12 +232,6 @@ function handleFilterChange() {
   fetchRecords()
 }
 
-// 排序变化
-function handleSortChange({ prop, order }: any) {
-  console.log('Sort:', prop, order)
-  fetchRecords()
-}
-
 // 分页大小变化
 function handleSizeChange(val: number) {
   pageSize.value = val
@@ -378,12 +243,6 @@ function handleSizeChange(val: number) {
 function handlePageChange(val: number) {
   currentPage.value = val
   fetchRecords()
-}
-
-// 查看详情
-function handleDetail(row: RecordItem) {
-  currentRecord.value = row
-  detailVisible.value = true
 }
 
 // 获取资金记录
@@ -412,9 +271,6 @@ async function fetchRecords() {
       const data = resp.data
       recordList.value = data.list || []
       total.value = data.pagination?.total || 0
-
-      // 更新统计数据
-      updateStatistics(data)
     }
   } catch (error) {
     console.error('获取资金记录失败:', error)
@@ -424,127 +280,104 @@ async function fetchRecords() {
   }
 }
 
-// 更新统计数据
-function updateStatistics(data: any) {
-  if (data.statistics) {
-    statistics.totalIncome = data.statistics.total_income || 0
-    statistics.totalExpense = data.statistics.total_expense || 0
-    statistics.currentBalance = data.statistics.current_balance || 0
-  }
-}
-
 onMounted(() => {
   fetchRecords()
 })
 </script>
 
-<style lang="less" scoped>
+<style scoped>
 .money-records-container {
-  padding: 20px;
+  min-height: 100vh;
   background-color: #f5f7fa;
-  min-height: calc(100vh - 60px);
-
-  .records-card {
-    max-width: 1400px;
-    margin: 0 auto;
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-
-      .header-left {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-
-        h2 {
-          margin: 0;
-          font-size: 20px;
-          color: #303133;
-        }
-      }
-
-      .header-right {
-        display: flex;
-        gap: 10px;
-      }
-    }
-
-    .filter-section {
-      margin-bottom: 20px;
-
-      .filter-form {
-        .el-form-item {
-          margin-bottom: 0;
-        }
-      }
-    }
-
-    .statistics-section {
-      padding: 20px;
-      background-color: #f5f7fa;
-      border-radius: 4px;
-      margin-bottom: 20px;
-
-      .el-statistic {
-        text-align: center;
-      }
-    }
-
-    .records-table {
-      .amount-income {
-        color: #67c23a;
-        font-weight: 600;
-        font-size: 15px;
-      }
-
-      .amount-expense {
-        color: #f56c6c;
-        font-weight: 600;
-        font-size: 15px;
-      }
-
-      .el-pagination {
-        margin-top: 20px;
-        justify-content: flex-end;
-      }
-    }
-  }
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-// 响应式
-@media (max-width: 768px) {
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
+  margin-right: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.filter-form .el-form-item {
+  margin-bottom: 0;
+}
+
+.records-table .amount-income {
+  color: #67c23a;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.records-table .amount-expense {
+  color: #f56c6c;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.records-table .el-pagination {
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+/* Element Plus 样式覆盖 */
+.money-records-container :deep(.el-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.money-records-container :deep(.el-table__header) {
+  background-color: #f8f9fa;
+}
+
+.money-records-container :deep(.el-table th) {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.money-records-container :deep(.el-table td) {
+  padding: 16px 12px;
+}
+
+.money-records-container :deep(.el-table__empty-block) {
+  padding: 60px 0;
+}
+
+.money-records-container :deep(.el-pagination) {
+  padding: 12px 0;
+}
+
+@media (min-width: 1600px) {
   .money-records-container {
-    padding: 10px;
-
-    .records-card {
-      .card-header {
-        flex-direction: column;
-        gap: 10px;
-        align-items: flex-start;
-
-        .header-right {
-          width: 100%;
-          justify-content: flex-end;
-        }
-      }
-
-      .filter-section {
-        .filter-form {
-          .el-form-item {
-            display: block;
-            margin-bottom: 10px;
-          }
-        }
-      }
-
-      .statistics-section {
-        .el-col {
-          margin-bottom: 10px;
-        }
-      }
-    }
+    max-width: 1400px;
   }
 }
 </style>
