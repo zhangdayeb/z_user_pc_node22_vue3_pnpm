@@ -1,307 +1,181 @@
-export interface ConfigParams {
-  group: string
-  url: string
-  is_mobile: number
-  lang: string
+// ========== 基础响应类型 ==========
+export interface ApiResponse<T = any> {
+  code: number
+  message?: string
+  data?: T
 }
 
+// ========== 系统配置 ==========
 export interface SiteConfig {
-  system_maintenance_message: string
-  site_title: string
-  site_keyword: string
-  site_name: string
+  site_name?: string
+  site_logo?: string
+  site_title?: string
+  site_keyword?: string
+  site_description?: string
+  customer_service_url?: string
+  group_prefix?: string
+  primary_color?: string
+  [key: string]: any
 }
 
-export interface PaymentItemParams {
-  bank_type: string
-  bank_address: string
-  bank_type_text: string
-}
-export interface ApiPaymentItem {
+// ========== 用户相关 ==========
+export interface ApiUser {
   id: number
-  account: string
   name: string
-  desc: string
-  type: string
-  qrcode: string
-  memo: string
-  params: PaymentItemParams
-  rate: string
-  min: number
-  max: number
-  is_open: number
-  lang: number
+  nickname?: string
+  realname?: string
+  phone?: string
+  email?: string
+  money: number
+  level: number
+  level_name?: string
+  invite_code?: string
+  status: number
   created_at: string
   updated_at: string
-  remark_code: number
-  type_text: string
+  [key: string]: any
 }
 
+// ========== 银行卡 ==========
 export interface ApiMemberBank {
   id: number
-  member_id: number
   card_no: string
   bank_type: string
-  phone: string | null
+  bank_type_text?: string
+  bank_address?: string
   owner_name: string
-  bank_address: string
-  remark: string
-  created_at: string
-  updated_at: string
-  url: string
-  bank_type_text: string
-}
-
-export interface ApiUser {
-  agent_id: number
-  created_at: string
-  deleted_at?: string
-  email?: string
-  facebook?: string
-  money_rebate: number
-  gender: number
-  has_qk_pwd: boolean
-  id: number
-  invite_code: string
-  is_demo: number
-  is_in_on: number
-  is_tips_on: number
-  is_trans_on: number
-  lang: string
-  level: number
-  level_name: string
-  line?: string
-  ml_money: string
-  money: number
-  name: string
-  nickname: string
   phone?: string
-  qq?: string
-  realname: string
-  register_area: string
-  register_ip: string
-  register_site: string
-  score: string
-  status: number
-  top_id: number
-  total_credit: string
-  total_money: string
-  updated_at: string
-  used_credit: string
-}
-
-export interface ApiLevel {
-  bet_money: string
+  remark?: string
   created_at: string
-  credit_bonus: string
-  day_bonus: string
-  deposit_money: string
-  id: number
-  lang: string
-  level: number
-  level_bonus: string
-  level_name: string
-  levelup_type: number
-  month_bonus: string
   updated_at: string
-  week_bonus: string
-  year_bonus: string
 }
 
-export interface ApiMemberLevels {
-  day_bonus: string
-  level_bonus: string
-  month_bonus: string
-  week_bonus: string
-  year_bonus: string
-}
-export interface ApiVips {
-  levels: ApiLevel[]
-  levelup_types: string[]
-  member_levels: ApiMemberLevels
-  total_bet: number
-  total_deposit: number
-}
-
-export interface ApiOperateType {
-  key: number
-  value: string
-}
-export interface ApiStatistic {
-  sum_money: number
-  valid_money: number
-}
-export interface ApiGameStatistic {
-  sum_bet_amount: number
-  sum_valid_bet_amount: number
-  sum_net_amount: number
-}
-
-export interface ApiMoneyLogItem {
+// ========== 资金记录 ==========
+export interface ApiMoneyLog {
   id: number
   member_id: number
   money: string
   money_before: string
   money_after: string
   money_type: string
-  number_type: number
   operate_type: number
-  user_id: number
-  model_name: string
-  model_id: number
-  description: string
-  remark: string
+  operate_type_text?: string
+  money_type_text?: string
+  description?: string
+  remark?: string
   created_at: string
   updated_at: string
-  deleted_at: null
-  operate_type_text: string
-  money_type_text: string
+}
+
+// ========== 充值/提现 ==========
+export interface ApiPaymentItem {
+  id: number
+  type: string
+  type_text?: string
+  account: string
+  name: string
+  desc?: string
+  qrcode?: string
+  min: number
+  max: number
+  rate?: string
+  is_open: number
+  created_at: string
+  updated_at: string
+}
+
+// ========== VIP等级 ==========
+export interface ApiLevel {
+  id: number
+  level: number
+  level_name: string
+  deposit_money: string
+  bet_money: string
+  day_bonus?: string
+  week_bonus?: string
+  month_bonus?: string
+  year_bonus?: string
+  level_bonus?: string
+  created_at: string
+  updated_at: string
+}
+
+// ========== 游戏相关 ==========
+export interface ApiGame {
+  id: number
+  api_name: string
+  name: string
+  en_name?: string
+  game_type: number
+  game_code: string
+  img_url: string
+  full_image_url?: string
+  platform?: string
+  is_open: number
+  weight: number
+  tags?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface ApiGameType {
-  isLobbyPage: boolean
   key: number
   value: string
 }
 
-export interface ApiResp<T = object> {
-  code: number
-  status: string
-  message: string
-  data?: T
-}
-
-export interface ApiPageData<T = object> {
-  current_page?: number
-  total?: number
-  data: T
-}
-
-export interface ApiWallet {
-  api_name: string
-  api_title: string
-  money: string
-  wallet_type: number
-  loading: boolean
-}
-export interface ApiMoneiesResp<T = object> {
-  api_moneys?: T[]
-}
-
-export interface ApiCollectGame {
-  api_name: string
-  client_type: number
-  created_at: string
-  en_name: string
-  full_image_url: string
-  game_code: string
-  game_type: number
-  id: number
-  img_path?: string
-  img_url: string
-  is_open: number
-  name: string
-  param_remark: string
-  platform: string
-  tags: string
-  updated_at: string
-  weight: number
-}
-
-export interface ApiRead {
-  content: string
-  created_at: string
-  deleted_at?: string
-  format_created_at: string
-  id: number
-  is_read: number
-  parent?: number
-  pid: number
-  title: string
-  url: string
-  user_id: number
-}
-
-export interface ApiMoneyRespData {
-  is_trans_on: number
-  money_info: ApiWallet[]
-}
-
+// ========== 通知公告 ==========
 export interface ApiNotice {
+  id?: number
   title: string
   content: string
   url?: string
-  type: string
+  type?: string
+  created_at?: string
+  updated_at?: string
 }
 
-export interface gameType {
-  id: number
-  title: string
-  subtitle: string
-  web_pic: string
-  mobile_pic: string
-  logo_url: string
-  api_name: string
-  class_name: string
-  game_type: number
-  params: string
-  is_open: number
-  weight: number
-  client_type: number
-  tags: string
-  remark: string
-  lang_json: string
-  lang: string
-  created_at: string
-  updated_at: string
-  icon_url: string
-}
-export interface gameInfo {
-  id: number
-  api_name: string
-  name: string
-  en_name: string | null
-  game_type: number
-  game_code: string
-  img_path: string | null
-  img_url: string
-  client_type: number
-  platform: string
-  param_remark: string
-  is_open: number
-  weight: number
-  tags: string
-  created_at: string
-  updated_at: string
-  full_image_url: string
-  api: {
-    api_name: string
-    api_title: string
-  }
-}
-
-export interface AdminConf {
-  service_skype: string
-  service_telegram: string
-  service_logo_link: string
-  site_email: string
-}
-
-export interface About {
-  id: number
-  title: string
-  weight: number
-  type: number
-  lang: string
-  type_text: string
-}
-
+// ========== Banner ==========
 export interface ApiBanner {
-  dimensions: string
-  groups: string
-  is_new_window: number
-  jump_link: string
+  id?: number
   title: string
   url: string
-  weight: number
+  jump_link?: string
+  is_new_window?: number
+  weight?: number
+  created_at?: string
+  updated_at?: string
+}
+
+// ========== 分页数据 ==========
+export interface ApiPageData<T = any> {
+  current_page?: number
+  total?: number
+  per_page?: number
+  last_page?: number
+  data: T[]
+}
+
+// ========== 活动文章 ==========
+export interface ApiActivity {
+  id: number
+  title: string
+  content: string
+  type?: string
+  img_url?: string
+  start_time?: string
+  end_time?: string
+  is_open?: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ApiArticle {
+  id: number
+  title: string
+  content: string
+  type?: string
+  author?: string
+  view_count?: number
+  created_at: string
+  updated_at: string
 }
