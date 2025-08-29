@@ -1,339 +1,439 @@
 <template>
-  <!-- 底部弹出 -->
-  <van-popup
-    class="m-pop"
-    v-model:show="showBottom"
-    closeable
-    position="bottom"
-    :style="{ height: '79%' }"
-    :before-close="closeLoginPop"
+  <el-dialog
+    v-model="dialogVisible"
+    :title="$t('login.login')"
+    width="420px"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    @close="handleClose"
+    class="login-dialog"
   >
-    <div class="m-pop-body">
-      <van-image
-        :src="getImgUrl(store.systemConf?.site_wap_logo ?? '')"
-        class="m-pop-logo"
-        fit="contain"
-      ></van-image>
-      <div class="m-pop-title">{{ $t('login.openFixed') }}</div>
+    <!-- 登录表单 -->
+    <el-form
+      ref="loginFormRef"
+      :model="loginForm"
+      :rules="loginRules"
+      label-width="0"
+      class="login-form"
+    >
+      <!-- Logo -->
+      <div class="login-logo">
+        <img
+          v-if="store.systemConf?.site_logo"
+          :src="getImgUrl(store.systemConf.site_logo)"
+          alt="logo"
+        />
+        <h2 v-else>{{ store.systemConf?.site_name || '个人中心' }}</h2>
+      </div>
 
-      <van-form class="m-login-frm" ref="frmRefs">
-        <van-cell-group inset>
-          <!-- 通过 pattern 进行正则校验 -->
-          <van-field
-            v-model="username"
-            name="username"
-            left-icon="contact"
-            :placeholder="$t('login.inputAccount')"
-            :rules="[{ required: true, message: $t('login.inputRight') }]"
-          />
-          <!-- 通过 validator 进行函数校验 -->
-          <van-field
-            v-model="pwd"
-            name="validator"
-            type="password"
-            left-icon="lock"
-            :placeholder="$t('login.inputPwd')"
-            :rules="[{ required: true, message: $t('login.inputRight') }]"
-          />
-        </van-cell-group>
-      </van-form>
-      <van-cell class="m-cell-checkbox">
-        <van-checkbox v-model="remember" name="1" shape="square">{{
-          $t('rememberMe')
-        }}</van-checkbox>
-      </van-cell>
-      <van-cell class="m-cell">
-        <van-button
-          round
-          block
-          @click.stop="loginHandler"
-          type="primary"
-          native-type="submit"
-          class="m-sub-btn"
-          >{{ $t('login.login') }}</van-button
+      <!-- 用户名 -->
+      <el-form-item prop="username">
+        <el-input
+          v-model="loginForm.username"
+          :placeholder="$t('login.inputAccount')"
+          size="large"
+          clearable
+          @keyup.enter="handleLogin"
         >
-      </van-cell>
-      <van-cell class="m-cell-link">
-        <span class="m-link-label" @click.stop="fotgetPwdHandler">{{
-          $t('login.forgetPwd')
-        }}</span>
-        <div>|</div>
-        <span class="m-link-label m-border" @click.stop="registerHandler">{{
-          $t('login.registerNow')
-        }}</span>
-      </van-cell>
-    </div>
-  </van-popup>
+          <template #prefix>
+            <el-icon><User /></el-icon>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <!-- 密码 -->
+      <el-form-item prop="password">
+        <el-input
+          v-model="loginForm.password"
+          type="password"
+          :placeholder="$t('login.inputPwd')"
+          size="large"
+          show-password
+          clearable
+          @keyup.enter="handleLogin"
+        >
+          <template #prefix>
+            <el-icon><Lock /></el-icon>
+          </template>
+        </el-input>
+      </el-form-item>
+
+      <!-- 验证码（如果需要） -->
+      <el-form-item v-if="showCaptcha" prop="captcha">
+        <div class="captcha-row">
+          <el-input
+            v-model="loginForm.captcha"
+            :placeholder="$t('login.inputCaptcha')"
+            size="large"
+            clearable
+            @keyup.enter="handleLogin"
+            class="captcha-input"
+          >
+            <template #prefix>
+              <el-icon><Key /></el-icon>
+            </template>
+          </el-input>
+          <div class="captcha-img" @click="getCaptcha">
+            <img
+              v-if="captchaUrl"
+              :src="captchaUrl"
+              alt="captcha"
+              title="点击刷新"
+            />
+            <el-button v-else type="primary" link>
+              获取验证码
+            </el-button>
+          </div>
+        </div>
+      </el-form-item>
+
+      <!-- 记住我 & 忘记密码 -->
+      <el-form-item>
+        <div class="login-options">
+          <el-checkbox v-model="loginForm.remember">
+            {{ $t('rememberMe') }}
+          </el-checkbox>
+          <el-link type="primary" @click="handleForgetPassword">
+            {{ $t('login.forgetPwd') }}
+          </el-link>
+        </div>
+      </el-form-item>
+
+      <!-- 登录按钮 -->
+      <el-form-item>
+        <el-button
+          type="primary"
+          size="large"
+          :loading="loading"
+          @click="handleLogin"
+          class="login-btn"
+        >
+          {{ loading ? $t('login.loggingIn') : $t('login.login') }}
+        </el-button>
+      </el-form-item>
+
+      <!-- 注册链接 -->
+      <el-form-item>
+        <div class="register-link">
+          <span>{{ $t('login.noAccount') }}</span>
+          <el-link type="primary" @click="handleRegister">
+            {{ $t('login.registerNow') }}
+          </el-link>
+        </div>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { ref, reactive, watch, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { User, Lock, Key } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
 import { useAppStore } from '@/stores/app'
 import { getImgUrl } from '@/utils/tools'
-import { showDialog, showToast } from 'vant'
-import { useRouter } from 'vue-router'
 import api from '@/api'
-import { useI18n } from 'vue-i18n'
 
-interface UserData {
-  name?: string
-  password?: string
+interface LoginForm {
+  username: string
+  password: string
+  captcha: string
+  remember: boolean
 }
+
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emit = defineEmits(['update:modelValue'])
+
+defineOptions({ name: 'LoginDialog' })
 
 const router = useRouter()
 const { t } = useI18n()
-const frmRefs = ref()
-const props = defineProps({
-  isShow: {
-    type: Boolean,
-    defalut: false,
-  },
-})
-defineOptions({ name: 'LoginPop' })
 const store = useAppStore()
-const showBottom = ref(props.isShow)
 
-// 校验函数返回 true 表示校验通过，false 表示不通过
-// const validator = val => /1\d{10}/.test(val)
-const username = ref('')
-const pwd = ref('')
-const remember = ref(false)
-const captcha = ref({ key: '', value: '' })
+// 表单相关
+const loginFormRef = ref<FormInstance>()
+const loading = ref(false)
+const showCaptcha = ref(false)
+const captchaUrl = ref('')
+const captchaKey = ref('')
 
-function fotgetPwdHandler() {
-  showDialog({ message: t('login.resetpwdForCustomer') })
-}
-function registerHandler() {
-  router.push({ name: 'register' })
-}
-function closeLoginPop() {
-  showBottom.value = false
-  store.$patch({ loginShow: false })
-}
-
-async function loginHandler() {
-  store.loading()
-
-  try {
-    // 表单验证
-    await frmRefs.value?.validate()
-
-    // 调用登录 API
-    const resp = await api.login({
-      name: username.value,
-      password: pwd.value,
-      key: captcha.value?.key ?? '',
-      captcha: captcha.value?.value ?? '',
-    })
-
-    console.log('login resp', resp)
-
-    if (resp && resp.code === 200) {
-      const { access_token, user_info } = resp.data || {}
-
-      if (!access_token) {
-        showToast('登录失败：未获取到访问令牌')
-        return
-      }
-
-      // 设置 token
-      store.setToken(access_token)
-      console.log('Token 设置成功:', access_token)
-
-      // 直接使用登录响应中的用户信息，避免额外的 API 调用
-      if (user_info) {
-        // 转换用户信息格式以匹配 store 期望的格式
-        const userForStore = {
-          id: user_info.id,
-          name: user_info.name,
-          nick_name: user_info.nick_name,
-          money: user_info.money,
-          level: user_info.vip_grade, // 将 vip_grade 映射为 level
-          vip_grade: user_info.vip_grade
-        }
-
-        store.setUser(userForStore)
-        console.log('用户信息设置成功:', userForStore)
-      }
-
-      // 保存记住我选项
-      if (remember.value) {
-        localStorage.setItem(
-          'rememberMe',
-          JSON.stringify({
-            name: username.value,
-            password: pwd.value,
-          }),
-        )
-      } else {
-        // 如果取消记住我，清除之前保存的信息
-        localStorage.removeItem('rememberMe')
-      }
-
-      // 显示登录成功消息
-      showToast(t('login.loginSuccess'))
-
-      // 关闭登录弹窗
-      store.$patch({ loginShow: false })
-
-      console.log('登录流程完成')
-
-    } else {
-      // 登录失败
-      const errorMessage = resp?.data || resp?.message || '登录失败'
-      showToast(errorMessage)
-      console.error('登录失败:', resp)
-    }
-
-  } catch (error) {
-    console.error('登录过程中发生错误:', error)
-
-    // 显示错误信息
-    const errorMessage = (error as any)?.message || '登录过程中发生错误'
-    showToast(errorMessage)
-
-    // 如果是验证码相关错误，刷新验证码
-    if (errorMessage.includes('验证码')) {
-      await getCaptcha()
-    }
-  } finally {
-    store.stopLoad()
+// 对话框显示状态
+const dialogVisible = computed({
+  get: () => props.modelValue || store.loginShow,
+  set: (val) => {
+    emit('update:modelValue', val)
+    store.$patch({ loginShow: val })
   }
-}
+})
 
+// 登录表单数据
+const loginForm = reactive<LoginForm>({
+  username: '',
+  password: '',
+  captcha: '',
+  remember: false
+})
+
+// 表单验证规则
+const loginRules = reactive<FormRules>({
+  username: [
+    { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 20, message: t('login.usernameLength'), trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: t('login.passwordRequired'), trigger: 'blur' },
+    { min: 6, max: 20, message: t('login.passwordLength'), trigger: 'blur' }
+  ],
+  captcha: [
+    { required: true, message: t('login.captchaRequired'), trigger: 'blur' },
+    { len: 4, message: t('login.captchaLength'), trigger: 'blur' }
+  ]
+})
+
+// 获取验证码
 async function getCaptcha() {
   try {
     const resp = await api.authCaptcha()
     if (resp && resp.code === 200 && resp.data) {
-      captcha.value.key = resp.data
+      captchaKey.value = resp.data.key
+      captchaUrl.value = resp.data.image
+      showCaptcha.value = true
     }
-  } catch (err: unknown) {
-    console.log('获取验证码失败:', err)
+  } catch (error) {
+    console.error('获取验证码失败:', error)
+    ElMessage.error('获取验证码失败')
   }
 }
 
-watch(
-  () => store.loginShow,
-  (n, o) => {
-    console.log('loginShow:', n, o)
-    showBottom.value = n
-  },
-  { immediate: true, deep: true },
-)
+// 处理登录
+async function handleLogin() {
+  if (!loginFormRef.value) return
 
-onMounted(async () => {
-  // 恢复记住的登录信息
-  const rm = localStorage.getItem('rememberMe')
-  if (rm) {
+  await loginFormRef.value.validate(async (valid) => {
+    if (!valid) return
+
+    loading.value = true
+
     try {
-      const user: UserData = JSON.parse(rm)
-      username.value = user?.name ?? ''
-      pwd.value = user?.password ?? ''
-      remember.value = true // 如果有记住的信息，勾选记住我
-    } catch (err: unknown) {
-      console.log('恢复记住的登录信息失败:', err)
-      // 清除损坏的数据
+      const loginData: any = {
+        name: loginForm.username,
+        password: loginForm.password
+      }
+
+      // 如果需要验证码
+      if (showCaptcha.value) {
+        loginData.key = captchaKey.value
+        loginData.captcha = loginForm.captcha
+      }
+
+      const resp = await api.login(loginData)
+
+      if (resp && resp.code === 200) {
+        const { access_token, user_info } = resp.data || {}
+
+        if (!access_token) {
+          ElMessage.error('登录失败：未获取到访问令牌')
+          return
+        }
+
+        // 设置 token
+        store.setToken(access_token)
+
+        // 设置用户信息
+        if (user_info) {
+          const userForStore = {
+            id: user_info.id,
+            name: user_info.name,
+            nick_name: user_info.nick_name,
+            money: user_info.money,
+            level: user_info.vip_grade || user_info.level,
+            vip_grade: user_info.vip_grade
+          }
+          store.setUser(userForStore)
+        }
+
+        // 处理记住我
+        if (loginForm.remember) {
+          localStorage.setItem('rememberMe', JSON.stringify({
+            username: loginForm.username,
+            password: loginForm.password
+          }))
+        } else {
+          localStorage.removeItem('rememberMe')
+        }
+
+        ElMessage.success(t('login.loginSuccess'))
+        dialogVisible.value = false
+
+        // 如果在登录页面，跳转到个人中心
+        if (router.currentRoute.value.name === 'login') {
+          router.push('/account')
+        }
+      } else {
+        const errorMessage = resp?.message || '登录失败'
+        ElMessage.error(errorMessage)
+
+        // 如果是验证码错误，刷新验证码
+        if (errorMessage.includes('验证码')) {
+          await getCaptcha()
+          loginForm.captcha = ''
+        }
+      }
+    } catch (error: any) {
+      console.error('登录错误:', error)
+      ElMessage.error(error.message || '登录失败，请稍后重试')
+
+      // 登录失败后获取验证码
+      if (!showCaptcha.value) {
+        await getCaptcha()
+      }
+    } finally {
+      loading.value = false
+    }
+  })
+}
+
+// 处理忘记密码
+function handleForgetPassword() {
+  ElMessageBox.alert(
+    t('login.resetpwdForCustomer'),
+    t('login.forgetPwd'),
+    {
+      confirmButtonText: t('common.confirm'),
+      type: 'info'
+    }
+  )
+}
+
+// 处理注册
+function handleRegister() {
+  dialogVisible.value = false
+  router.push({ name: 'register' })
+}
+
+// 处理对话框关闭
+function handleClose() {
+  // 清空表单
+  loginFormRef.value?.resetFields()
+  loginForm.captcha = ''
+  captchaUrl.value = ''
+  showCaptcha.value = false
+}
+
+// 监听登录显示状态
+watch(() => store.loginShow, (newVal) => {
+  dialogVisible.value = newVal
+})
+
+// 组件挂载时
+onMounted(() => {
+  // 恢复记住的登录信息
+  const rememberData = localStorage.getItem('rememberMe')
+  if (rememberData) {
+    try {
+      const data = JSON.parse(rememberData)
+      loginForm.username = data.username || ''
+      loginForm.password = data.password || ''
+      loginForm.remember = true
+    } catch (error) {
+      console.error('恢复登录信息失败:', error)
       localStorage.removeItem('rememberMe')
     }
   }
 
-  // 获取验证码
-  await getCaptcha()
+  // 根据配置决定是否需要验证码
+  // 可以根据实际需求调整逻辑
+  // getCaptcha()
 })
 </script>
 
 <style lang="less" scoped>
-.m-pop {
-  .m-pop-body {
-    padding: 50px 40px;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    flex-wrap: nowrap;
-    align-content: space-around;
-    justify-content: flex-start;
-    align-items: flex-start;
-    .m-pop-logo {
-      height: 35px;
-    }
-    .m-pop-title {
-      margin: 10px 0px 45px 0px;
-      font-size: 21px;
-      font-weight: 400;
-      color: var(--van-text-color);
-    }
-    .m-login-frm {
-      border: 1px solid #e0e4e8;
-      border-radius: 0.13333rem;
-      overflow: hidden;
-      box-shadow: 0 0.16rem 0.42667rem 0.02667rem rgba(0, 0, 0, 0.04);
-      width: 100%;
-      margin: 0px;
-    }
-    .m-cell-checkbox {
-      padding: 10px 0px;
-      &::after {
-        border: 0px;
-      }
-    }
-    .m-cell {
-      padding: 40px 0 0 0;
-    }
-    .m-sub-btn {
-      height: 48px;
-      font-size: 16px;
-    }
-    .m-cell-link {
-      padding: 30px 0px 10px 0px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-    }
-    .m-link-label {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      -webkit-box-flex: 1;
-      -webkit-flex: 1;
-      -ms-flex: 1;
-      flex: 1;
-      text-align: center;
-      color: #0091ff;
-      white-space: nowrap;
-      &::before {
-        border-left: 1px solid #c8c8c8;
-      }
-    }
-    .m-border {
-    }
+.login-dialog {
+  :deep(.el-dialog__body) {
+    padding: 10px 30px 20px;
   }
 }
-</style>
-<style lang="less">
-.m-pop {
-  .van-popup__close-icon {
-    font-size: 14px;
-    color: #737373;
+
+.login-form {
+  .login-logo {
+    text-align: center;
+    margin-bottom: 30px;
+
+    img {
+      height: 50px;
+      max-width: 200px;
+      object-fit: contain;
+    }
+
+    h2 {
+      margin: 0;
+      color: #303133;
+      font-size: 24px;
+      font-weight: 500;
+    }
   }
-  .m-login-frm {
-    .van-cell-group--inset {
-      margin: 0px;
-      .van-field__left-icon {
-        .van-icon {
-          color: var(--van-image-placeholder-text-color);
-        }
+
+  .captcha-row {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+
+    .captcha-input {
+      flex: 1;
+    }
+
+    .captcha-img {
+      width: 120px;
+      height: 40px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      &:hover {
+        border-color: #409eff;
       }
     }
-    .van-cell:after {
-      left: 0px;
-      right: 0px;
-      border: 0.5px solid #e0e4e8;
-    }
   }
-  .m-cell-link {
-    .van-cell__value {
-      display: flex;
-      flex-direction: row;
+
+  .login-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .login-btn {
+    width: 100%;
+    font-size: 16px;
+    height: 40px;
+  }
+
+  .register-link {
+    text-align: center;
+    width: 100%;
+    color: #909399;
+    font-size: 14px;
+
+    .el-link {
+      margin-left: 5px;
     }
   }
 }
