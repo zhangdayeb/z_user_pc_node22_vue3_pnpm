@@ -167,9 +167,8 @@
           </el-form-item>
 
           <div class="pc-register-footer">
-            <span>{{ $t('login.hasAccount') }}</span>
-            <el-link type="primary" @click="router.push('/login')">
-              {{ $t('login.login') }}
+              <el-link type="primary" @click="router.push('/login')">
+              {{ $t('user.login') }}
             </el-link>
           </div>
         </el-form>
@@ -307,12 +306,12 @@ watch(
 // 表单验证规则
 const rules = computed(() => ({
   name: [
-    { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
-    { min: 3, max: 20, message: t('login.usernameLength'), trigger: 'blur' }
+    { required: true, message: t('user.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 20, message: t('user.usernameLength'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: t('login.passwordRequired'), trigger: 'blur' },
-    { min: 6, max: 20, message: t('login.passwordLength'), trigger: 'blur' }
+    { required: true, message: t('user.passwordRequired'), trigger: 'blur' },
+    { min: 6, max: 20, message: t('user.passwordLength'), trigger: 'blur' }
   ],
   password_confirmation: [
     { required: true, message: t('register.inputConfirmPassword'), trigger: 'blur' },
