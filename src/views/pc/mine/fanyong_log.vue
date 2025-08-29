@@ -5,7 +5,7 @@
       <el-button
         type="primary"
         :icon="ArrowLeft"
-        @click="onClickLeft"
+        @click="handleBack"
         class="back-btn"
       >
         {{ $t('common.back') }}
@@ -49,34 +49,16 @@
 
       <!-- 分页组件 -->
       <el-pagination
-        v-if="total > 0"
         v-model:current-page="currentPage"
-        :page-size="pageSize"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
         :total="total"
         :background="true"
-        layout="total, prev, pager, next, jumper"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
         @current-change="handlePageChange"
         class="pagination"
       />
-
-      <!-- 空状态 -->
-      <el-empty
-        v-if="!loading && list.length === 0"
-        :description="$t('noCommissionRecord')"
-        class="empty-state"
-      />
-
-      <!-- 刷新按钮 -->
-      <el-button
-        v-if="list.length > 0"
-        type="primary"
-        :loading="refreshing"
-        @click="onRefresh"
-        class="refresh-btn"
-        :icon="Refresh"
-      >
-        {{ $t('refresh') }}
-      </el-button>
     </div>
   </div>
 </template>
@@ -85,7 +67,7 @@
 import { useRouter } from 'vue-router'
 import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Refresh } from '@element-plus/icons-vue'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { invokeApi } from '@/utils/tools'
 
@@ -110,21 +92,11 @@ const total = ref(0)
 // 数据相关
 const list = ref<FanyongRecordItem[]>([])
 const loading = ref(false)
-const refreshing = ref(false)
 
 // 获取金额样式类
 function getAmountClass(money: string): string {
   const amount = parseFloat(money)
   return amount >= 0 ? 'amount-positive' : 'amount-negative'
-}
-
-// 刷新数据
-async function onRefresh() {
-  refreshing.value = true
-  currentPage.value = 1
-  await getFanyongRecords()
-  refreshing.value = false
-  ElMessage.success(t('success'))
 }
 
 // 处理分页变化
@@ -133,8 +105,15 @@ async function handlePageChange(page: number) {
   await getFanyongRecords()
 }
 
+// 分页大小变化
+function handleSizeChange(val: number) {
+  pageSize.value = val
+  currentPage.value = 1
+  getFanyongRecords()
+}
+
 // 返回上一页
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -186,6 +165,8 @@ onMounted(() => {
   min-height: 100vh;
   background-color: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pc-header {
@@ -214,7 +195,6 @@ onMounted(() => {
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: relative;
 }
 
 .record-table {
@@ -236,18 +216,7 @@ onMounted(() => {
 
 .pagination {
   margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-
-.empty-state {
-  padding: 80px 0;
-}
-
-.refresh-btn {
-  position: absolute;
-  top: 24px;
-  right: 24px;
+  justify-content: flex-end;
 }
 
 /* Element Plus 样式覆盖 */
@@ -276,14 +245,6 @@ onMounted(() => {
 
 .pc-fanyong-record :deep(.el-pagination) {
   padding: 12px 0;
-}
-
-/* 大屏优化 */
-@media (min-width: 1200px) {
-  .pc-fanyong-record {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
 }
 
 @media (min-width: 1600px) {
