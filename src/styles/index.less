@@ -1,0 +1,314 @@
+// 全局样式入口文件
+// src/styles/index.less
+
+// ==================== 变量导入 ====================
+// 注意：variables.less 已经在 vite.config.ts 中全局导入，这里不需要重复导入
+// @import './variables.less';
+
+// ==================== 重置样式 ====================
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+  color: #333;
+  background-color: #f5f7fa;
+}
+
+#app {
+  width: 100%;
+  height: 100%;
+  min-width: 1200px;
+}
+
+// ==================== 滚动条样式 ====================
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+  transition: background 0.3s;
+  
+  &:hover {
+    background: #a8a8a8;
+  }
+}
+
+// ==================== 通用布局类 ====================
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.page-container {
+  min-height: calc(100vh - 60px); // 减去header高度
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 4px;
+  margin: 20px;
+}
+
+// ==================== Flex 布局 ====================
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+// ==================== 间距工具类 ====================
+.generate-spacing(@n, @i: 5) when (@i <= @n) {
+  .mt-@{i} { margin-top: unit(@i, px); }
+  .mb-@{i} { margin-bottom: unit(@i, px); }
+  .ml-@{i} { margin-left: unit(@i, px); }
+  .mr-@{i} { margin-right: unit(@i, px); }
+  .m-@{i} { margin: unit(@i, px); }
+  
+  .pt-@{i} { padding-top: unit(@i, px); }
+  .pb-@{i} { padding-bottom: unit(@i, px); }
+  .pl-@{i} { padding-left: unit(@i, px); }
+  .pr-@{i} { padding-right: unit(@i, px); }
+  .p-@{i} { padding: unit(@i, px); }
+  
+  .generate-spacing(@n, @i + 5);
+}
+
+.generate-spacing(50);
+
+// ==================== 文本样式 ====================
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.text-ellipsis-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.text-primary {
+  color: @primary-color;
+}
+
+.text-success {
+  color: @success-color;
+}
+
+.text-warning {
+  color: @warning-color;
+}
+
+.text-danger {
+  color: @danger-color;
+}
+
+.text-info {
+  color: @info-color;
+}
+
+// ==================== 字体大小 ====================
+.text-xs { font-size: 12px; }
+.text-sm { font-size: 13px; }
+.text-base { font-size: 14px; }
+.text-lg { font-size: 16px; }
+.text-xl { font-size: 18px; }
+.text-2xl { font-size: 20px; }
+.text-3xl { font-size: 24px; }
+
+// ==================== 字重 ====================
+.font-normal { font-weight: 400; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+// ==================== 显示隐藏 ====================
+.hidden {
+  display: none !important;
+}
+
+.block {
+  display: block;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+// ==================== 动画 ====================
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+
+// ==================== 卡片样式 ====================
+.card {
+  background: #fff;
+  border-radius: 4px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  &.card-hover {
+    transition: all 0.3s;
+    cursor: pointer;
+    
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+// ==================== 按钮样式增强 ====================
+.btn-group {
+  display: flex;
+  gap: 10px;
+  
+  &.btn-group-right {
+    justify-content: flex-end;
+  }
+  
+  &.btn-group-center {
+    justify-content: center;
+  }
+}
+
+// ==================== 表格样式增强 ====================
+.table-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  
+  .table-header {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+// ==================== 加载状态 ====================
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  
+  .loading-text {
+    margin-left: 10px;
+    color: @info-color;
+  }
+}
+
+// ==================== 空状态 ====================
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: @text-color-placeholder;
+  
+  .empty-text {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+}
+
+// ==================== Element Plus 样式覆盖 ====================
+.el-message-box {
+  max-width: 450px;
+}
+
+.el-table {
+  font-size: 14px;
+}
+
+.el-form-item__label {
+  font-weight: 400;
+}
+
+// ==================== 响应式工具类 ====================
+@media screen and (max-width: 1440px) {
+  .container {
+    max-width: 1200px;
+  }
+}
+
+@media screen and (min-width: 1920px) {
+  .container {
+    max-width: 1600px;
+  }
+}
