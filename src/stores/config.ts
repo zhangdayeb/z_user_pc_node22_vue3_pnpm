@@ -1,15 +1,13 @@
 import { ref, computed, readonly } from 'vue'
 import { defineStore } from 'pinia'
-import { showLoadingToast, showFailToast, type ToastWrapperInstance } from 'vant'
 import { ElLoading, ElMessage } from 'element-plus'
-import type { LoadingInstance } from 'element-plus/es/components/loading/src/loading.mjs'
-import { mobileFunc } from '@/utils/tools'
+import type { LoadingInstance } from 'element-plus/es/components/loading/src/loading'
 import api from '@/api'
 
 // 站点配置接口定义
 interface SiteConfig {
   site_name: string
-  site_wap_logo: string
+  site_logo: string
   site_description: string
   customer_service_url: string
   group_prefix: string
@@ -19,7 +17,8 @@ interface SiteConfig {
   agent_url: string
   lobby_url: string
   promotion_url: string
-  is_mobile: number
+  primary_color?: string
+  theme?: string
   [key: string]: any // 允许其他动态字段
 }
 
@@ -28,6 +27,7 @@ interface ConfigLoadError {
   code: number
   message: string
   timestamp: number
+  retry?: boolean
 }
 
 export const useConfigStore = defineStore('config', () => {
@@ -36,17 +36,20 @@ export const useConfigStore = defineStore('config', () => {
   // 系统配置
   const groupPrefix = ref<string>('')
   const siteConfig = ref<SiteConfig | null>(null)
+  const primaryColor = ref<string>('#409EFF')
 
   // 状态控制
   const isConfigLoaded = ref<boolean>(false)
   const isConfigLoading = ref<boolean>(false)
   const configLoadError = ref<ConfigLoadError | null>(null)
+  const configRetryCount = ref<number>(0)
+  const maxRetryCount = 3
 
   // 初始化状态
   const isAppReady = ref<boolean>(false)
 
   // 加载实例
-  const loadingInstance = ref<ToastWrapperInstance | LoadingInstance | null>(null)
+  const loadingInstance = ref<LoadingInstance | null>(null)
 
   // ========== 计算属性 ==========
 
@@ -62,12 +65,22 @@ export const useConfigStore = defineStore('config', () => {
 
   // 站点名称（带默认值）
   const siteName = computed(() =>
-    siteConfig.value?.site_name || '娱乐平台'
+    siteConfig.value?.site_name || '个人中心'
   )
 
   // 站点Logo（带默认值）
   const siteLogo = computed(() =>
-    siteConfig.value?.site_wap_logo || '/src/assets/logo.png'
+    siteConfig.value?.site_logo || '/logo.png'
+  )
+
+  // 客服链接
+  const customerServiceUrl = computed(() =>
+    siteConfig.value?.customer_service_url || ''
+  )
+
+  // 是否可以重试
+  const canRetry = computed(() =>
+    configRetryCount.value < maxRetryCount && !!configLoadError.value
   )
 
   // ========== 私有方法 ==========
@@ -76,15 +89,7 @@ export const useConfigStore = defineStore('config', () => {
    * 显示加载状态
    */
   function showLoading(message: string = '加载配置中...') {
-    if (mobileFunc()) {
-      loadingInstance.value = showLoadingToast({
-        message,
-        duration: 0,
-        overlay: true,
-        forbidClick: true,
-        loadingType: 'spinner',
-      })
-    } else {
+    if (!loadingInstance.value) {
       loadingInstance.value = ElLoading.service({
         lock: true,
         fullscreen: true,
@@ -107,19 +112,29 @@ export const useConfigStore = defineStore('config', () => {
   /**
    * 显示错误提示
    */
-  function showError(message: string) {
-    if (mobileFunc()) {
-      showFailToast(message)
-    } else {
-      ElMessage.error(message)
-    }
+  function showError(message: string, duration: number = 3000) {
+    ElMessage.error({
+      message,
+      duration,
+      showClose: true
+    })
+  }
+
+  /**
+   * 显示成功提示
+   */
+  function showSuccess(message: string) {
+    ElMessage.success({
+      message,
+      duration: 2000
+    })
   }
 
   /**
    * 获取当前页面URL
    */
   function getCurrentUrl(): string {
-    return window.location.href
+    return window.location.origin + window.location.pathname
   }
 
   /**
@@ -130,7 +145,7 @@ export const useConfigStore = defineStore('config', () => {
       const response = await api.sysConfig({
         group: 'system',
         url: url,
-        is_mobile: mobileFunc() ? 1 : 0
+        platform: 'pc' // 明确指定PC平台
       })
 
       if (response && response.code === 200 && response.data) {
@@ -140,7 +155,46 @@ export const useConfigStore = defineStore('config', () => {
       }
     } catch (error: any) {
       console.error('配置API调用失败:', error)
+
+      // 网络错误特殊处理
+      if (error.message?.includes('Network')) {
+        throw new Error('网络连接失败，请检查网络设置')
+      }
+
       throw error
+    }
+  }
+
+  /**
+   * 从缓存加载配置
+   */
+  function loadConfigFromCache(): SiteConfig | null {
+    try {
+      const cached = localStorage.getItem('site_config')
+      if (cached) {
+        const config = JSON.parse(cached)
+        // 检查缓存是否过期（24小时）
+        if (config.timestamp && Date.now() - config.timestamp < 24 * 60 * 60 * 1000) {
+          return config.data
+        }
+      }
+    } catch (error) {
+      console.error('加载缓存配置失败:', error)
+    }
+    return null
+  }
+
+  /**
+   * 保存配置到缓存
+   */
+  function saveConfigToCache(config: SiteConfig): void {
+    try {
+      localStorage.setItem('site_config', JSON.stringify({
+        data: config,
+        timestamp: Date.now()
+      }))
+    } catch (error) {
+      console.error('保存配置到缓存失败:', error)
     }
   }
 
@@ -161,8 +215,25 @@ export const useConfigStore = defineStore('config', () => {
       isConfigLoading.value = true
       configLoadError.value = null
 
+      // 尝试从缓存加载
+      const cachedConfig = loadConfigFromCache()
+      if (cachedConfig) {
+        updateSiteConfig(cachedConfig)
+        console.log('使用缓存的站点配置')
+
+        // 异步更新配置（不阻塞）
+        fetchSiteConfig(url || getCurrentUrl()).then(config => {
+          updateSiteConfig(config)
+          saveConfigToCache(config)
+        }).catch(error => {
+          console.warn('后台更新配置失败:', error)
+        })
+
+        return true
+      }
+
       if (showLoadingUI) {
-        showLoading('正在加载站点配置...')
+        showLoading('正在初始化系统配置...')
       }
 
       // 获取URL
@@ -175,7 +246,15 @@ export const useConfigStore = defineStore('config', () => {
       // 更新状态
       updateSiteConfig(config)
 
+      // 保存到缓存
+      saveConfigToCache(config)
+
       console.log('站点配置加载成功:', config)
+
+      if (showLoadingUI) {
+        showSuccess('配置加载成功')
+      }
+
       return true
 
     } catch (error: any) {
@@ -183,17 +262,30 @@ export const useConfigStore = defineStore('config', () => {
       const errorInfo: ConfigLoadError = {
         code: error.code || 500,
         message: error.message || '配置加载失败',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        retry: configRetryCount.value < maxRetryCount
       }
 
       configLoadError.value = errorInfo
       isConfigLoaded.value = false
       isAppReady.value = false
+      configRetryCount.value++
 
       console.error('站点配置加载失败:', errorInfo)
 
       if (showLoadingUI) {
-        showError(errorInfo.message)
+        showError(
+          errorInfo.message + (errorInfo.retry ? '，将自动重试' : ''),
+          errorInfo.retry ? 2000 : 5000
+        )
+      }
+
+      // 自动重试
+      if (errorInfo.retry && showLoadingUI) {
+        setTimeout(() => {
+          console.log(`自动重试加载配置 (${configRetryCount.value}/${maxRetryCount})`)
+          loadSiteConfig(url, showLoadingUI)
+        }, 3000)
       }
 
       return false
@@ -212,20 +304,37 @@ export const useConfigStore = defineStore('config', () => {
   function updateSiteConfig(config: SiteConfig): void {
     siteConfig.value = config
 
+    // 更新相关配置
     if (config.group_prefix) {
       groupPrefix.value = config.group_prefix
+    }
+
+    if (config.primary_color) {
+      primaryColor.value = config.primary_color
+      // 更新CSS变量
+      document.documentElement.style.setProperty('--el-color-primary', config.primary_color)
+    }
+
+    // 更新页面标题
+    if (config.site_name) {
+      document.title = config.site_name
     }
 
     // 更新状态
     isConfigLoaded.value = true
     configLoadError.value = null
     isAppReady.value = true
+    configRetryCount.value = 0
 
     console.log('配置状态已更新:', {
       groupPrefix: groupPrefix.value,
       siteName: config.site_name,
+      primaryColor: primaryColor.value,
       isAppReady: isAppReady.value
     })
+
+    // 触发配置更新事件
+    window.dispatchEvent(new CustomEvent('config-updated', { detail: config }))
   }
 
   /**
@@ -234,9 +343,14 @@ export const useConfigStore = defineStore('config', () => {
   function resetConfig(): void {
     groupPrefix.value = ''
     siteConfig.value = null
+    primaryColor.value = '#409EFF'
     isConfigLoaded.value = false
     configLoadError.value = null
     isAppReady.value = false
+    configRetryCount.value = 0
+
+    // 清除缓存
+    localStorage.removeItem('site_config')
 
     console.log('配置已重置')
   }
@@ -245,8 +359,13 @@ export const useConfigStore = defineStore('config', () => {
    * 重试加载配置
    */
   async function retryLoadConfig(): Promise<boolean> {
-    console.log('重试加载配置')
-    resetConfig()
+    if (!canRetry.value) {
+      showError('已达到最大重试次数')
+      return false
+    }
+
+    console.log(`重试加载配置 (${configRetryCount.value + 1}/${maxRetryCount})`)
+    configLoadError.value = null
     return await loadSiteConfig()
   }
 
@@ -261,10 +380,28 @@ export const useConfigStore = defineStore('config', () => {
   /**
    * 获取配置字段值（带默认值）
    */
-  function getConfigValue<T>(key: keyof SiteConfig, defaultValue: T): T {
+  function getConfigValue<T>(key: keyof SiteConfig | string, defaultValue: T): T {
     if (!siteConfig.value) return defaultValue
     const value = siteConfig.value[key]
     return value !== undefined ? (value as T) : defaultValue
+  }
+
+  /**
+   * 批量获取配置值
+   */
+  function getConfigValues(keys: string[]): Record<string, any> {
+    const result: Record<string, any> = {}
+    keys.forEach(key => {
+      result[key] = getConfigValue(key, null)
+    })
+    return result
+  }
+
+  /**
+   * 加载系统配置（别名方法，兼容旧代码）
+   */
+  async function loadConfig(): Promise<void> {
+    await loadSiteConfig()
   }
 
   // ========== 返回公共API ==========
@@ -272,6 +409,7 @@ export const useConfigStore = defineStore('config', () => {
     // 状态
     groupPrefix: readonly(groupPrefix),
     siteConfig: readonly(siteConfig),
+    primaryColor: readonly(primaryColor),
     isConfigLoaded: readonly(isConfigLoaded),
     isConfigLoading: readonly(isConfigLoading),
     configLoadError: readonly(configLoadError),
@@ -282,13 +420,17 @@ export const useConfigStore = defineStore('config', () => {
     shouldShowLoading,
     siteName,
     siteLogo,
+    customerServiceUrl,
+    canRetry,
 
     // 方法
     loadSiteConfig,
+    loadConfig,
     updateSiteConfig,
     resetConfig,
     retryLoadConfig,
     setGroupPrefix,
     getConfigValue,
+    getConfigValues,
   }
 })
