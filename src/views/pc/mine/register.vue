@@ -4,7 +4,7 @@
       <div class="pc-register-box">
         <div class="pc-register-header">
           <h1>{{ $t('user.register') }}</h1>
-          <p>{{ $t('mine.welcomeTo') }} ATB</p>
+          <p>{{ $t('mine.welcomeTo') }}</p>
         </div>
 
         <el-form
@@ -15,10 +15,10 @@
           class="pc-register-form"
           size="large"
         >
-          <el-form-item :label="$t('login.username')" prop="name">
+          <el-form-item :label="$t('mine.name')" prop="name">
             <el-input
               v-model="frm.name"
-              :placeholder="$t('login.enterUsername')"
+              :placeholder="$t('register.inputUsername')"
               clearable
             >
               <template #prefix>
@@ -27,11 +27,11 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item :label="$t('login.password')" prop="password">
+          <el-form-item :label="$t('mine.loginPwd')" prop="password">
             <el-input
               v-model="frm.password"
               type="password"
-              :placeholder="$t('login.enterPassword')"
+              :placeholder="$t('register.inputPassword')"
               show-password
             >
               <template #prefix>
@@ -223,7 +223,7 @@ import {
 defineOptions({ name: 'RegisterVue' })
 
 const { t } = useI18n()
-const store = useAppStore()
+const store:any = useAppStore()
 const router = useRouter()
 const route = useRoute()
 const regiFrmRefs = ref()
@@ -382,7 +382,7 @@ async function submitRegisterHandler() {
       currency: columns.value[currencyIndex.value].code,
     }
 
-    const resp = await api.register(registerData)
+    const resp:any = await api.register(registerData)
 
     if (resp && resp.code === 200) {
       if (resp.token) {
@@ -409,7 +409,7 @@ async function refreshCaptcha() {
     if ((store.registerConf?.register_setting_json?.isCaptchaRequired ?? 0) !== '1') {
       return
     }
-    const resp = await api.authCaptcha()
+    const resp:any = await api.authCaptcha()
     if (resp && resp.code === 200 && resp.data) {
       captchaImg.value = resp.data?.img ?? ''
       frm.value.key = resp.data?.key
