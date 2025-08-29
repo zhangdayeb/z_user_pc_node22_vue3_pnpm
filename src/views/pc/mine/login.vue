@@ -72,15 +72,14 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage, ElFormInstance } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { ElMessage, FormInstance } from 'element-plus'
 import api from '@/api'
 
 const router = useRouter()
 const route = useRoute()
 
 // 表单ref
-const loginFormRef = ref<ElFormInstance>()
+const loginFormRef = ref<FormInstance>()
 
 // 登录表单
 const loginForm = reactive({
