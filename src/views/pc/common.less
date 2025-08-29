@@ -1,0 +1,152 @@
+:root {
+  --van-notify-text-color: var(--van-white);
+  --van-notify-padding: var(--van-padding-xs) var(--van-padding-md);
+  --van-notify-font-size: var(--van-font-size-md);
+  --van-notify-line-height: var(--van-line-height-md);
+  --van-notify-primary-background: var(--van-primary-color);
+  --van-notify-success-background: var(--van-success-color);
+  --van-notify-danger-background: var(--van-danger-color);
+  --van-notify-warning-background: var(--van-warning-color);
+
+  --el-menu-horizontal-height: 47px;
+  --home-top-btn: linear-gradient(180deg, #80b4fe, #549bff);
+  --herder-bg-down: linear-gradient(#66a2ef 30%, rgba(167, 203, 252, 0.8));
+  --herder-top: #66a2ef;
+  --home-btn-border: #a6c8da;
+  --home-btn-font: #6195ca;
+  --home-btn-hover-one: linear-gradient(90deg, #7db5f9, #2a87f1);
+  --herder-down-one: rgba(199, 218, 236, 0.95);
+  --herder-down-two: rgba(229, 240, 252, 0.95);
+  --herder-down-select: linear-gradient(
+    360deg,
+    rgba(0, 120, 255, 0.2) 10%,
+    rgba(171, 201, 238, 0.12) 61%,
+    rgba(188, 210, 238, 0)
+  );
+  --Cardinality: 1;
+  --web-max-width: 1500Px /* no */;
+  --web-min-width: 1300Px /* no */;
+  --web-submenu-max-width: 1400Px /* no */;
+}
+
+a,
+abbr,
+acronym,
+address,
+applet,
+b,
+big,
+blockquote,
+body,
+caption,
+center,
+cite,
+code,
+dd,
+del,
+dfn,
+div,
+dl,
+dt,
+em,
+fieldset,
+font,
+form,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+html,
+i,
+iframe,
+img,
+ins,
+kbd,
+label,
+legend,
+li,
+object,
+ol,
+p,
+pre,
+q,
+s,
+samp,
+small,
+span,
+strike,
+strong,
+sub,
+sup,
+table,
+tbody,
+td,
+tfoot,
+th,
+thead,
+tr,
+tt,
+u,
+ul,
+var {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  font-size: 100%;
+}
+
+a,
+a:hover,
+del,
+ins,
+s,
+u {
+  text-decoration: none;
+}
+a:active,
+a:hover {
+  outline: 0;
+}
+
+html,
+body,
+#app {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  height: 100%;
+  font-size: 14px;
+  background: #87b7f4;
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: inherit;
+  }
+}
+
+@media screen and (min-width: 1551px) {
+  :root {
+    --Cardinality: 1;
+  }
+}
+
+@media screen and (max-width: 1550px) and (min-width: 0) {
+  :root {
+    --Cardinality: 1.22;
+  }
+}
+
+.animation-show {
+    -webkit-transition: all .2s linear;
+    transition: all .2s linear;
+    opacity: 1
+}
+.p-min-max {
+  max-width: 1500px;
+  min-width: 1300px;
+}
