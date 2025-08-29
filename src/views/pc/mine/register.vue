@@ -119,7 +119,7 @@
 
           <el-form-item :label="$t('register.inviteCode')" prop="invite_code">
             <el-input
-              v-model="frm.invite_code"
+              v-model="frm.invite_code as string "
               :placeholder="$t('register.inputInviterCode')"
               clearable
             >
