@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <h2>用户登录</h2>
+        <h2>{{ $t('user.login') }}</h2>
       </div>
 
       <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="login-form">
@@ -10,7 +10,7 @@
           <el-input
             v-model="loginForm.username"
             prefix-icon="User"
-            placeholder="请输入用户名"
+            :placeholder="$t('user.enterUsername')"
             size="large"
             clearable
           />
@@ -21,7 +21,7 @@
             v-model="loginForm.password"
             type="password"
             prefix-icon="Lock"
-            placeholder="请输入密码"
+            :placeholder="$t('user.enterPassword')"
             size="large"
             show-password
             @keyup.enter="handleLogin"
@@ -32,17 +32,17 @@
           <div class="captcha-wrapper">
             <el-input
               v-model="loginForm.captcha"
-              placeholder="请输入验证码"
+              :placeholder="$t('user.enterCaptcha')"
               size="large"
               clearable
               @keyup.enter="handleLogin"
             />
             <img
               :src="captchaUrl"
-              alt="验证码"
+              :alt="$t('user.captcha')"
               class="captcha-img"
               @click="getCaptcha"
-              title="点击刷新"
+              :title="$t('user.clickToRefresh')"
             />
           </div>
         </el-form-item>
@@ -55,14 +55,14 @@
             @click="handleLogin"
             class="login-btn"
           >
-            {{ loading ? '登录中...' : '登录' }}
+            {{ loading ? $t('user.loggingIn') : $t('user.login') }}
           </el-button>
         </el-form-item>
 
         <div class="login-footer">
-          <router-link to="/register" class="link">立即注册</router-link>
+          <router-link to="/register" class="link">{{ $t('user.registerNow') }}</router-link>
           <span class="divider">|</span>
-          <a href="#" class="link" @click.prevent="handleForgotPassword">忘记密码？</a>
+          <a href="#" class="link" @click.prevent="handleForgotPassword">{{ $t('user.forgotPassword') }}</a>
         </div>
       </el-form>
     </div>
@@ -70,13 +70,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, FormInstance } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import api from '@/api'
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 
 // 表单ref
 const loginFormRef = ref<FormInstance>()
@@ -88,20 +90,20 @@ const loginForm = reactive({
   captcha: ''
 })
 
-// 验证规则
-const rules = {
+// 验证规则 - 使用computed来实现响应式多语言
+const rules = computed(() => ({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { required: true, message: t('user.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 20, message: t('user.usernameLength'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+    { required: true, message: t('user.passwordRequired'), trigger: 'blur' },
+    { min: 6, max: 20, message: t('user.passwordLength'), trigger: 'blur' }
   ],
   captcha: [
-    { required: true, message: '请输入验证码', trigger: 'blur' }
+    { required: true, message: t('user.captchaRequired'), trigger: 'blur' }
   ]
-}
+}))
 
 // 状态
 const loading = ref(false)
@@ -152,7 +154,7 @@ const handleLogin = async () => {
           localStorage.setItem('userInfo', JSON.stringify(res.data.user))
         }
 
-        ElMessage.success('登录成功')
+        ElMessage.success(t('user.loginSuccess'))
 
         // 跳转到原本要访问的页面或首页
         const redirect = route.query.redirect as string
@@ -174,7 +176,7 @@ const handleLogin = async () => {
 
 // 忘记密码
 const handleForgotPassword = () => {
-  ElMessage.info('请联系客服重置密码')
+  ElMessage.info(t('user.contactSupport'))
 }
 
 // 初始化
