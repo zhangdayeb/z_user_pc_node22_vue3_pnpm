@@ -22,7 +22,7 @@
           <div class="info-item">
             <span class="info-label">
               <el-icon><User /></el-icon>
-              用户ID
+              {{ $t('extension.userId') }}
             </span>
             <span class="info-value">{{ userInfo?.id || '-' }}</span>
           </div>
@@ -93,7 +93,7 @@
 
       <!-- 推广说明 -->
       <div class="info-section">
-        <h3 class="section-title">推广说明</h3>
+        <h3 class="section-title">{{ $t('extension.promotionInstructions') }}</h3>
         <el-alert
           type="info"
           :closable="false"
@@ -101,10 +101,10 @@
         >
           <template #default>
             <ul class="promotion-tips">
-              <li>通过您的邀请码注册的用户将成为您的下级</li>
-              <li>您可以获得下级用户产生的返佣奖励</li>
-              <li>邀请码和推广链接永久有效</li>
-              <li>可以将推广链接分享给朋友或在社交媒体上推广</li>
+              <li>{{ $t('extension.tip1') }}</li>
+              <li>{{ $t('extension.tip2') }}</li>
+              <li>{{ $t('extension.tip3') }}</li>
+              <li>{{ $t('extension.tip4') }}</li>
             </ul>
           </template>
         </el-alert>
