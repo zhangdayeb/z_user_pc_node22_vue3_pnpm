@@ -8,21 +8,21 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.tuiguanG') }}</h2>
+      <h2 class="page-title">{{ t('mine.promotion') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
     <div class="pc-content">
       <!-- 用户信息 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('mine.baseInfo') }}</h3>
+        <h3 class="section-title">{{ t('mine.baseInfo') }}</h3>
         <div class="user-info">
           <div class="info-item">
             <span class="info-label">
               <el-icon><User /></el-icon>
-              {{ $t('extension.userId') }}
+              {{ t('extension.userId') }}
             </span>
             <span class="info-value">{{ userInfo?.id || '-' }}</span>
           </div>
@@ -31,11 +31,11 @@
 
       <!-- 邀请码 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('extension.myInviteCode') }}</h3>
+        <h3 class="section-title">{{ t('extension.myInviteCode') }}</h3>
         <div class="invite-code-wrapper">
           <div class="invite-code-display">
             <div class="invite-code">
-              {{ userInfo?.inviteCode || $t('extension.loading') }}
+              {{ userInfo?.inviteCode || t('extension.loading') }}
             </div>
             <el-button
               type="primary"
@@ -44,7 +44,7 @@
               class="copy-btn"
               :icon="DocumentCopy"
             >
-              {{ $t('extension.copyInviteCode') }}
+              {{ t('extension.copyInviteCode') }}
             </el-button>
           </div>
         </div>
@@ -52,7 +52,7 @@
 
       <!-- 推广链接 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('extension.promotionLink') }}</h3>
+        <h3 class="section-title">{{ t('extension.promotionLink') }}</h3>
         <div class="link-wrapper">
           <div class="link-display">
             <el-input
@@ -67,7 +67,7 @@
                   @click="copyPromotionLink"
                   :icon="DocumentCopy"
                 >
-                  {{ $t('extension.copyLink') }}
+                  {{ t('extension.copyLink') }}
                 </el-button>
               </template>
             </el-input>
@@ -77,7 +77,7 @@
 
       <!-- 分享操作 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('extension.sharePromotionLink') }}</h3>
+        <h3 class="section-title">{{ t('extension.sharePromotionLink') }}</h3>
         <div class="share-actions">
           <el-button
             type="success"
@@ -86,14 +86,14 @@
             class="share-btn"
             :icon="Share"
           >
-            {{ $t('extension.sharePromotionLink') }}
+            {{ t('extension.sharePromotionLink') }}
           </el-button>
         </div>
       </div>
 
       <!-- 推广说明 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('extension.promotionInstructions') }}</h3>
+        <h3 class="section-title">{{ t('extension.promotionInstructions') }}</h3>
         <el-alert
           type="info"
           :closable="false"
@@ -101,10 +101,10 @@
         >
           <template #default>
             <ul class="promotion-tips">
-              <li>{{ $t('extension.tip1') }}</li>
-              <li>{{ $t('extension.tip2') }}</li>
-              <li>{{ $t('extension.tip3') }}</li>
-              <li>{{ $t('extension.tip4') }}</li>
+              <li>{{ t('extension.tip1') }}</li>
+              <li>{{ t('extension.tip2') }}</li>
+              <li>{{ t('extension.tip3') }}</li>
+              <li>{{ t('extension.tip4') }}</li>
             </ul>
           </template>
         </el-alert>
@@ -116,9 +116,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft, User, Share, DocumentCopy } from '@element-plus/icons-vue'
-import { useI18n } from 'vue-i18n'
 import { userApi } from '@/api'
 
 defineOptions({ name: 'PcExtension' })

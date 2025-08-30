@@ -11,10 +11,10 @@
           <div class="user-details">
             <div v-if="!isLoggedIn" class="login-prompt">
               <el-button type="primary" @click="goToLogin">
-                {{ $t('user.login') }}
+                {{ t('user.login') }}
               </el-button>
               <el-button @click="goToRegister">
-                {{ $t('user.register') }}
+                {{ t('user.register') }}
               </el-button>
             </div>
 
@@ -26,7 +26,7 @@
                 </el-tag>
               </div>
               <p class="welcome-text">
-                {{ $t('mine.welcomeTo') }}
+                {{ t('mine.welcomeTo') }}
               </p>
             </div>
           </div>
@@ -35,7 +35,7 @@
         <div class="wallet-info">
           <div class="wallet-item" @click="refreshBalance">
             <div class="wallet-label">
-              {{ $t('mine.centerWallet') }}
+              {{ t('mine.centerWallet') }}
               <el-icon v-if="!balanceLoading" class="refresh-icon">
                 <Refresh />
               </el-icon>
@@ -49,7 +49,7 @@
           </div>
 
           <div v-if="shouldShowFanshui" class="wallet-item">
-            <div class="wallet-label">{{ $t('mine.fsWallet') }}</div>
+            <div class="wallet-label">{{ t('mine.rebateWallet') }}</div>
             <div class="wallet-amount">
               ¥{{ formatMoney(userInfo?.money_rebate || 0) }}
             </div>
@@ -58,11 +58,11 @@
           <div class="wallet-actions">
             <el-button type="primary" @click="handleDeposit">
               <el-icon><Wallet /></el-icon>
-              {{ $t('mine.deposit') }}
+              {{ t('mine.deposit') }}
             </el-button>
             <el-button type="success" @click="handleWithdraw">
               <el-icon><Money /></el-icon>
-              {{ $t('mine.withdraw') }}
+              {{ t('mine.withdraw') }}
             </el-button>
           </div>
         </div>
@@ -75,34 +75,34 @@
       <el-card class="function-card">
         <template #header>
           <div class="card-header">
-            <span>{{ $t('mine.normalFunc') }}</span>
+            <span>{{ t('mine.normalFunc') }}</span>
           </div>
         </template>
 
         <div class="function-grid">
           <div class="function-item" @click="goToPage('moneyLog')">
             <el-icon :size="32" color="#409EFF"><Tickets /></el-icon>
-            <span>{{ $t('mine.moneyLog') }}</span>
+            <span>{{ t('mine.moneyLog') }}</span>
           </div>
           <div class="function-item" @click="goToPage('gameRecord')">
             <el-icon :size="32" color="#67C23A"><Trophy /></el-icon>
-            <span>{{ $t('mine.gameLog') }}</span>
+            <span>{{ t('mine.gameLog') }}</span>
           </div>
           <div class="function-item" @click="goToPage('vip')">
             <el-icon :size="32" color="#E6A23C"><Medal /></el-icon>
-            <span>{{ $t('mine.levelRight') }}</span>
+            <span>{{ t('mine.levelRight') }}</span>
           </div>
           <div class="function-item" @click="goToPage('extension')">
             <el-icon :size="32" color="#F56C6C"><Share /></el-icon>
-            <span>{{ $t('mine.pullMoney') }}</span>
+            <span>{{ t('mine.promotion') }}</span>
           </div>
           <div v-if="isLoggedIn" class="function-item" @click="showSettings">
             <el-icon :size="32" color="#909399"><Setting /></el-icon>
-            <span>{{ $t('user.settings') }}</span>
+            <span>{{ t('user.settings') }}</span>
           </div>
           <div v-if="isLoggedIn" class="function-item" @click="handleLogout">
             <el-icon :size="32" color="#F56C6C"><SwitchButton /></el-icon>
-            <span>{{ $t('user.logout') }}</span>
+            <span>{{ t('user.logout') }}</span>
           </div>
         </div>
       </el-card>
@@ -111,22 +111,22 @@
       <el-card class="menu-card">
         <template #header>
           <div class="card-header">
-            <span>{{ $t('mine.accountManage') }}</span>
+            <span>{{ t('mine.accountManage') }}</span>
           </div>
         </template>
 
         <el-menu :default-active="activeMenu" @select="handleMenuSelect">
           <el-menu-item index="personal">
             <el-icon><User /></el-icon>
-            <span>{{ $t('mine.persionalInfo') }}</span>
+            <span>{{ t('mine.personalInfo') }}</span>
           </el-menu-item>
           <el-menu-item index="security">
             <el-icon><Lock /></el-icon>
-            <span>{{ $t('mine.accountSafe') }}</span>
+            <span>{{ t('mine.accountSafe') }}</span>
           </el-menu-item>
           <el-menu-item index="cards">
             <el-icon><CreditCard /></el-icon>
-            <span>{{ $t('mine.bankCard') }}</span>
+            <span>{{ t('mine.bankCard') }}</span>
           </el-menu-item>
         </el-menu>
       </el-card>
@@ -135,30 +135,30 @@
       <el-card class="menu-card">
         <template #header>
           <div class="card-header">
-            <span>{{ $t('mine.recordQuery') }}</span>
+            <span>{{ t('mine.recordQuery') }}</span>
           </div>
         </template>
 
         <el-menu :default-active="activeMenu" @select="handleMenuSelect">
           <el-menu-item index="depositLog">
             <el-icon><Document /></el-icon>
-            <span>{{ $t('rechargeRecord') }}</span>
+            <span>{{ t('deposit.rechargeRecord') }}</span>
           </el-menu-item>
           <el-menu-item index="withdrawLog">
             <el-icon><DocumentCopy /></el-icon>
-            <span>{{ $t('withdrawRecord') }}</span>
+            <span>{{ t('withdraw.record') }}</span>
           </el-menu-item>
           <el-menu-item index="moneyLog">
             <el-icon><List /></el-icon>
-            <span>{{ $t('mine.moneyLog') }}</span>
+            <span>{{ t('mine.moneyLog') }}</span>
           </el-menu-item>
           <el-menu-item v-if="shouldShowFanshui" index="rebateLog">
             <el-icon><PriceTag /></el-icon>
-            <span>{{ $t('rebateRecord') }}</span>
+            <span>{{ t('records.rebateRecord') }}</span>
           </el-menu-item>
           <el-menu-item index="commissionLog">
             <el-icon><Present /></el-icon>
-            <span>{{ $t('commissionRecord') }}</span>
+            <span>{{ t('records.commissionRecord') }}</span>
           </el-menu-item>
         </el-menu>
       </el-card>
@@ -167,18 +167,18 @@
       <el-card class="menu-card">
         <template #header>
           <div class="card-header">
-            <span>{{ $t('mine.agencyPromotion') }}</span>
+            <span>{{ t('mine.agencyPromotion') }}</span>
           </div>
         </template>
 
         <el-menu :default-active="activeMenu" @select="handleMenuSelect">
           <el-menu-item index="team">
             <el-icon><UserFilled /></el-icon>
-            <span>{{ $t('subordinateMembers') }}</span>
+            <span>{{ t('mine.subordinateMembers') }}</span>
           </el-menu-item>
           <el-menu-item index="extension">
             <el-icon><Share /></el-icon>
-            <span>{{ $t('mine.promotionCenter') }}</span>
+            <span>{{ t('mine.promotionCenter') }}</span>
           </el-menu-item>
         </el-menu>
       </el-card>
@@ -187,20 +187,20 @@
     <!-- 设置对话框 -->
     <el-dialog
       v-model="settingsVisible"
-      :title="$t('user.settings')"
+      :title="t('user.settings')"
       width="500px"
     >
       <div class="settings-content">
         <el-button text @click="goToPage('safeSettings')">
-          {{ $t('mine.safeSetting') }}
+          {{ t('mine.safeSetting') }}
         </el-button>
         <el-divider />
         <el-button text @click="handleContactUs">
-          {{ $t('user.conactUs') }}
+          {{ t('user.contactUs') }}
         </el-button>
         <el-divider />
         <el-button text @click="handleAboutUs">
-          {{ $t('mine.aboutUs') }}
+          {{ t('mine.aboutUs') }}
         </el-button>
       </div>
     </el-dialog>
@@ -210,6 +210,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   User,
@@ -242,6 +243,7 @@ defineOptions({ name: 'AccountCenter' })
 const router = useRouter()
 const appStore = useAppStore()
 const configStore = useConfigStore()
+const { t } = useI18n()
 
 // 响应式数据
 const balanceLoading = ref(false)
@@ -252,7 +254,6 @@ const activeMenu = ref('')
 const isLoggedIn = computed(() => appStore.isLogin())
 const userInfo = computed(() => appStore.userInfo)
 const avatarUrl = computed(() => userInfo.value?.avatar || '')
-
 
 // 计算属性：判断是否显示返水金额
 const shouldShowFanshui = computed(() => {
@@ -292,12 +293,12 @@ async function refreshBalance() {
 
     if (response?.code === 200 && response.data) {
       appStore.setUserInfo(response.data)
-      ElMessage.success('余额已更新')
+      ElMessage.success(t('mine.balanceUpdated'))
     } else {
-      ElMessage.error('刷新失败，请重试')
+      ElMessage.error(t('mine.refreshFailed'))
     }
   } catch (error) {
-    ElMessage.error('刷新失败，请重试')
+    ElMessage.error(t('mine.refreshFailed'))
   } finally {
     balanceLoading.value = false
   }
@@ -363,13 +364,13 @@ function showSettings() {
 
 // 联系我们
 function handleContactUs() {
-  ElMessage.info('客服功能开发中')
+  ElMessage.info(t('mine.customerServiceInDevelopment'))
   settingsVisible.value = false
 }
 
 // 关于我们
 function handleAboutUs() {
-  ElMessage.info('关于我们页面开发中')
+  ElMessage.info(t('mine.aboutUsInDevelopment'))
   settingsVisible.value = false
 }
 
@@ -377,25 +378,25 @@ function handleAboutUs() {
 async function handleLogout() {
   try {
     await ElMessageBox.confirm(
-      '确定要退出登录吗？',
-      '退出确认',
+      t('user.confirmLogout'),
+      t('user.logoutConfirmTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     )
 
-    appStore.loading('正在退出...')
+    appStore.loading(t('user.loggingOut'))
     const resp:any = await api.logout()
 
     // 修复：检查响应的 code 字段
     if (resp && (resp.code === 200 || resp.code === 0 || resp.code === 1)) {
       appStore.logout()
-      ElMessage.success('已退出登录')
+      ElMessage.success(t('user.logoutSuccess'))
       router.push('/')
     } else {
-      ElMessage.error('退出失败，请重试')
+      ElMessage.error(t('user.logoutFailed'))
     }
   } catch (error) {
     // 用户取消或其他错误

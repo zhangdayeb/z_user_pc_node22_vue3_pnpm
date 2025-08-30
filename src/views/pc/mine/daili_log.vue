@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('agentRecord') }}</h2>
+      <h2 class="page-title">{{ t('mine.agentRecord') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -20,16 +20,16 @@
         v-loading="loading"
         :data="list"
         class="record-table"
-        :empty-text="$t('noAgentRecord')"
+        :empty-text="t('mine.noAgentRecord')"
         stripe
       >
         <el-table-column
           prop="name"
-          :label="$t('agent')"
+          :label="t('mine.agent')"
           min-width="150"
         />
         <el-table-column
-          :label="$t('balance')"
+          :label="t('mine.balance')"
           width="150"
           align="right"
         >
@@ -38,7 +38,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          :label="$t('currentRate')"
+          :label="t('mine.currentRate')"
           width="120"
           align="center"
         >
@@ -48,11 +48,11 @@
         </el-table-column>
         <el-table-column
           prop="created_at"
-          :label="$t('applyTime')"
+          :label="t('deposit.applyTime')"
           width="180"
         />
         <el-table-column
-          :label="$t('common.operate')"
+          :label="t('common.operation')"
           width="240"
           align="center"
         >
@@ -63,14 +63,14 @@
                 size="small"
                 @click="handleEdit(row)"
               >
-                {{ $t('adjustProportion') }}
+                {{ t('mine.adjustProportion') }}
               </el-button>
               <el-button
                 type="warning"
                 size="small"
                 @click="handleAddMoney(row)"
               >
-                {{ $t('addCredits') }}
+                {{ t('mine.addCredits') }}
               </el-button>
             </el-button-group>
           </template>
@@ -94,31 +94,31 @@
     <!-- 编辑比例弹窗 -->
     <el-dialog
       v-model="showEditDialog"
-      :title="$t('adjustCommissionRate')"
+      :title="t('mine.adjustCommissionRate')"
       width="500px"
       :before-close="handleEditDialogClose"
     >
       <div class="edit-content">
         <div class="edit-info">
           <el-descriptions :column="1" border>
-            <el-descriptions-item :label="$t('agent')">
+            <el-descriptions-item :label="t('mine.agent')">
               {{ currentEditItem?.name || '' }}
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('currentRate')">
+            <el-descriptions-item :label="t('mine.currentRate')">
               {{ currentEditItem?.fanyong_proportion || '0.00' }}%
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('yourRate')">
+            <el-descriptions-item :label="t('mine.yourRate')">
               {{ currentUserInfo?.fanyong_proportion || '0.00' }}%
             </el-descriptions-item>
           </el-descriptions>
         </div>
 
         <el-form class="edit-form" label-width="100px">
-          <el-form-item :label="$t('newRate')">
+          <el-form-item :label="t('mine.newRate')">
             <el-input
               v-model="editProportion"
               type="number"
-              :placeholder="$t('enterDecimal')"
+              :placeholder="t('mine.enterDecimal')"
               step="0.01"
             >
               <template #suffix>%</template>
@@ -128,13 +128,13 @@
       </div>
 
       <template #footer>
-        <el-button @click="showEditDialog = false">{{ $t('common.cancel') }}</el-button>
+        <el-button @click="showEditDialog = false">{{ t('common.cancel') }}</el-button>
         <el-button
           type="primary"
           @click="handleEditConfirm('confirm')"
           :loading="editLoading"
         >
-          {{ $t('common.confirm') }}
+          {{ t('common.confirm') }}
         </el-button>
       </template>
     </el-dialog>
@@ -142,28 +142,28 @@
     <!-- 上分弹窗 -->
     <el-dialog
       v-model="showAddMoneyDialog"
-      :title="$t('memberAddCredits')"
+      :title="t('mine.memberAddCredits')"
       width="500px"
       :before-close="handleAddMoneyDialogClose"
     >
       <div class="add-money-content">
         <div class="add-money-info">
           <el-descriptions :column="1" border>
-            <el-descriptions-item :label="$t('member')">
+            <el-descriptions-item :label="t('mine.member')">
               {{ currentAddMoneyItem?.name || '' }}
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('yourBalance')">
+            <el-descriptions-item :label="t('mine.yourBalance')">
               ¥{{ formatMoney(currentUserInfo?.money) }}
             </el-descriptions-item>
           </el-descriptions>
         </div>
 
         <el-form class="add-money-form" label-width="120px">
-          <el-form-item :label="$t('transferAmount')">
+          <el-form-item :label="t('mine.transferAmount')">
             <el-input
               v-model="addMoneyAmount"
               type="number"
-              :placeholder="$t('enterTransferAmount')"
+              :placeholder="t('mine.enterTransferAmount')"
               step="0.01"
             />
           </el-form-item>
@@ -176,22 +176,22 @@
         >
           <template #default>
             <div class="tip-list">
-              <p>• {{ $t('transferAmountTip1') }}</p>
-              <p>• {{ $t('transferAmountTip2') }}</p>
-              <p>• {{ $t('transferAmountTip3') }}</p>
+              <p>• {{ t('mine.transferAmountTip1') }}</p>
+              <p>• {{ t('mine.transferAmountTip2') }}</p>
+              <p>• {{ t('mine.transferAmountTip3') }}</p>
             </div>
           </template>
         </el-alert>
       </div>
 
       <template #footer>
-        <el-button @click="showAddMoneyDialog = false">{{ $t('common.cancel') }}</el-button>
+        <el-button @click="showAddMoneyDialog = false">{{ t('common.cancel') }}</el-button>
         <el-button
           type="primary"
           @click="handleAddMoneyConfirm('confirm')"
           :loading="transferLoading"
         >
-          {{ $t('confirmTransfer') }}
+          {{ t('mine.confirmTransfer') }}
         </el-button>
       </template>
     </el-dialog>
@@ -291,7 +291,7 @@ async function loadData() {
       total.value = 0
     }
   } catch (error) {
-    ElMessage.error(t('getAgentRecordFailed'))
+    ElMessage.error(t('mine.getAgentRecordFailed'))
     list.value = []
     total.value = 0
   } finally {
@@ -341,7 +341,7 @@ async function handleEditConfirm(action: string) {
   }
 
   if (!currentEditItem.value || !editProportion.value) {
-    ElMessage.error(t('enterCommissionRate'))
+    ElMessage.error(t('mine.enterCommissionRate'))
     return false
   }
 
@@ -349,7 +349,7 @@ async function handleEditConfirm(action: string) {
   const userProportion = parseFloat(currentUserInfo.value?.fanyong_proportion || '0')
 
   if (isNaN(inputValue) || inputValue < 0 || inputValue > userProportion) {
-    ElMessage.error(t('rateMustBeBetween', { max: userProportion }))
+    ElMessage.error(t('mine.rateMustBeBetween', { max: userProportion }))
     return false
   }
 
@@ -362,7 +362,7 @@ async function handleEditConfirm(action: string) {
     })
 
     if (resp && resp.code === 200) {
-      ElMessage.success(t('modifySuccess'))
+      ElMessage.success(t('mine.modifySuccess'))
 
       // 更新列表中的数据
       const index = list.value.findIndex(item => item.id === currentEditItem.value?.id)
@@ -373,11 +373,11 @@ async function handleEditConfirm(action: string) {
       showEditDialog.value = false
       return true
     } else {
-      ElMessage.error(resp?.message || t('modifyFailed'))
+      ElMessage.error(resp?.message || t('mine.modifyFailed'))
       return false
     }
   } catch (error) {
-    ElMessage.error(t('modifyFailed'))
+    ElMessage.error(t('mine.modifyFailed'))
     return false
   } finally {
     editLoading.value = false
@@ -402,7 +402,7 @@ async function handleAddMoneyConfirm(action: string) {
   }
 
   if (!currentAddMoneyItem.value || !addMoneyAmount.value) {
-    ElMessage.error(t('enterTransferAmount'))
+    ElMessage.error(t('mine.enterTransferAmount'))
     return false
   }
 
@@ -410,12 +410,12 @@ async function handleAddMoneyConfirm(action: string) {
   const userMoney = parseFloat(currentUserInfo.value?.money || '0')
 
   if (isNaN(inputValue) || inputValue <= 0) {
-    ElMessage.error(t('enterValidAmount'))
+    ElMessage.error(t('mine.enterValidAmount'))
     return false
   }
 
   if (inputValue > userMoney) {
-    ElMessage.error(t('amountExceedsBalance', { balance: userMoney.toFixed(2) }))
+    ElMessage.error(t('mine.amountExceedsBalance', { balance: userMoney.toFixed(2) }))
     return false
   }
 
@@ -433,7 +433,7 @@ async function handleAddMoneyConfirm(action: string) {
 
     if (isSuccess) {
       showAddMoneyDialog.value = false
-      ElMessage.success(t('transferSuccess'))
+      ElMessage.success(t('mine.transferSuccess'))
 
       // 刷新数据
       setTimeout(() => {
@@ -442,11 +442,11 @@ async function handleAddMoneyConfirm(action: string) {
 
       return true
     } else {
-      ElMessage.error(resp?.message || t('transferFailed'))
+      ElMessage.error(resp?.message || t('mine.transferFailed'))
       return false
     }
   } catch (error) {
-    ElMessage.error(t('transferFailed'))
+    ElMessage.error(t('mine.transferFailed'))
     return false
   } finally {
     transferLoading.value = false

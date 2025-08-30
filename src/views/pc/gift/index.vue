@@ -6,16 +6,16 @@
         <div class="header-content">
           <h1 class="page-title">
             <el-icon class="title-icon"><Present /></el-icon>
-            {{ $t('youhuihuodong') }}
+            {{ t('gift.promotionActivity') }}
           </h1>
-          <p class="page-subtitle">{{ $t('gift.subtitle') }}</p>
+          <p class="page-subtitle">{{ t('gift.subtitle') }}</p>
         </div>
 
         <!-- 搜索和筛选 -->
         <div class="header-actions">
           <el-input
             v-model="searchKeyword"
-            :placeholder="$t('common.search')"
+            :placeholder="t('common.search')"
             class="search-input"
             clearable
             @clear="handleSearch"
@@ -41,7 +41,7 @@
             @click="handleTabChange(idx)"
           >
             <span class="tab-label">
-              {{ tab.title === 'all' ? $t('all') : tab.title }}
+              {{ tab.title === 'all' ? t('common.all') : tab.title }}
             </span>
             <span class="tab-count" v-if="getTabCount(tab.value) > 0">
               {{ getTabCount(tab.value) }}
@@ -82,7 +82,7 @@
               <!-- 悬浮遮罩 -->
               <div class="image-overlay">
                 <el-button type="primary" size="default">
-                  {{ $t('common.viewDetails') }}
+                  {{ t('common.viewDetails') }}
                   <el-icon class="el-icon--right"><ArrowRight /></el-icon>
                 </el-button>
               </div>
@@ -125,9 +125,9 @@
 
       <!-- 空状态 -->
       <div class="empty-state" v-else>
-        <el-empty :description="$t('noRecord')">
+        <el-empty :description="t('common.noData')">
           <el-button type="primary" @click="resetFilters">
-            {{ $t('common.reset') }}
+            {{ t('common.reset') }}
           </el-button>
         </el-empty>
       </div>
@@ -141,6 +141,7 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   Present,
   Search,
@@ -176,6 +177,7 @@ interface TabInfo {
 
 const router = useRouter()
 const store = useAppStore()
+const { t } = useI18n()
 
 // 数据状态
 const activeTab = ref(0)
@@ -236,6 +238,7 @@ async function getActivityTypes() {
     }
   } catch (err) {
     console.error('获取活动类型失败:', err)
+    ElMessage.error(t('gift.getTypesError'))
   }
 }
 
@@ -253,6 +256,7 @@ async function getActivities() {
     }
   } catch (err) {
     console.error('获取活动列表失败:', err)
+    ElMessage.error(t('gift.getActivitiesError'))
   }
 }
 
@@ -274,7 +278,7 @@ function getActivityTypeName(type: number): string {
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN')
+  return date.toLocaleDateString(t('common.locale'))
 }
 
 // 切换标签
@@ -319,6 +323,9 @@ onMounted(async () => {
       getActivityTypes(),
       getActivities()
     ])
+  } catch (error) {
+    console.error('初始化失败:', error)
+    ElMessage.error(t('common.networkError'))
   } finally {
     store.stopLoad()
   }

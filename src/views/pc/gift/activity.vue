@@ -10,18 +10,18 @@
             class="back-button"
           >
             <el-icon><ArrowLeft /></el-icon>
-            <span>{{ $t('common.back') }}</span>
+            <span>{{ t('common.back') }}</span>
           </el-button>
 
           <el-breadcrumb separator="/">
             <el-breadcrumb-item :to="{ path: '/' }">
-              {{ $t('main.index') }}
+              {{ t('main.index') }}
             </el-breadcrumb-item>
             <el-breadcrumb-item :to="{ path: '/gift' }">
-              {{ $t('main.gift') }}
+              {{ t('main.gift') }}
             </el-breadcrumb-item>
             <el-breadcrumb-item>
-              {{ activityDetail.title || $t('activity.detail') }}
+              {{ activityDetail.title || t('activity.detail') }}
             </el-breadcrumb-item>
           </el-breadcrumb>
         </div>
@@ -44,7 +44,7 @@
                 </span>
                 <span class="meta-item">
                   <el-icon><View /></el-icon>
-                  {{ viewCount }} {{ $t('activity.views') }}
+                  {{ viewCount }} {{ t('activity.views') }}
                 </span>
               </div>
             </header>
@@ -80,7 +80,7 @@
                   @click="handleShare"
                 >
                   <el-icon><Share /></el-icon>
-                  {{ $t('activity.share') }}
+                  {{ t('activity.share') }}
                 </el-button>
                 <el-button
                   size="large"
@@ -88,7 +88,7 @@
                   :type="isCollected ? 'success' : ''"
                 >
                   <el-icon><Star /></el-icon>
-                  {{ isCollected ? $t('activity.collected') : $t('activity.collect') }}
+                  {{ isCollected ? t('activity.collected') : t('activity.collect') }}
                 </el-button>
               </div>
             </div>
@@ -105,6 +105,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import {
   ArrowLeft,
   Calendar,
@@ -133,6 +134,7 @@ interface ActivityDetail {
 const store = useAppStore()
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 // 数据状态
 const activityDetail = ref<ActivityDetail>({
@@ -155,7 +157,7 @@ async function getActivityDetail() {
   try {
     const id = route.params?.id
     if (!id) {
-      ElMessage.error('活动ID无效')
+      ElMessage.error(t('activity.invalidId'))
       router.back()
       return
     }
@@ -164,12 +166,12 @@ async function getActivityDetail() {
     if (resp?.code === 200 || resp?.code === 1 || resp?.code === 0) {
       activityDetail.value = resp.data
     } else {
-      ElMessage.error('获取活动详情失败')
+      ElMessage.error(t('activity.getDetailFailed'))
       router.back()
     }
   } catch (err) {
     console.error('获取活动详情失败:', err)
-    ElMessage.error('加载失败，请稍后重试')
+    ElMessage.error(t('common.loadFailed'))
     router.back()
   } finally {
     store.stopLoad()
@@ -180,7 +182,7 @@ async function getActivityDetail() {
 function formatDate(dateStr: string) {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-CN', {
+  return date.toLocaleDateString(t('locale'), {
     year: 'numeric',
     month: 'long',
     day: 'numeric'
@@ -196,9 +198,9 @@ function onClickBack() {
 function handleShare() {
   const url = window.location.href
   navigator.clipboard.writeText(url).then(() => {
-    ElMessage.success('链接已复制到剪贴板')
+    ElMessage.success(t('activity.shareSuccess'))
   }).catch(() => {
-    ElMessage.error('复制失败，请手动复制')
+    ElMessage.error(t('activity.shareFailed'))
   })
 }
 
@@ -206,9 +208,9 @@ function handleShare() {
 function handleCollect() {
   isCollected.value = !isCollected.value
   if (isCollected.value) {
-    ElMessage.success('收藏成功')
+    ElMessage.success(t('activity.favoriteSuccess'))
   } else {
-    ElMessage.info('已取消收藏')
+    ElMessage.info(t('activity.unfavoriteSuccess'))
   }
 }
 

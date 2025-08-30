@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.gameLog') }}</h2>
+      <h2 class="page-title">{{ t('mine.gameLog') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -20,37 +20,37 @@
         v-loading="loading"
         :data="list"
         class="record-table"
-        :empty-text="$t('noGameRecord')"
+        :empty-text="t('game.noRecord')"
         stripe
       >
         <el-table-column
           prop="operate_type_text"
-          :label="$t('mine.operateType')"
+          :label="t('mine.operateType')"
           min-width="150"
         />
         <el-table-column
           prop="money_type_text"
-          :label="$t('mine.walletType')"
+          :label="t('mine.walletType')"
           width="120"
         />
         <el-table-column
           prop="description"
-          :label="$t('moneyLog.desc')"
+          :label="t('moneyLog.desc')"
           min-width="200"
           show-overflow-tooltip
         />
         <el-table-column
           prop="created_at"
-          :label="$t('moneyLog.tradeDate')"
+          :label="t('moneyLog.tradeDate')"
           width="180"
         >
           <template #default="{ row }">
-            {{ row.created_at || $t('timeUnknown') }}
+            {{ row.created_at || t('mine.timeUnknown') }}
           </template>
         </el-table-column>
         <el-table-column
           prop="amount_display"
-          :label="$t('mine.moneyLogAmount')"
+          :label="t('mine.moneyLogAmount')"
           width="150"
           align="right"
         >
@@ -62,7 +62,7 @@
         </el-table-column>
         <el-table-column
           prop="money_after"
-          :label="$t('moneyLog.afterMoney')"
+          :label="t('moneyLog.afterMoney')"
           width="150"
           align="right"
         >
@@ -185,7 +185,7 @@ async function getGameRecords() {
       total.value = 0
     }
   } catch (error) {
-    ElMessage.error(t('getGameRecordFailed'))
+    ElMessage.error(t('game.getGameRecordFailed'))
     list.value = []
     total.value = 0
   } finally {

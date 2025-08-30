@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.bankManage') }}</h2>
+      <h2 class="page-title">{{ t('mine.bankManage') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -23,7 +23,7 @@
               <div class="pc-bank-name">
                 {{ getDisplayName(item) }}
                 <el-tag v-if="item.is_default" type="danger" size="small" effect="dark">
-                  {{ $t('mine.currentDefault') }}
+                  {{ t('mine.currentDefault') }}
                 </el-tag>
               </div>
               <div class="pc-bank-details">{{ getAccountDetails(item) }}</div>
@@ -35,20 +35,20 @@
                 :loading="setDefaultLoading === item.id"
                 :type="(item.is_default === 1 || item.is_default === 1) ? 'success' : 'default'"
               >
-                {{ (item.is_default === 1 || item.is_default === 1 )? $t('mine.currentDefault') : $t('mine.setDefault') }}
+                {{ (item.is_default === 1 || item.is_default === 1 )? t('mine.currentDefault') : t('mine.setDefault') }}
               </el-button>
               <el-button
                 size="small"
                 type="primary"
                 @click="editCardHandler(item)"
               >
-                {{ $t('mine.edit') }}
+                {{ t('mine.edit') }}
               </el-button>
             </div>
           </div>
           <div class="pc-bank-card">{{ getFullAccountNumber(item) }}</div>
           <div class="pc-bank-extra-info">
-            <span class="pc-account-holder">{{ $t('mine.accountHolder') }}：{{ item.account_name }}</span>
+            <span class="pc-account-holder">{{ t('mine.accountHolder') }}：{{ item.account_name }}</span>
             <span class="pc-account-date">{{ formatDate(item?.created_at as string) }}</span>
           </div>
         </div>
@@ -56,13 +56,13 @@
 
       <!-- 无数据提示 -->
       <div class="pc-empty-state" v-else>
-        <el-empty :description="$t('mine.noAccount')">
+        <el-empty :description="t('mine.noAccount')">
           <template #image>
             <div class="pc-empty-icon">
               <span class="icon-bank-empty"></span>
             </div>
           </template>
-          <div class="pc-empty-desc">{{ $t('mine.addAccountTip') }}</div>
+          <div class="pc-empty-desc">{{ t('mine.addAccountTip') }}</div>
         </el-empty>
       </div>
 
@@ -73,92 +73,92 @@
         @click.stop="addBindHandler"
       >
         <el-icon><Plus /></el-icon>
-        {{ $t('mine.addBind') }}
+        {{ t('mine.addBind') }}
       </el-button>
     </div>
 
     <!-- 编辑弹窗 -->
     <el-dialog
       v-model="showBottom"
-      :title="isEditMode ? $t('mine.editAccount') : $t('mine.addAccount')"
+      :title="isEditMode ? t('mine.editAccount') : t('mine.addAccount')"
       width="600px"
       @close="onPopupClose"
       class="pc-card-dialog"
     >
       <el-tabs v-model="activeTab" @tab-click="onClickTab">
         <!-- 银行卡 -->
-        <el-tab-pane :label="$t('mine.bankCard')" name="bank">
+        <el-tab-pane :label="t('mine.bankCard')" name="bank">
           <el-form :model="frm" label-position="right" label-width="120px">
-            <el-form-item :label="$t('mine.openingBank')" required>
-              <el-input v-model="frm.bank_name" :placeholder="$t('mine.inputBankName')" />
+            <el-form-item :label="t('mine.openingBank')" required>
+              <el-input v-model="frm.bank_name" :placeholder="t('mine.inputBankName')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.accountName')" required>
+            <el-form-item :label="t('mine.accountName')" required>
               <el-input
                 v-model="frm.account_name"
                 :readonly="isEditMode && frm.account_name.length > 0"
-                :placeholder="$t('mine.inputAccountName')"
+                :placeholder="t('mine.inputAccountName')"
               />
             </el-form-item>
-            <el-form-item :label="$t('mine.accountNumber')" required>
-              <el-input v-model="frm.account_number" :placeholder="$t('mine.inputAccountNumber')" />
+            <el-form-item :label="t('mine.accountNumber')" required>
+              <el-input v-model="frm.account_number" :placeholder="t('mine.inputAccountNumber')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.bankBranch')" required>
-              <el-input v-model="frm.bank_branch" :placeholder="$t('mine.inputBankBranch')" />
+            <el-form-item :label="t('mine.bankBranch')" required>
+              <el-input v-model="frm.bank_branch" :placeholder="t('mine.inputBankBranch')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.idNumber')">
-              <el-input v-model="frm.id_number" :placeholder="$t('mine.inputIdNumber')" />
+            <el-form-item :label="t('mine.idNumber')">
+              <el-input v-model="frm.id_number" :placeholder="t('mine.inputIdNumber')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.phoneNumber')">
-              <el-input v-model="frm.phone_number" :placeholder="$t('mine.inputPhoneNumber')" />
+            <el-form-item :label="t('mine.phoneNumber')">
+              <el-input v-model="frm.phone_number" :placeholder="t('mine.inputPhoneNumber')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.setAsDefault')">
+            <el-form-item :label="t('mine.setAsDefault')">
               <el-checkbox v-model="frm.is_default" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- 汇旺 -->
-        <el-tab-pane :label="$t('mine.huiwang')" name="huiwang">
+        <el-tab-pane :label="t('mine.huiwang')" name="huiwang">
           <el-form :model="frm" label-position="right" label-width="120px">
-            <el-form-item :label="$t('mine.accountName')" required>
+            <el-form-item :label="t('mine.accountName')" required>
               <el-input
                 v-model="frm.account_name"
                 :readonly="isEditMode && frm.account_name.length > 0"
-                :placeholder="$t('mine.inputAccountName')"
+                :placeholder="t('mine.inputAccountName')"
               />
             </el-form-item>
-            <el-form-item :label="$t('mine.huiwangAccount')" required>
-              <el-input v-model="frm.account_number" :placeholder="$t('mine.fillHuiwangAccount')" />
+            <el-form-item :label="t('mine.huiwangAccount')" required>
+              <el-input v-model="frm.account_number" :placeholder="t('mine.fillHuiwangAccount')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.phoneNumber')" required>
-              <el-input v-model="frm.phone_number" :placeholder="$t('mine.inputHuiwangPhone')" />
+            <el-form-item :label="t('mine.phoneNumber')" required>
+              <el-input v-model="frm.phone_number" :placeholder="t('mine.inputHuiwangPhone')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.setAsDefault')">
+            <el-form-item :label="t('mine.setAsDefault')">
               <el-checkbox v-model="frm.is_default" />
             </el-form-item>
           </el-form>
         </el-tab-pane>
 
         <!-- USDT -->
-        <el-tab-pane :label="$t('mine.usdt')" name="usdt">
+        <el-tab-pane :label="t('mine.usdt')" name="usdt">
           <el-form :model="frm" label-position="right" label-width="120px">
-            <el-form-item :label="$t('mine.networkType')" required>
-              <el-select v-model="frm.network_type" :placeholder="$t('mine.selectNetworkType')">
+            <el-form-item :label="t('mine.networkType')" required>
+              <el-select v-model="frm.network_type" :placeholder="t('mine.selectNetworkType')">
                 <el-option label="TRC20" value="TRC20" />
                 <el-option label="ERC20" value="ERC20" />
               </el-select>
             </el-form-item>
-            <el-form-item :label="$t('mine.accountName')" required>
+            <el-form-item :label="t('mine.accountName')" required>
               <el-input
                 v-model="frm.account_name"
                 :readonly="isEditMode && frm.account_name.length > 0"
-                :placeholder="$t('mine.inputAccountName')"
+                :placeholder="t('mine.inputAccountName')"
               />
             </el-form-item>
-            <el-form-item :label="$t('mine.walletAddress')" required>
-              <el-input v-model="frm.wallet_address" :placeholder="$t('mine.inputWalletAddress')" />
+            <el-form-item :label="t('mine.walletAddress')" required>
+              <el-input v-model="frm.wallet_address" :placeholder="t('mine.inputWalletAddress')" />
             </el-form-item>
-            <el-form-item :label="$t('mine.setAsDefault')">
+            <el-form-item :label="t('mine.setAsDefault')">
               <el-checkbox v-model="frm.is_default" />
             </el-form-item>
           </el-form>
@@ -166,13 +166,13 @@
       </el-tabs>
 
       <template #footer>
-        <el-button @click="showBottom = false">{{ $t('common.cancel') }}</el-button>
+        <el-button @click="showBottom = false">{{ t('common.cancel') }}</el-button>
         <el-button
           type="primary"
           :loading="submitLoading"
           @click="handleSubmit"
         >
-          {{ isEditMode ? $t('mine.updateAccount') : $t('submit') }}
+          {{ isEditMode ? t('mine.updateAccount') : t('common.submit') }}
         </el-button>
       </template>
     </el-dialog>
@@ -267,7 +267,7 @@ async function setDefaultHandler(item: UserAccount) {
 
   try {
     await ElMessageBox.confirm(
-      `${t('common.confirm')}将 ${getDisplayName(item)} 设为默认账户？`,
+      t('mine.confirmSetDefaultMsg', { name: getDisplayName(item) }),
       t('mine.confirmSetDefault'),
       {
         confirmButtonText: t('common.confirm'),
@@ -314,9 +314,9 @@ function getDisplayName(item: UserAccount): string {
 function getAccountDetails(item: UserAccount): string {
   switch (item.account_type) {
     case 'bank':
-      return `${t('mine.bankBranch')}：${item.bank_branch || '未设置'}`
+      return `${t('mine.bankBranch')}：${item.bank_branch || t('mine.notSet')}`
     case 'huiwang':
-      return `${t('mine.phoneNumber')}：${item.phone_number_masked || '未设置'}`
+      return `${t('mine.phoneNumber')}：${item.phone_number_masked || t('mine.notSet')}`
     case 'usdt':
       return `${t('mine.networkType')}：${item.network_type || 'TRC20'}`
     default:
@@ -359,7 +359,10 @@ function maskAccount(account: string): string {
 function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
-  return `${date.getMonth() + 1}/${date.getDate()}`
+  return date.toLocaleDateString(t('common.locale'), {
+    month: 'short',
+    day: 'numeric'
+  })
 }
 
 // 添加绑定按钮事件

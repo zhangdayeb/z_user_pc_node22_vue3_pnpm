@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.quickDeposit') }}</h2>
+      <h2 class="page-title">{{ t('mine.quickDeposit') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -20,7 +20,7 @@
         <template #header>
           <div class="card-header">
             <span class="step-number">1</span>
-            <span class="step-title">{{ $t('pay_type') }}</span>
+            <span class="step-title">{{ t('deposit.payType') }}</span>
           </div>
         </template>
         <div class="pay-method-list">
@@ -45,7 +45,7 @@
         <template #header>
           <div class="card-header">
             <span class="step-number">2</span>
-            <span class="step-title">{{ $t('pay_channel') }}</span>
+            <span class="step-title">{{ t('deposit.payChannel') }}</span>
           </div>
         </template>
         <div class="account-list">
@@ -73,34 +73,34 @@
         <template #header>
           <div class="card-header">
             <span class="step-number">3</span>
-            <span class="step-title">{{ $t('recharge_account') }}</span>
+            <span class="step-title">{{ t('deposit.rechargeAccount') }}</span>
           </div>
         </template>
 
         <!-- 银行转账信息 -->
         <div v-if="selectedMethod?.method_code === 'bank'" class="payment-details">
           <el-descriptions :column="1" border>
-            <el-descriptions-item :label="$t('account')">
+            <el-descriptions-item :label="t('deposit.account')">
               <div class="copy-field">
                 <span>{{ selectedAccount.account_number }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.account_number)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('recharge_username')">
+            <el-descriptions-item :label="t('deposit.rechargeUsername')">
               <div class="copy-field">
                 <span>{{ selectedAccount.account_name }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.account_name)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('open_bank')">
+            <el-descriptions-item :label="t('deposit.openBank')">
               <div class="copy-field">
                 <span>{{ selectedAccount.bank_name }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.bank_name)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
@@ -108,7 +108,7 @@
 
           <!-- 二维码 -->
           <div v-if="selectedAccount.qr_code_url" class="qrcode-container">
-            <h4>{{ $t('recharge_qrcode') }}</h4>
+            <h4>{{ t('deposit.rechargeQrcode') }}</h4>
             <el-image
               :src="getImgUrl(selectedAccount.qr_code_url)"
               fit="contain"
@@ -121,7 +121,7 @@
         <div v-else-if="selectedMethod?.method_code === 'huiwang'" class="payment-details">
           <!-- 二维码 -->
           <div v-if="selectedAccount.qr_code_url" class="qrcode-container">
-            <h4>{{ $t('recharge_qrcode') }}</h4>
+            <h4>{{ t('deposit.rechargeQrcode') }}</h4>
             <el-image
               :src="getImgUrl(selectedAccount.qr_code_url)"
               fit="contain"
@@ -130,27 +130,27 @@
           </div>
 
           <el-descriptions :column="1" border>
-            <el-descriptions-item :label="$t('recharge_account')">
+            <el-descriptions-item :label="t('deposit.rechargeAccount')">
               <div class="copy-field">
                 <span>{{ selectedAccount.account_number }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.account_number)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('recharge_username')">
+            <el-descriptions-item :label="t('deposit.rechargeUsername')">
               <div class="copy-field">
                 <span>{{ selectedAccount.account_name }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.account_name)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item v-if="selectedAccount.phone_number" :label="$t('mine.phoneNumber')">
+            <el-descriptions-item v-if="selectedAccount.phone_number" :label="t('mine.phoneNumber')">
               <div class="copy-field">
                 <span>{{ selectedAccount.phone_number }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.phone_number)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
@@ -161,7 +161,7 @@
         <div v-else-if="selectedMethod?.method_code === 'usdt'" class="payment-details">
           <!-- 二维码 -->
           <div v-if="selectedAccount.qr_code_url" class="qrcode-container">
-            <h4>{{ $t('recharge_qrcode') }}</h4>
+            <h4>{{ t('deposit.rechargeQrcode') }}</h4>
             <el-image
               :src="getImgUrl(selectedAccount.qr_code_url)"
               fit="contain"
@@ -170,19 +170,19 @@
           </div>
 
           <el-descriptions :column="1" border>
-            <el-descriptions-item :label="$t('rechate_address')">
+            <el-descriptions-item :label="t('deposit.rechargeAddress')">
               <div class="copy-field">
                 <span>{{ selectedAccount.wallet_address }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.wallet_address)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
-            <el-descriptions-item :label="$t('mine.networkType')">
+            <el-descriptions-item :label="t('mine.networkType')">
               <div class="copy-field">
                 <span>{{ selectedAccount.network_type }}</span>
                 <el-button type="primary" size="small" @click="copyHandler(selectedAccount.network_type)">
-                  {{ $t('copy') }}
+                  {{ t('common.copy') }}
                 </el-button>
               </div>
             </el-descriptions-item>
@@ -195,7 +195,7 @@
         <template #header>
           <div class="card-header">
             <span class="step-number">4</span>
-            <span class="step-title">{{ $t('transfer_amount') }}</span>
+            <span class="step-title">{{ t('deposit.transferAmount') }}</span>
             <span class="amount-range">
               ({{ selectedMethod?.min_amount }}~{{ selectedMethod?.max_amount }})
             </span>
@@ -207,24 +207,24 @@
           label-position="top"
           class="recharge-form"
         >
-          <el-form-item :label="$t('transfer_amount')" required>
+          <el-form-item :label="t('deposit.transferAmount')" required>
             <el-input
               v-model="form.amount"
               type="number"
-              :placeholder="$t('input_transfer_amount')"
+              :placeholder="t('deposit.inputTransferAmount')"
               size="large"
             />
           </el-form-item>
 
-          <el-form-item :label="$t('transfer_user')" required>
+          <el-form-item :label="t('deposit.transferUser')" required>
             <el-input
               v-model="form.transferUser"
-              :placeholder="$t('iput_transfer_amount')"
+              :placeholder="t('deposit.inputTransferAmount')"
               size="large"
             />
           </el-form-item>
 
-          <el-form-item :label="$t('upload_cert')" required>
+          <el-form-item :label="t('deposit.uploadCert')" required>
             <el-upload
               v-model:file-list="fileList"
               class="upload-cert"
@@ -246,7 +246,7 @@
             @click="submitHandler"
             class="submit-btn"
           >
-            {{ $t('common.confirm') }}
+            {{ t('common.confirm') }}
           </el-button>
         </el-form>
       </el-card>
@@ -258,12 +258,12 @@
         class="tips-alert"
       >
         <template #title>
-          <strong>{{ $t('sweetWarning') }}：</strong>
+          <strong>{{ t('gift.sweetWarning') }}：</strong>
         </template>
         <div class="tips-content">
-          <p>{{ $t('deposit.detail1') }}</p>
-          <p>{{ $t('deposit.detail2') }}</p>
-          <p>{{ $t('deposit.detail3') }}</p>
+          <p>{{ t('deposit.detail1') }}</p>
+          <p>{{ t('deposit.detail2') }}</p>
+          <p>{{ t('deposit.detail3') }}</p>
         </div>
       </el-alert>
     </div>
@@ -378,7 +378,7 @@ async function copyHandler(text?: string) {
   if (text && text.trim().length > 0) {
     try {
       await navigator.clipboard.writeText(text)
-      ElMessage.success(t('mine.copySuccess'))
+      ElMessage.success(t('common.copySuccess'))
     } catch {
       // 兼容处理
       const textArea = document.createElement('textarea')
@@ -387,7 +387,7 @@ async function copyHandler(text?: string) {
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
-      ElMessage.success(t('mine.copySuccess'))
+      ElMessage.success(t('common.copySuccess'))
     }
   }
 }
@@ -395,12 +395,12 @@ async function copyHandler(text?: string) {
 function beforeUpload(file: any) {
   const isImage = file.type.startsWith('image/')
   if (!isImage) {
-    ElMessage.error('只能上传图片文件！')
+    ElMessage.error(t('deposit.imageOnlyError'))
     return false
   }
   const isLt5M = file.size / 1024 / 1024 < 5
   if (!isLt5M) {
-    ElMessage.error('图片大小不能超过 5MB!')
+    ElMessage.error(t('deposit.imageSizeError'))
     return false
   }
 
@@ -419,12 +419,12 @@ async function uploadHandler(file: any) {
 
     if (resp && resp.code === 200 && resp.data?.image_url) {
       form.value.certImage = resp.data.image_url
-      ElMessage.success('上传成功')
+      ElMessage.success(t('deposit.uploadSuccess'))
     } else {
-      throw new Error(resp.message || '上传失败')
+      throw new Error(resp.message || t('deposit.uploadFailed'))
     }
   } catch (err) {
-    ElMessage.error((err as Error).message || '上传失败')
+    ElMessage.error((err as Error).message || t('deposit.uploadFailed'))
   } finally {
     store.stopLoad()
   }
@@ -433,23 +433,23 @@ async function uploadHandler(file: any) {
 function uploadSuccess(response: any) {
   if (response && response.data?.image_url) {
     form.value.certImage = response.data.image_url
-    ElMessage.success('上传成功')
+    ElMessage.success(t('deposit.uploadSuccess'))
   }
 }
 
 function uploadError() {
-  ElMessage.error('上传失败')
+  ElMessage.error(t('deposit.uploadFailed'))
 }
 
 function getTransferBankName() {
   const methodCode = selectedMethod.value?.method_code
   switch (methodCode) {
     case 'bank':
-      return '转账银行'
+      return t('deposit.transferBankName')
     case 'huiwang':
-      return '汇旺'
+      return t('mine.huiwang')
     case 'usdt':
-      return 'USDT钱包'
+      return t('deposit.usdtWallet')
     default:
       return ''
   }
@@ -459,11 +459,11 @@ function getTransferAccount() {
   const methodCode = selectedMethod.value?.method_code
   switch (methodCode) {
     case 'bank':
-      return '转账卡号'
+      return t('deposit.bankCardNumber')
     case 'huiwang':
-      return '汇旺账号'
+      return t('mine.huiwangAccount')
     case 'usdt':
-      return '转出钱包地址'
+      return t('deposit.transferOutAddress')
     default:
       return ''
   }
@@ -472,28 +472,31 @@ function getTransferAccount() {
 async function submitHandler() {
   // 表单验证
   if (!selectedAccount.value) {
-    ElMessage.warning('请选择收款账户')
+    ElMessage.warning(t('deposit.selectPaymentAccount'))
     return
   }
 
   if (!form.value.amount || Number(form.value.amount) <= 0) {
-    ElMessage.warning(t('input_transfer_amount'))
+    ElMessage.warning(t('deposit.inputTransferAmount'))
     return
   }
 
   const amount = Number(form.value.amount)
   if (selectedMethod.value && (amount < selectedMethod.value.min_amount || amount > selectedMethod.value.max_amount)) {
-    ElMessage.warning(`充值金额须在 ${selectedMethod.value.min_amount}-${selectedMethod.value.max_amount} 之间`)
+    ElMessage.warning(t('deposit.amountRangeError', {
+      min: selectedMethod.value.min_amount,
+      max: selectedMethod.value.max_amount
+    }))
     return
   }
 
   if (!form.value.transferUser.trim()) {
-    ElMessage.warning(t('iput_transfer_amount'))
+    ElMessage.warning(t('deposit.inputTransferAmount'))
     return
   }
 
   if (!form.value.certImage) {
-    ElMessage.warning('请上传转账凭证')
+    ElMessage.warning(t('deposit.uploadCertRequired'))
     return
   }
 
@@ -513,7 +516,7 @@ async function submitHandler() {
     const resp:any = await api.topUp(submitData)
 
     if (resp && resp.code === 200) {
-      ElMessage.success(t('rechargeSubmitSuccess'))
+      ElMessage.success(t('deposit.rechargeSubmitSuccess'))
 
       // 重置表单
       form.value = {
@@ -529,10 +532,10 @@ async function submitHandler() {
       }, 1500)
 
     } else {
-      throw new Error(resp.message || '提交失败')
+      throw new Error(resp.message || t('deposit.submitFailed'))
     }
   } catch (err) {
-    ElMessage.error((err as Error).message || '提交失败，请重试')
+    ElMessage.error((err as Error).message || t('deposit.submitFailedRetry'))
   } finally {
     submitting.value = false
   }
@@ -553,10 +556,10 @@ async function loadPayMethods() {
         }
       }
     } else {
-      throw new Error(resp.message || '获取充值信息失败')
+      throw new Error(resp.message || t('deposit.getPayInfoFailed'))
     }
   } catch (err) {
-    ElMessage.error((err as Error).message || '获取充值信息失败')
+    ElMessage.error((err as Error).message || t('deposit.getPayInfoFailed'))
   }
 }
 

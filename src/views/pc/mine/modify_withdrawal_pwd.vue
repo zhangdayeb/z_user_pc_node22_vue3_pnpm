@@ -8,7 +8,7 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
       <h2 class="page-title">{{ pageTitle }}</h2>
     </div>
@@ -17,18 +17,18 @@
     <div class="pc-content">
       <!-- 安全提示 -->
       <div v-if="!isModify" class="security-notice">
-        <h3 class="section-title">{{ $t('mine.withdrawPasswordImportant') }}</h3>
+        <h3 class="section-title">{{ t('mine.withdrawPasswordImportant') }}</h3>
         <el-alert
-          :title="$t('mine.withdrawPasswordImportant')"
+          :title="t('mine.withdrawPasswordImportant')"
           type="warning"
           :closable="false"
           show-icon
         >
           <template #default>
             <ul class="security-tips">
-              <li>{{ $t('mine.withdrawPwdTip1') }}</li>
-              <li>{{ $t('mine.withdrawPwdTip2') }}</li>
-              <li>{{ $t('mine.withdrawPwdTip3') }}</li>
+              <li>{{ t('mine.withdrawPwdTip1') }}</li>
+              <li>{{ t('mine.withdrawPwdTip2') }}</li>
+              <li>{{ t('mine.withdrawPwdTip3') }}</li>
             </ul>
           </template>
         </el-alert>
@@ -47,13 +47,13 @@
           <!-- 当前密码（仅修改时显示） -->
           <el-form-item
             v-if="isModify"
-            :label="$t('mine.currWithdrawPwd')"
+            :label="t('mine.currWithdrawPwd')"
             prop="oldPassword"
           >
             <el-input
               v-model="passwordForm.oldPassword"
               type="password"
-              :placeholder="$t('mine.inputCurrWithdrawPwd')"
+              :placeholder="t('mine.inputCurrWithdrawPwd')"
               show-password
               clearable
             >
@@ -65,13 +65,13 @@
 
           <!-- 新密码 -->
           <el-form-item
-            :label="isModify ? $t('mine.newWithdrawPwd') : $t('mine.setWithdrawPwd')"
+            :label="isModify ? t('mine.newWithdrawPwd') : t('mine.setWithdrawPwd')"
             prop="newPassword"
           >
             <el-input
               v-model="passwordForm.newPassword"
               type="password"
-              :placeholder="isModify ? $t('mine.inputNewWithdrawPwd') : $t('mine.inputWithdrawPwd')"
+              :placeholder="isModify ? t('mine.inputNewWithdrawPwd') : t('mine.inputWithdrawPwd')"
               show-password
               clearable
               @input="validatePasswordStrength"
@@ -97,13 +97,13 @@
 
           <!-- 确认密码 -->
           <el-form-item
-            :label="$t('mine.confirmWithdrawPwd')"
+            :label="t('mine.confirmWithdrawPwd')"
             prop="confirmPassword"
           >
             <el-input
               v-model="passwordForm.confirmPassword"
               type="password"
-              :placeholder="$t('mine.inputWithdrawPwdAgain')"
+              :placeholder="t('mine.inputWithdrawPwdAgain')"
               show-password
               clearable
               @paste.prevent
@@ -130,7 +130,7 @@
               @click="handleReset"
               class="reset-btn"
             >
-              {{ $t('common.reset') }}
+              {{ t('common.reset') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -138,35 +138,35 @@
 
       <!-- 密码格式要求 -->
       <div class="requirements-section">
-        <h3 class="section-title">{{ $t('mine.passwordFormat') }}</h3>
+        <h3 class="section-title">{{ t('mine.passwordFormat') }}</h3>
         <div class="requirement-list">
           <div class="requirement-item" :class="{ valid: requirements.length }">
             <el-icon class="requirement-icon">
               <SuccessFilled v-if="requirements.length" />
               <CircleClose v-else />
             </el-icon>
-            <span>{{ $t('mine.withdrawPwdLength') }}</span>
+            <span>{{ t('mine.withdrawPwdLengthReq') }}</span>
           </div>
           <div class="requirement-item" :class="{ valid: requirements.onlyNumbers }">
             <el-icon class="requirement-icon">
               <SuccessFilled v-if="requirements.onlyNumbers" />
               <CircleClose v-else />
             </el-icon>
-            <span>{{ $t('mine.withdrawPwdOnlyNumbers') }}</span>
+            <span>{{ t('mine.withdrawPwdOnlyNumbersReq') }}</span>
           </div>
           <div class="requirement-item" :class="{ valid: requirements.notSameAsLogin }">
             <el-icon class="requirement-icon">
               <Warning v-if="!requirements.notSameAsLogin" />
               <SuccessFilled v-else />
             </el-icon>
-            <span>{{ $t('mine.withdrawPwdNotSameAsLogin') }}</span>
+            <span>{{ t('mine.withdrawPwdNotSameAsLoginReq') }}</span>
           </div>
         </div>
       </div>
 
       <!-- 安全建议 -->
       <div class="suggestions-section">
-        <h3 class="section-title">{{ $t('mine.securitySuggestions') }}</h3>
+        <h3 class="section-title">{{ t('mine.securitySuggestions') }}</h3>
         <el-alert
           type="info"
           :closable="false"
@@ -174,9 +174,9 @@
         >
           <template #default>
             <ul class="suggestions-list">
-              <li>{{ $t('mine.suggestion1') }}</li>
-              <li>{{ $t('mine.suggestion2') }}</li>
-              <li>{{ $t('mine.suggestion3') }}</li>
+              <li>{{ t('mine.suggestion1') }}</li>
+              <li>{{ t('mine.suggestion2') }}</li>
+              <li>{{ t('mine.suggestion3') }}</li>
             </ul>
           </template>
         </el-alert>
@@ -230,13 +230,13 @@ const requirements = reactive({
 
 // 页面标题
 const pageTitle = computed(() =>
-  isModify.value ? t('mine.modifyWithdrawPwd') : t('mine.settingWithdrawPwd')
+  isModify.value ? t('mine.modifyWithdrawalPwd') : t('mine.settingWithdrawalPwd')
 )
 
 // 提交按钮文字
 const submitButtonText = computed(() =>
   isSubmitting.value
-    ? t('common.submitting')
+    ? t('common.loading')
     : (isModify.value ? t('mine.confirmModify') : t('mine.confirmSet'))
 )
 
@@ -275,9 +275,9 @@ const validateNewPassword = (rule: any, value: any, callback: any) => {
   if (!value) {
     callback(new Error(isModify.value ? t('mine.inputNewWithdrawPwd') : t('mine.inputWithdrawPwd')))
   } else if (value.length < 6 || value.length > 20) {
-    callback(new Error(t('mine.withdrawPwdLength')))
+    callback(new Error(t('mine.withdrawPwdLengthReq')))
   } else if (!/^\d+$/.test(value)) {
-    callback(new Error(t('mine.withdrawPwdOnlyNumbers')))
+    callback(new Error(t('mine.withdrawPwdOnlyNumbersReq')))
   } else {
     callback()
   }
@@ -384,11 +384,11 @@ async function handleSubmit() {
           router.back()
         }, 1500)
       } else {
-        throw new Error(resp?.message || t('mine.operationFailed'))
+        throw new Error(resp?.message || t('common.operationFailed'))
       }
     } catch (error: any) {
       if (error !== 'cancel') {
-        ElMessage.error(error.message || t('mine.operationFailed'))
+        ElMessage.error(error.message || t('common.operationFailed'))
       }
     } finally {
       isSubmitting.value = false

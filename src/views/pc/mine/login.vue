@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-box">
       <div class="login-header">
-        <h2>{{ $t('user.login') }}</h2>
+        <h2>{{ t('user.login') }}</h2>
       </div>
 
       <el-form ref="loginFormRef" :model="loginForm" :rules="rules" class="login-form">
@@ -10,7 +10,7 @@
           <el-input
             v-model="loginForm.username"
             prefix-icon="User"
-            :placeholder="$t('user.enterUsername')"
+            :placeholder="t('user.enterUsername')"
             size="large"
             clearable
           />
@@ -21,7 +21,7 @@
             v-model="loginForm.password"
             type="password"
             prefix-icon="Lock"
-            :placeholder="$t('user.enterPassword')"
+            :placeholder="t('user.enterPassword')"
             size="large"
             show-password
             @keyup.enter="handleLogin"
@@ -32,17 +32,17 @@
           <div class="captcha-wrapper">
             <el-input
               v-model="loginForm.captcha"
-              :placeholder="$t('user.enterCaptcha')"
+              :placeholder="t('user.enterCaptcha')"
               size="large"
               clearable
               @keyup.enter="handleLogin"
             />
             <img
               :src="captchaUrl"
-              :alt="$t('user.captcha')"
+              :alt="t('user.captcha')"
               class="captcha-img"
               @click="getCaptcha"
-              :title="$t('user.clickToRefresh')"
+              :title="t('user.clickToRefresh')"
             />
           </div>
         </el-form-item>
@@ -55,14 +55,14 @@
             @click="handleLogin"
             class="login-btn"
           >
-            {{ loading ? $t('user.loggingIn') : $t('user.login') }}
+            {{ loading ? t('user.loggingIn') : t('user.login') }}
           </el-button>
         </el-form-item>
 
         <div class="login-footer">
-          <router-link to="/register" class="link">{{ $t('user.registerNow') }}</router-link>
+          <router-link to="/register" class="link">{{ t('user.registerNow') }}</router-link>
           <span class="divider">|</span>
-          <a href="#" class="link" @click.prevent="handleForgotPassword">{{ $t('user.forgotPassword') }}</a>
+          <a href="#" class="link" @click.prevent="handleForgotPassword">{{ t('user.forgotPassword') }}</a>
         </div>
       </el-form>
     </div>
@@ -121,7 +121,7 @@ const getCaptcha = async () => {
       captchaKey.value = res.data.key
     }
   } catch (error) {
-    console.error('获取验证码失败:', error)
+    console.error('Get captcha failed:', error)
   }
 }
 
@@ -155,13 +155,13 @@ const handleLogin = async () => {
         const { access_token, user_info } = res.data || {}
 
         if (!access_token) {
-          ElMessage.error('登录失败：未获取到访问令牌')
+          ElMessage.error(t('user.loginNoToken'))
           return
         }
 
         // 使用 Store 方法设置 token - 关键修改点
         appStore.setToken(access_token)
-        console.log('Token 设置成功:', access_token)
+        console.log('Token set successfully:', access_token)
 
         // 使用 Store 方法设置用户信息 - 关键修改点
         if (user_info) {
@@ -180,7 +180,7 @@ const handleLogin = async () => {
           }
 
           appStore.setUser(userForStore)
-          console.log('用户信息设置成功:', userForStore)
+          console.log('User info set successfully:', userForStore)
         }
 
         ElMessage.success(t('user.loginSuccess'))
@@ -190,15 +190,15 @@ const handleLogin = async () => {
         router.push(redirect || '/')
       } else {
         // 登录失败，刷新验证码
-        ElMessage.error(res?.message || '登录失败')
+        ElMessage.error(res?.message || t('user.loginFailed'))
         if (captchaUrl.value) {
           getCaptcha()
           loginForm.captcha = ''
         }
       }
     } catch (error: any) {
-      console.error('登录过程中发生错误:', error)
-      ElMessage.error(error?.message || '登录过程中发生错误')
+      console.error('Login process error:', error)
+      ElMessage.error(error?.message || t('user.loginError'))
 
       // 登录失败，刷新验证码
       if (captchaUrl.value) {

@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.modifyLoginPwd') }}</h2>
+      <h2 class="page-title">{{ t('mine.modifyLoginPwd') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -27,13 +27,13 @@
         >
           <!-- 当前密码 -->
           <el-form-item
-            :label="$t('mine.currPwd')"
+            :label="t('mine.currPwd')"
             prop="oldPassword"
           >
             <el-input
               v-model="passwordForm.oldPassword"
               type="password"
-              :placeholder="$t('mine.inputCurrPwd')"
+              :placeholder="t('mine.inputCurrPwd')"
               show-password
               autocomplete="current-password"
               clearable
@@ -46,13 +46,13 @@
 
           <!-- 新密码 -->
           <el-form-item
-            :label="$t('mine.newPwd')"
+            :label="t('mine.newPwd')"
             prop="newPassword"
           >
             <el-input
               v-model="passwordForm.newPassword"
               type="password"
-              :placeholder="$t('mine.inputNewPwd')"
+              :placeholder="t('mine.inputNewPwd')"
               show-password
               autocomplete="new-password"
               clearable
@@ -79,13 +79,13 @@
 
           <!-- 确认新密码 -->
           <el-form-item
-            :label="$t('mine.confrmNewPwd')"
+            :label="t('mine.confirmNewPwd')"
             prop="confirmPassword"
           >
             <el-input
               v-model="passwordForm.confirmPassword"
               type="password"
-              :placeholder="$t('mine.inputNewPwdAgain')"
+              :placeholder="t('mine.inputNewPwdAgain')"
               show-password
               autocomplete="new-password"
               clearable
@@ -106,14 +106,14 @@
               @click="handleSubmit"
               class="submit-btn"
             >
-              {{ isSubmitting ? $t('common.submitting') : $t('submit') }}
+              {{ isSubmitting ? t('common.loading') : t('common.submit') }}
             </el-button>
             <el-button
               size="large"
               @click="handleReset"
               class="reset-btn"
             >
-              {{ $t('common.reset') }}
+              {{ t('common.reset') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -121,35 +121,35 @@
 
       <!-- 密码要求提示 -->
       <div class="requirements-section">
-        <h3 class="section-title">{{ $t('mine.passwordRequirements') }}</h3>
+        <h3 class="section-title">{{ t('mine.passwordRequirements') }}</h3>
         <div class="requirement-list">
           <div class="requirement-item" :class="{ valid: passwordChecks.length }">
             <el-icon class="requirement-icon">
               <CircleCheck v-if="passwordChecks.length" />
               <CircleClose v-else />
             </el-icon>
-            <span>{{ $t('mine.passwordLength') }}</span>
+            <span>{{ t('mine.passwordLengthRequirement') }}</span>
           </div>
           <div class="requirement-item" :class="{ valid: passwordChecks.hasNumber }">
             <el-icon class="requirement-icon">
               <CircleCheck v-if="passwordChecks.hasNumber" />
               <CircleClose v-else />
             </el-icon>
-            <span>{{ $t('mine.passwordNumber') }}</span>
+            <span>{{ t('mine.passwordNumberRequirement') }}</span>
           </div>
           <div class="requirement-item" :class="{ valid: passwordChecks.hasLetter }">
             <el-icon class="requirement-icon">
               <CircleCheck v-if="passwordChecks.hasLetter" />
               <CircleClose v-else />
             </el-icon>
-            <span>{{ $t('mine.passwordLetter') }}</span>
+            <span>{{ t('mine.passwordLetterRequirement') }}</span>
           </div>
         </div>
       </div>
 
       <!-- 安全提示 -->
       <div class="security-section">
-        <h3 class="section-title">安全提示</h3>
+        <h3 class="section-title">{{ t('mine.securityTips') }}</h3>
         <el-alert
           type="info"
           :closable="false"
@@ -157,10 +157,10 @@
         >
           <template #default>
             <ul class="security-tips">
-              <li>密码修改成功后，需要重新登录</li>
-              <li>请使用包含字母和数字的强密码</li>
-              <li>不要使用简单或常见的密码组合</li>
-              <li>定期更换密码以保证账户安全</li>
+              <li>{{ t('mine.securityTip1') }}</li>
+              <li>{{ t('mine.securityTip2') }}</li>
+              <li>{{ t('mine.securityTip3') }}</li>
+              <li>{{ t('mine.securityTip4') }}</li>
             </ul>
           </template>
         </el-alert>

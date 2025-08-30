@@ -8,9 +8,9 @@
         @click="handleBack"
         class="back-btn"
       >
-        {{ $t('common.back') }}
+        {{ t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('rebateRecord') }}</h2>
+      <h2 class="page-title">{{ t('records.rebateRecord') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -20,22 +20,22 @@
         v-loading="loading"
         :data="list"
         class="record-table"
-        :empty-text="$t('noRebateRecord')"
+        :empty-text="t('mine.noRebateRecord')"
         stripe
       >
         <el-table-column
           prop="remark"
-          :label="$t('remark')"
+          :label="t('common.remark')"
           min-width="200"
         />
         <el-table-column
           prop="create_time"
-          :label="$t('moneyLog.tradeDate')"
+          :label="t('moneyLog.tradeDate')"
           width="180"
         />
         <el-table-column
           prop="money_display"
-          :label="$t('rebateAmount')"
+          :label="t('records.rebateAmount')"
           width="150"
           align="right"
         >
@@ -146,7 +146,7 @@ async function getFanshuiRecords() {
       total.value = 0
     }
   } catch (error) {
-    ElMessage.error(t('getRebateRecordFailed'))
+    ElMessage.error(t('mine.getRebateRecordFailed'))
     list.value = []
     total.value = 0
   } finally {
