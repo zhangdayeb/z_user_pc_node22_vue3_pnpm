@@ -25,7 +25,7 @@
             <div class="pc-item-title">{{ getConfigName(config) }}</div>
             <div class="pc-item-subtitle">{{ config.value }}</div>
             <div class="pc-item-label">
-              <span>{{ $t('clickToOpen') }}</span>
+              <span>{{ $t('support.clickToOpen') }}</span>
               <el-icon class="pc-arrow-icon"><ArrowRight /></el-icon>
             </div>
           </div>
@@ -37,7 +37,7 @@
         <el-icon class="is-loading" :size="40">
           <Loading />
         </el-icon>
-        <p class="loading-text">{{ $t('loading') }}</p>
+        <p class="loading-text">{{ $t('common.loading') }}</p>
       </div>
 
       <!-- 无配置项 -->
@@ -97,8 +97,8 @@ function getConfigName(config: ConfigItem): string {
 
   // 2. 尝试使用i18n翻译
   const i18nKeyMap: { [key: string]: string } = {
-    '客服地址': 'customerService',
-    '财务地址': 'financeAddress',
+    '客服地址': 'support.customerService',
+    '财务地址': 'support.financeAddress',
     '热线电话': 'main.hotline',
     '在线客服': 'support.onlineService',
     'VIP客服': 'support.vipService',
@@ -107,7 +107,7 @@ function getConfigName(config: ConfigItem): string {
     'Telegram': 'support.telegram',
     'WhatsApp': 'support.whatsapp',
     '主线客服': 'support.mainCustom',
-    '客户服务代表': 'support.agentCoustom'
+    '客户服务代表': 'support.agentCustom'
   }
 
   const i18nKey = i18nKeyMap[config.name]
@@ -196,7 +196,7 @@ async function getConfigList() {
 
       configList.value = tempList
     } else {
-      throw new Error(resp?.message || '获取配置失败')
+      throw new Error(resp?.message || t('support.configLoadFailed'))
     }
   } catch (error) {
     console.error('获取配置出错:', error)

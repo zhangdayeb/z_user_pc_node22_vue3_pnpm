@@ -51,12 +51,12 @@
 
         <div class="stats-section">
           <div class="stat-item">
-            <span class="stat-label">{{ $t('vip.dqCK') }}：</span>
+            <span class="stat-label">{{ $t('vip.currentDeposit') }}：</span>
             <span class="stat-value">{{ getNumber(vips?.total_deposit ?? 0) }}</span>
             <span class="stat-target">（{{ userLevel?.deposit_money ?? 0 }}/{{ userNextLevel?.deposit_money }}）</span>
           </div>
           <div class="stat-item">
-            <span class="stat-label">{{ $t('vip.dqBet') }}：</span>
+            <span class="stat-label">{{ $t('vip.currentBet') }}：</span>
             <span class="stat-value">{{ getNumber(vips?.total_bet ?? 0) }}</span>
             <span class="stat-target">（{{ userLevel?.bet_money ?? 0 }}/{{ userNextLevel?.bet_money ?? 0 }}）</span>
           </div>
@@ -65,7 +65,7 @@
 
       <!-- VIP等级表格 -->
       <div class="vip-levels-section">
-        <h3 class="section-title">VIP等级详情</h3>
+        <h3 class="section-title">{{ $t('vip.levelDetails') }}</h3>
         <el-table
           :data="vips?.levels ?? []"
           class="levels-table"
@@ -73,24 +73,24 @@
         >
           <el-table-column
             prop="level_name"
-            label="VIP等级"
+            :label="$t('vip.vipLevel')"
             width="120"
           />
           <el-table-column
             prop="deposit_money"
-            label="存款要求($)"
+            :label="$t('vip.depositRequirement')"
             width="120"
             align="right"
           />
           <el-table-column
             prop="bet_money"
-            label="投注要求($)"
+            :label="$t('vip.betRequirement')"
             width="120"
             align="right"
           />
           <el-table-column
             prop="level_bonus"
-            label="升级奖金($)"
+            :label="$t('vip.upgradeBonus')"
             width="120"
             align="right"
           >
@@ -100,25 +100,25 @@
           </el-table-column>
           <el-table-column
             prop="day_bonus"
-            label="日礼金"
+            :label="$t('vip.dailyReward')"
             width="100"
             align="right"
           />
           <el-table-column
             prop="week_bonus"
-            label="周礼金"
+            :label="$t('vip.weeklyReward')"
             width="100"
             align="right"
           />
           <el-table-column
             prop="month_bonus"
-            label="月礼金"
+            :label="$t('vip.monthlyReward')"
             width="100"
             align="right"
           />
           <el-table-column
             prop="year_bonus"
-            label="年礼金"
+            :label="$t('vip.birthdayReward')"
             min-width="100"
             align="right"
           />
@@ -128,7 +128,7 @@
       <!-- 当前等级特权 -->
       <div class="privileges-section">
         <h3 class="section-title">
-          {{ currentLevel?.level_name ?? 'VIP0' }}{{ $t('vip.zhuanXiang') }}
+          {{ currentLevel?.level_name ?? 'VIP0' }}{{ $t('vip.exclusive') }}
         </h3>
         <div class="privileges-grid">
           <div class="privilege-item">
@@ -141,28 +141,28 @@
           <div class="privilege-item">
             <div class="privilege-icon calendar-icon"></div>
             <div class="privilege-info">
-              <div class="privilege-label">{{ $t('vip.dayLJ') }}</div>
-              <div class="privilege-value">{{ currentLevel?.day_bonus ?? '0.00' }}元</div>
+              <div class="privilege-label">{{ $t('vip.dailyReward') }}</div>
+              <div class="privilege-value">{{ currentLevel?.day_bonus ?? '0.00' }}{{ $t('common.yuan') }}</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon week-icon"></div>
             <div class="privilege-info">
-              <div class="privilege-label">{{ $t('vip.weekLJ') }}</div>
+              <div class="privilege-label">{{ $t('vip.weeklyReward') }}</div>
               <div class="privilege-value">{{ currentLevel?.week_bonus ?? '0.00' }}$</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon month-icon"></div>
             <div class="privilege-info">
-              <div class="privilege-label">{{ $t('vip.monthLJ') }}</div>
+              <div class="privilege-label">{{ $t('vip.monthlyReward') }}</div>
               <div class="privilege-value">{{ currentLevel?.month_bonus ?? '0.00' }}$</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon birthday-icon"></div>
             <div class="privilege-info">
-              <div class="privilege-label">{{ $t('vip.brithdayLJ') }}</div>
+              <div class="privilege-label">{{ $t('vip.birthdayReward') }}</div>
               <div class="privilege-value">{{ currentLevel?.year_bonus ?? '0.00' }}$</div>
             </div>
           </div>
@@ -181,6 +181,7 @@
 import avatarImg from '@/assets/mobile/avatar.png'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { useI18n } from 'vue-i18n'
 import { ref, onMounted } from 'vue'
 import { invokeApi } from '@/utils/tools'
 import { ArrowLeft } from '@element-plus/icons-vue'
@@ -188,6 +189,7 @@ import type { ApiLevel } from 'typings'
 
 defineOptions({ name: 'PcVipIndex' })
 
+const { t } = useI18n()
 const router = useRouter()
 const store = useAppStore()
 const vips = ref<any | null>(null)

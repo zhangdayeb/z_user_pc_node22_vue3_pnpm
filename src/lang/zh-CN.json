@@ -10,6 +10,7 @@
     "downloadApp": "下载手机版",
     "hotline": "热线电话"
   },
+
   "user": {
     "register": "注册",
     "settings": "设置",
@@ -34,8 +35,16 @@
     "passwordRequired": "请输入密码",
     "passwordLength": "密码长度在 6 到 20 个字符",
     "captchaRequired": "请输入验证码",
-    "contactSupport": "请联系客服重置密码"
+    "contactSupport": "请联系客服重置密码",
+    "confirmLogout": "确定要退出登录吗？",
+    "logoutConfirmTitle": "退出确认",
+    "loggingOut": "正在退出...",
+    "logoutSuccess": "已退出登录",
+    "logoutFailed": "退出失败，请重试",
+    "loginNoToken": "登录失败：未获取到访问令牌",
+    "loginError": "登录过程中发生错误"
   },
+
   "login": {
     "openFixed": "开启极致体验",
     "inputAccount": "请输入账号",
@@ -80,6 +89,7 @@
     "verificationRequired": "需要进行身份验证",
     "loginSuccessWelcome": "登录成功，欢迎回来！"
   },
+
   "register": {
     "inputUsername": "请填写用户名",
     "inputPassword": "请填写密码",
@@ -97,6 +107,7 @@
     "inputInviterCode": "请填写邀请码",
     "email": "电子邮箱"
   },
+
   "game": {
     "myCollection": "我的收藏",
     "start": "开始",
@@ -136,92 +147,13 @@
     "enterGame": "进入游戏",
     "maintenance": "平台游戏维护中..."
   },
+
   "game_log": {
     "not_complete": "未结算",
     "cancel": "已取消",
     "complete": "已完成"
   },
-  "common": {
-    "viewMore": "查看更多",
-    "viewDetails": "查看详情",
-    "tip": "提示",
-    "confirm": "确认",
-    "cancel": "取消",
-    "back": "返回",
-    "pageNotFound": "页面不存在",
-    "pageNotFoundDesc": "抱歉，您访问的页面不存在或已被删除",
-    "backToHome": "返回首页",
-    "backToPrevious": "返回上一页",
-    "sort": "排序",
-    "loading": "加载中...",
-    "reset": "重置",
-    "search": "搜索",
-    "refresh": "刷新",
-    "export": "导出",
-    "yuan": "元",
-    "startDate": "开始日期",
-    "endDate": "结束日期",
-    "to": "到",
-    "operation": "操作",
-    "all": "全部",
-    "submit": "提交",
-    "success": "操作成功",
-    "noMore": "没有更多了",
-    "fillIn": "填写",
-    "edit": "编辑",
-    "delete": "删除",
-    "save": "保存",
-    "operationFailed": "操作失败",
-    "pleaseInput": "请输入",
-    "pleaseSelect": "请选择",
-    "inputPlaceholder": "请输入内容",
-    "pending": "待审核",
-    "approved": "已通过",
-    "rejected": "已拒绝",
-    "processing": "处理中",
-    "completed": "已完成",
-    "networkError": "网络请求失败",
-    "tryAgainLater": "请稍后重试",
-    "dataLoadFailed": "数据加载失败",
-    "parameterError": "参数错误",
-    "tryAgain": "请重试",
-    "required": "必填",
-    "optional": "可选",
-    "invalidFormat": "格式不正确",
-    "duplicateAccount": "该账户已存在",
-    "copySuccess": "复制成功",
-    "copyFailed": "复制失败",
-    "clickToCopy": "点击复制",
-    "add": "新增",
-    "copy": "复制",
-    "selected": "请选择",
-    "noData": "无数据"
-  },
-  "footer": {
-    "brandInfo1": "ATB 中国由MI平台 (台湾)",
-    "brandInfo2": "包网团队提供平台技术支持",
-    "mga": "马耳他牌照（MGA）认证",
-    "bvi": "英属维尔京群岛（BVI）认证",
-    "gc": "英国GC监督委员会",
-    "pagcor": "菲律宾（PAGCOR）监督牌照",
-    "consultNow": "立即咨询",
-    "disclaimer": "ATB 中国拥有欧洲马耳他MGA、英国GC监督委员会（GamblingCommission）和菲律宾政府（PAGCOR）颁发的合法执照。注册于英属维尔京群岛，是受国际行业协会认可的合法公司。进行注册并娱乐前，请确保您年满18周岁！",
-    "copyright": "版权所有 ©2019-2023 ATB 中国 保留所有权"
-  },
-  "home": {
-    "newMemberOffer": "新会员优惠",
-    "moreOffersInVip": "更多优惠尽在VIP",
-    "electronicOffer": "电子游戏专属优惠",
-    "electronicOfferDesc": "电子游艺专属存款送25%优惠",
-    "liveOffer": "真人视讯专属优惠",
-    "liveOfferDesc": "会员首笔存款得30％的奖金",
-    "safeBetting": "安全畅快 实时投注",
-    "enjoyExperience": "纵想指尖畅快体验",
-    "appDescription": "全球首家一体化娱乐原生APP，尽显流畅、完美操作。海量体育、捕鱼游戏，真人娱乐、彩票投注及电子游艺等，最新最全娱乐项目尽在掌中体验扫码下载，即刻拥有！",
-    "scanTip": "(提示：用手机自带浏览器扫码或者使用手机自带的照相机扫描二维码下载）",
-    "browserAccess": "手机浏览器也能直接访问",
-    "comprehensiveChoice": "包容万象 从容选择"
-  },
+
   "mine": {
     "safeSetting": "安全设置",
     "aboutUs": "关于我们",
@@ -272,7 +204,6 @@
     "yesterday": "昨天",
     "week": "一周内",
     "month": "一月内",
-    "all": "全部",
     "rebateWallet": "返水钱包",
     "commissionWallet": "返佣钱包",
     "centerWallet": "中心钱包",
@@ -437,7 +368,6 @@
     "newRate": "新比例",
     "enterDecimal": "请输入小数，如：0.05",
     "yourBalance": "您的余额",
-    "transferAmount": "转账金额",
     "enterTransferAmount": "请输入转账金额",
     "rateMustBeBetween": "比例必须在0到{max}之间",
     "enterValidAmount": "请输入有效的转账金额",
@@ -448,8 +378,58 @@
     "modifyFailed": "修改失败",
     "enterCommissionRate": "请输入返佣比例",
     "agent": "代理",
-    "member": "会员"
+    "member": "会员",
+    "notSet": "未设置",
+    "confirmSetDefaultMsg": "确定将 {name} 设为默认账户吗？",
+    "getAgentRecordFailed": "获取代理记录失败",
+    "balanceUpdated": "余额已更新",
+    "refreshFailed": "刷新失败，请重试",
+    "customerServiceInDevelopment": "客服功能开发中",
+    "aboutUsInDevelopment": "关于我们页面开发中",
+    "passwordRequirements": "密码要求",
+    "passwordLengthRequirement": "密码长度为6-20个字符",
+    "passwordNumberRequirement": "包含至少一个数字",
+    "passwordLetterRequirement": "包含至少一个字母",
+    "passwordWeak": "弱",
+    "passwordMedium": "中等",
+    "passwordStrong": "强",
+    "passwordVeryStrong": "很强",
+    "securityTips": "安全提示",
+    "securityTip1": "密码修改成功后，需要重新登录",
+    "securityTip2": "请使用包含字母和数字的强密码",
+    "securityTip3": "不要使用简单或常见的密码组合",
+    "securityTip4": "定期更换密码以保证账户安全",
+    "newPasswordSameAsOld": "新密码不能与旧密码相同",
+    "confirmPasswordChange": "确定要修改登录密码吗？密码修改后需要重新登录。",
+    "withdrawPasswordImportant": "取款密码重要提示",
+    "withdrawPwdTip1": "取款密码用于提现操作验证，请妥善保管",
+    "withdrawPwdTip2": "密码只能使用6-20位数字",
+    "withdrawPwdTip3": "不要与登录密码设置为相同",
+    "currWithdrawPwd": "当前取款密码",
+    "inputCurrWithdrawPwd": "请输入当前取款密码",
+    "newWithdrawPwd": "新取款密码",
+    "inputNewWithdrawPwd": "请输入新取款密码",
+    "setWithdrawPwd": "设置取款密码",
+    "inputWithdrawPwd": "请输入取款密码",
+    "confirmWithdrawPwd": "确认取款密码",
+    "inputWithdrawPwdAgain": "请再次输入取款密码",
+    "confirmModify": "确认修改",
+    "confirmSet": "确认设置",
+    "passwordFormat": "密码格式要求",
+    "withdrawPwdLengthReq": "密码长度为6-20位数字",
+    "withdrawPwdOnlyNumbersReq": "只能使用数字",
+    "withdrawPwdNotSameAsLoginReq": "不要与登录密码相同",
+    "securitySuggestions": "安全建议",
+    "suggestion1": "定期更换取款密码",
+    "suggestion2": "不要将密码告诉他人",
+    "suggestion3": "选择不易被猜测的数字组合",
+    "passwordNotMatch": "两次输入的密码不一致",
+    "confirmModifyWithdrawPwd": "确定要修改取款密码吗？",
+    "confirmSetWithdrawPwd": "确定要设置取款密码吗？",
+    "withdrawPwdModifySuccess": "取款密码修改成功",
+    "withdrawPwdSetSuccess": "取款密码设置成功"
   },
+
   "moneyLog": {
     "detail": "记录详情",
     "tradeMoney": "交易金额",
@@ -461,6 +441,7 @@
     "tradeDate": "交易时间",
     "status": "状态"
   },
+
   "support": {
     "welcome": "欢迎来到客服中心",
     "mainCustom": "主线客服",
@@ -480,6 +461,7 @@
     "financeAddress": "财务地址",
     "clickToOpen": "点击打开"
   },
+
   "vip": {
     "currentDeposit": "当前存款",
     "currentBet": "当前投注",
@@ -491,6 +473,7 @@
     "birthdayReward": "生日礼金",
     "rightDetail": "VIP特权详情"
   },
+
   "deposit": {
     "detail1": "1.上面所列银行为'在线支付'所支持的银行，选择您的支付银行。",
     "detail2": "2.在 '存款金额' 栏目中填写您要支付的金额， 并点击'提交'按钮。",
@@ -507,7 +490,6 @@
     "transferUser": "转账人",
     "inputTransferAmount": "请输入转账人姓名",
     "transferAmount": "充值金额",
-    "inputTransferAmount": "请输入充值金额",
     "account": "账号",
     "openBank": "开户行",
     "inputRechargeAmount": "请输入转账账户",
@@ -530,8 +512,19 @@
     "bankAccountName": "银行户名",
     "bankCardNumber": "银行卡号",
     "unknownStatus": "未知状态",
-    "getRechargeRecordFailed": "获取充值记录失败"
+    "getRechargeRecordFailed": "获取充值记录失败",
+    "imageOnlyError": "只能上传图片文件！",
+    "imageSizeError": "图片大小不能超过 5MB!",
+    "uploadSuccess": "上传成功",
+    "uploadFailed": "上传失败",
+    "selectPaymentAccount": "请选择收款账户",
+    "amountRangeError": "充值金额须在 {min}-{max} 之间",
+    "uploadCertRequired": "请上传转账凭证",
+    "submitFailed": "提交失败",
+    "submitFailedRetry": "提交失败，请重试",
+    "getPayInfoFailed": "获取充值信息失败"
   },
+
   "withdraw": {
     "record": "提现记录",
     "detail": "提现详情",
@@ -544,6 +537,7 @@
     "remark": "备注",
     "getRecordFailed": "获取提现记录失败"
   },
+
   "extension": {
     "myInviteCode": "我的邀请码",
     "loading": "LOADING...",
@@ -565,6 +559,7 @@
     "tip3": "邀请码和推广链接永久有效",
     "tip4": "可以将推广链接分享给朋友或在社交媒体上推广"
   },
+
   "currency": {
     "cny": "人民币 (CNY)",
     "usd": "美元 (USD)",
@@ -582,14 +577,18 @@
     "usdt": "泰达币 (USDT)",
     "currencyType": "货币类型"
   },
+
   "gift": {
     "subtitle": "精彩活动，优惠不断",
     "newest": "最新发布",
     "hottest": "最热门",
     "ending": "即将结束",
     "sweetWarning": "温馨提示",
-    "promotionActivity": "优惠活动"
+    "promotionActivity": "优惠活动",
+    "getTypesError": "获取活动类型失败",
+    "getActivitiesError": "获取活动列表失败"
   },
+
   "activity": {
     "detail": "活动详情",
     "tableOfContents": "目录",
@@ -602,8 +601,15 @@
     "fontSize": "字体",
     "small": "小",
     "medium": "中",
-    "large": "大"
+    "large": "大",
+    "invalidId": "活动ID无效",
+    "getDetailFailed": "获取活动详情失败",
+    "favoriteSuccess": "收藏成功",
+    "unfavoriteSuccess": "已取消收藏",
+    "shareSuccess": "链接已复制到剪贴板",
+    "shareFailed": "复制失败，请手动复制"
   },
+
   "records": {
     "rebateRecord": "返水记录",
     "rebateAmount": "返水金额",
@@ -614,6 +620,7 @@
     "read": "已读",
     "todayDoNotShow": "今日不再显示"
   },
+
   "gameTypes": {
     "hotGames": "热门游戏",
     "sportsEvents": "体育赛事",
@@ -623,8 +630,99 @@
     "fishingGames": "捕鱼游戏",
     "lotteryGames": "彩票游戏"
   },
+
   "changeMode": {
     "changeAuto": "切换至自动",
     "changeManual": "切换至手动"
+  },
+
+  "footer": {
+    "brandInfo1": "ATB 中国由MI平台 (台湾)",
+    "brandInfo2": "包网团队提供平台技术支持",
+    "mga": "马耳他牌照（MGA）认证",
+    "bvi": "英属维尔京群岛（BVI）认证",
+    "gc": "英国GC监督委员会",
+    "pagcor": "菲律宾（PAGCOR）监督牌照",
+    "consultNow": "立即咨询",
+    "disclaimer": "ATB 中国拥有欧洲马耳他MGA、英国GC监督委员会（GamblingCommission）和菲律宾政府（PAGCOR）颁发的合法执照。注册于英属维尔京群岛，是受国际行业协会认可的合法公司。进行注册并娱乐前，请确保您年满18周岁！",
+    "copyright": "版权所有 ©2019-2023 ATB 中国 保留所有权"
+  },
+
+  "home": {
+    "newMemberOffer": "新会员优惠",
+    "moreOffersInVip": "更多优惠尽在VIP",
+    "electronicOffer": "电子游戏专属优惠",
+    "electronicOfferDesc": "电子游艺专属存款送25%优惠",
+    "liveOffer": "真人视讯专属优惠",
+    "liveOfferDesc": "会员首笔存款得30％的奖金",
+    "safeBetting": "安全畅快 实时投注",
+    "enjoyExperience": "纵想指尖畅快体验",
+    "appDescription": "全球首家一体化娱乐原生APP，尽显流畅、完美操作。海量体育、捕鱼游戏，真人娱乐、彩票投注及电子游艺等，最新最全娱乐项目尽在掌中体验扫码下载，即刻拥有！",
+    "scanTip": "(提示：用手机自带浏览器扫码或者使用手机自带的照相机扫描二维码下载）",
+    "browserAccess": "手机浏览器也能直接访问",
+    "comprehensiveChoice": "包容万象 从容选择"
+  },
+
+  "common": {
+    "viewMore": "查看更多",
+    "viewDetails": "查看详情",
+    "tip": "提示",
+    "confirm": "确认",
+    "cancel": "取消",
+    "back": "返回",
+    "pageNotFound": "页面不存在",
+    "pageNotFoundDesc": "抱歉，您访问的页面不存在或已被删除",
+    "backToHome": "返回首页",
+    "backToPrevious": "返回上一页",
+    "sort": "排序",
+    "loading": "加载中...",
+    "reset": "重置",
+    "search": "搜索",
+    "refresh": "刷新",
+    "export": "导出",
+    "yuan": "元",
+    "startDate": "开始日期",
+    "endDate": "结束日期",
+    "to": "到",
+    "operation": "操作",
+    "all": "全部",
+    "submit": "提交",
+    "success": "操作成功",
+    "noMore": "没有更多了",
+    "fillIn": "填写",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "operationFailed": "操作失败",
+    "pleaseInput": "请输入",
+    "pleaseSelect": "请选择",
+    "inputPlaceholder": "请输入内容",
+    "pending": "待审核",
+    "approved": "已通过",
+    "rejected": "已拒绝",
+    "processing": "处理中",
+    "completed": "已完成",
+    "networkError": "网络请求失败",
+    "tryAgainLater": "请稍后重试",
+    "dataLoadFailed": "数据加载失败",
+    "parameterError": "参数错误",
+    "tryAgain": "请重试",
+    "required": "必填",
+    "optional": "可选",
+    "invalidFormat": "格式不正确",
+    "duplicateAccount": "该账户已存在",
+    "copySuccess": "复制成功",
+    "copyFailed": "复制失败",
+    "clickToCopy": "点击复制",
+    "add": "新增",
+    "copy": "复制",
+    "selected": "请选择",
+    "noData": "无数据",
+    "loadFailed": "加载失败，请稍后重试",
+    "locale": "zh-CN",
+    "remark": "备注",
+    "time": "时间",
+    "type": "类型",
+    "amount": "金额"
   }
 }

@@ -21,11 +21,11 @@
           <el-form-item :label="$t('mine.recordType')">
             <el-select
               v-model="filterForm.type"
-              :placeholder="$t('all')"
+              :placeholder="$t('common.all')"
               clearable
               @change="handleFilterChange"
             >
-              <el-option :label="$t('all')" value="" />
+              <el-option :label="$t('common.all')" value="" />
               <el-option :label="$t('mine.totalIncome')" value="income" />
               <el-option :label="$t('mine.totalExpense')" value="expense" />
             </el-select>
@@ -58,13 +58,13 @@
         <el-table
           v-loading="loading"
           :data="recordList"
-          :empty-text="$t('noMoneyRecord')"
+          :empty-text="$t('mine.noMoneyRecord')"
           style="width: 100%"
           stripe
         >
           <el-table-column
             prop="create_time"
-            :label="$t('mine.time')"
+            :label="$t('common.time')"
             width="180"
           >
             <template #default="{ row }">
@@ -74,7 +74,7 @@
 
           <el-table-column
             prop="type_text"
-            :label="$t('mine.type')"
+            :label="$t('common.type')"
             width="150"
           >
             <template #default="{ row }">
@@ -86,7 +86,7 @@
 
           <el-table-column
             prop="amount"
-            :label="$t('mine.amount')"
+            :label="$t('common.amount')"
             width="150"
           >
             <template #default="{ row }">
@@ -118,7 +118,7 @@
 
           <el-table-column
             prop="remark"
-            :label="$t('mine.remark')"
+            :label="$t('common.remark')"
             min-width="200"
             show-overflow-tooltip
           />
@@ -274,7 +274,7 @@ async function fetchRecords() {
     }
   } catch (error) {
     console.error('获取资金记录失败:', error)
-    ElMessage.error(t('getMoneyRecordFailed'))
+    ElMessage.error(t('mine.getMoneyRecordFailed'))
   } finally {
     loading.value = false
   }

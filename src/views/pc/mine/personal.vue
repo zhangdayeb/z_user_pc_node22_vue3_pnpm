@@ -43,7 +43,7 @@
         <div class="money-item" v-if="shouldShowFanshui">
           <span class="money-label">
             <el-icon color="#409EFF"><Coin /></el-icon>
-            {{ $t('rebateAmount') }}
+            {{ $t('records.rebateAmount') }}
           </span>
           <span class="money-value rebate">¥{{ formatMoney(userInfo?.money_rebate) }}</span>
         </div>
@@ -51,7 +51,7 @@
         <div class="money-item">
           <span class="money-label">
             <el-icon color="#E6A23C"><Present /></el-icon>
-            {{ $t('commissionAmount') }}
+            {{ $t('records.commissionAmount') }}
           </span>
           <span class="money-value commission">¥{{ formatMoney(userInfo?.money_fanyong) }}</span>
         </div>
@@ -59,7 +59,7 @@
         <el-divider />
 
         <div class="info-item">
-          <span class="info-label">{{ $t('currencyType') }}</span>
+          <span class="info-label">{{ $t('currency.currencyType') }}</span>
           <span class="info-value">
             <el-tag type="info" size="large">{{ formatCurrency(userInfo?.currency) }}</el-tag>
           </span>
@@ -68,7 +68,7 @@
 
       <!-- 个人资料 -->
       <div class="info-section">
-        <h3 class="section-title">{{ $t('mine.persionalInfo') }}</h3>
+        <h3 class="section-title">{{ $t('mine.personalInfo') }}</h3>
 
         <div class="info-item">
           <span class="info-label">
@@ -95,7 +95,7 @@
         <div class="info-item clickable" @click="editUserInfo('nick_name')">
           <span class="info-label">
             <el-icon><Avatar /></el-icon>
-            {{ $t('nickname') }}
+            {{ $t('mine.nickname') }}
           </span>
           <span class="info-value">
             <span>{{ userInfo?.nick_name ?? userInfo?.nickname ?? '--' }}</span>
@@ -111,19 +111,19 @@
     <!-- 编辑基础信息弹窗 -->
     <el-dialog
       v-model="showEditBasic"
-      :title="editField === 'nick_name' ? $t('nickname') : $t('register.phone')"
+      :title="editField === 'nick_name' ? $t('mine.nickname') : $t('register.phone')"
       width="500px"
       class="edit-dialog"
     >
       <el-form :model="basicForm" label-width="100px">
         <el-form-item
-          :label="$t('nickname')"
+          :label="$t('mine.nickname')"
           v-if="editField === 'nick_name'"
-          :rules="[{ required: true, message: $t('inputNickname'), trigger: 'blur' }]"
+          :rules="[{ required: true, message: $t('mine.inputNickname'), trigger: 'blur' }]"
         >
           <el-input
             v-model="basicForm.nick_name"
-            :placeholder="$t('inputNickname')"
+            :placeholder="$t('mine.inputNickname')"
             clearable
           >
             <template #prefix>
@@ -153,7 +153,7 @@
         <span class="dialog-footer">
           <el-button @click="showEditBasic = false">{{ $t('common.cancel') }}</el-button>
           <el-button type="primary" @click="updateBasicInfo">
-            {{ $t('submit') }}
+            {{ $t('common.submit') }}
           </el-button>
         </span>
       </template>
@@ -264,7 +264,7 @@ async function updateBasicInfo() {
 
     if (editField.value === 'nick_name') {
       if (!basicForm.value.nick_name.trim()) {
-        ElMessage.warning(t('inputNickname'))
+        ElMessage.warning(t('mine.inputNickname'))
         return
       }
       updateData.nick_name = basicForm.value.nick_name.trim()

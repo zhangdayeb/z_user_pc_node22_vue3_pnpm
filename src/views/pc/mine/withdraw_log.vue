@@ -10,7 +10,7 @@
       >
         {{ $t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('withdrawRecord') }}</h2>
+      <h2 class="page-title">{{ $t('withdraw.record') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -18,17 +18,17 @@
       <!-- 筛选条件 -->
       <div class="filter-section">
         <el-form :inline="true" class="filter-form">
-          <el-form-item :label="$t('moneyLog.status')">
+          <el-form-item :label="$t('common.status')">
             <el-select
               v-model="activeStatus"
-              :placeholder="$t('all')"
+              :placeholder="$t('common.all')"
               clearable
               @change="handleFilterChange"
             >
-              <el-option :label="$t('all')" value="" />
-              <el-option :label="$t('pending')" value="0" />
-              <el-option :label="$t('approved')" value="1" />
-              <el-option :label="$t('rejected')" value="2" />
+              <el-option :label="$t('common.all')" value="" />
+              <el-option :label="$t('common.pending')" value="0" />
+              <el-option :label="$t('common.approved')" value="1" />
+              <el-option :label="$t('common.rejected')" value="2" />
             </el-select>
           </el-form-item>
           <el-form-item>
@@ -47,12 +47,12 @@
         v-loading="loading"
         :data="list"
         class="record-table"
-        :empty-text="$t('noData')"
+        :empty-text="$t('common.noData')"
         stripe
       >
         <el-table-column
           prop="create_time"
-          :label="$t('applyTime')"
+          :label="$t('deposit.applyTime')"
           width="180"
         >
           <template #default="{ row }">
@@ -62,13 +62,13 @@
 
         <el-table-column
           prop="id"
-          :label="$t('orderNumber')"
+          :label="$t('deposit.orderNumber')"
           width="150"
         />
 
         <el-table-column
           prop="amount"
-          :label="$t('withdrawAmount')"
+          :label="$t('withdraw.amount')"
           width="130"
           align="right"
         >
@@ -81,7 +81,7 @@
 
         <el-table-column
           prop="actual_amount"
-          :label="$t('actualAmount')"
+          :label="$t('withdraw.actualAmount')"
           width="130"
           align="right"
         >
@@ -94,7 +94,7 @@
 
         <el-table-column
           prop="fee"
-          :label="$t('handlingFee')"
+          :label="$t('withdraw.handlingFee')"
           width="100"
           align="right"
         >
@@ -105,7 +105,7 @@
 
         <el-table-column
           prop="status_text"
-          :label="$t('moneyLog.status')"
+          :label="$t('common.status')"
           width="120"
         >
           <template #default="{ row }">
@@ -117,7 +117,7 @@
 
         <el-table-column
           prop="pay_type_text"
-          :label="$t('withdrawMethod')"
+          :label="$t('withdraw.method')"
           width="120"
           show-overflow-tooltip
         >
@@ -128,7 +128,7 @@
 
         <el-table-column
           prop="success_time"
-          :label="$t('completeTime')"
+          :label="$t('deposit.completeTime')"
           width="180"
         >
           <template #default="{ row }">
@@ -138,7 +138,7 @@
 
         <el-table-column
           prop="remark"
-          :label="$t('remark')"
+          :label="$t('common.remark')"
           min-width="150"
           show-overflow-tooltip
         >
@@ -193,7 +193,7 @@ interface WithdrawRecordItem {
 }
 
 const router = useRouter()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 // 分页相关
 const currentPage = ref(1)
@@ -237,33 +237,9 @@ function formatTime(timeStr: string): string {
 
   try {
     const date = new Date(timeStr)
-    const currentLocale = locale.value || 'zh-CN'
+    const currentLocale = t('common.locale')
 
-    let dateLocale = currentLocale
-    switch (currentLocale) {
-      case 'zh-CN':
-        dateLocale = 'zh-CN'
-        break
-      case 'zh-TW':
-        dateLocale = 'zh-TW'
-        break
-      case 'en-US':
-        dateLocale = 'en-US'
-        break
-      case 'ko-KR':
-        dateLocale = 'ko-KR'
-        break
-      case 'th-TH':
-        dateLocale = 'th-TH'
-        break
-      case 'vi-VN':
-        dateLocale = 'vi-VN'
-        break
-      default:
-        dateLocale = 'zh-CN'
-    }
-
-    return date.toLocaleString(dateLocale, {
+    return date.toLocaleString(currentLocale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -347,7 +323,7 @@ async function getWithdrawRecords() {
     }
   } catch (error) {
     console.error('获取提现记录失败:', error)
-    ElMessage.error(t('getWithdrawRecordFailed'))
+    ElMessage.error(t('withdraw.getRecordFailed'))
   } finally {
     loading.value = false
   }

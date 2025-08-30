@@ -15,7 +15,7 @@
           class="pc-register-form"
           size="large"
         >
-          <el-form-item :label="$t('mine.name')" prop="name">
+          <el-form-item :label="$t('login.username')" prop="name">
             <el-input
               v-model="frm.name"
               :placeholder="$t('register.inputUsername')"
@@ -69,7 +69,7 @@
             </el-input>
           </el-form-item>
 
-          <el-form-item :label="$t('mine.qknewPwd')" prop="qk_pwd">
+          <el-form-item :label="$t('mine.withdrawPwd')" prop="qk_pwd">
             <el-input
               v-model="frm.qk_pwd"
               type="password"
@@ -162,7 +162,7 @@
               @click="submitRegisterHandler"
               class="pc-submit-btn"
             >
-              {{ $t('submit') }}
+              {{ $t('common.submit') }}
             </el-button>
           </el-form-item>
 

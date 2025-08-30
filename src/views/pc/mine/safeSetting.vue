@@ -26,7 +26,7 @@
           </div>
           <div class="setting-content">
             <h3 class="setting-title">{{ $t('mine.loginPwd') }}</h3>
-            <p class="setting-desc">修改登录密码，保护账户安全</p>
+            <p class="setting-desc">{{ $t('mine.loginPwdDesc') }}</p>
           </div>
           <div class="setting-arrow">
             <el-icon><ArrowRight /></el-icon>
@@ -42,7 +42,7 @@
           </div>
           <div class="setting-content">
             <h3 class="setting-title">{{ $t('mine.withdrawPwd') }}</h3>
-            <p class="setting-desc">设置提现密码，确保资金安全</p>
+            <p class="setting-desc">{{ $t('mine.withdrawPwdDesc') }}</p>
           </div>
           <div class="setting-arrow">
             <el-icon><ArrowRight /></el-icon>
@@ -52,19 +52,19 @@
 
       <!-- 安全提示 -->
       <div class="security-tips">
-        <h3 class="section-title">安全提示</h3>
+        <h3 class="section-title">{{ $t('mine.securityTips') }}</h3>
         <el-alert
-          title="账户安全建议"
+          :title="$t('mine.accountSecurityAdvice')"
           type="info"
           :closable="false"
           show-icon
         >
           <template #default>
             <ul class="tips-list">
-              <li>定期更新密码，建议使用字母、数字和特殊字符组合</li>
-              <li>提现密码应与登录密码不同，增强安全性</li>
-              <li>不要在公共场所或不安全的网络环境下修改密码</li>
-              <li>如发现账户异常，请立即联系客服</li>
+              <li>{{ $t('mine.securityTip1') }}</li>
+              <li>{{ $t('mine.securityTip2') }}</li>
+              <li>{{ $t('mine.securityTip3') }}</li>
+              <li>{{ $t('mine.securityTip4') }}</li>
             </ul>
           </template>
         </el-alert>
@@ -75,10 +75,12 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
 defineOptions({ name: 'PcSafeSetting' })
 
+const { t } = useI18n()
 const router = useRouter()
 
 function handleBack() {

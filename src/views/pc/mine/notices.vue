@@ -41,7 +41,7 @@
 
       <!-- 空数据状态 -->
       <div v-else class="empty-container">
-        <el-empty :description="$t('common.noData')" />
+        <el-empty :description="$t('records.noNotices')" />
       </div>
 
       <!-- 分页器 -->
@@ -77,7 +77,7 @@ interface NoticeItem {
   created_at: string
 }
 
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const router = useRouter()
 
 // 响应式数据
@@ -91,7 +91,7 @@ function handleBack() {
   router.back()
 }
 
-// 格式化时间
+// 格式化时间 - 使用动态语言环境
 function formatTime(timeStr: string): string {
   if (!timeStr) return ''
 
@@ -101,7 +101,9 @@ function formatTime(timeStr: string): string {
       return timeStr
     }
 
-    return date.toLocaleString('zh-CN', {
+    // 使用当前语言设置格式化时间
+    const currentLocale = t('common.locale')
+    return date.toLocaleString(currentLocale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -157,11 +159,11 @@ async function getNotices(page = 1, limit = 20) {
         currentPage: currentPage.value
       })
     } else {
-      throw new Error(resp?.message || '获取通知失败')
+      throw new Error(resp?.message || t('records.getNoticesFailed'))
     }
   } catch (error) {
     console.error('获取通知列表失败:', error)
-    ElMessage.error('获取通知失败，请稍后重试')
+    ElMessage.error(t('records.getNoticesFailed'))
     noticeList.value = []
     total.value = 0
   } finally {

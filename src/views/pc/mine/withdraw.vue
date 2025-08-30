@@ -10,7 +10,7 @@
       >
         {{ $t('common.back') }}
       </el-button>
-      <h2 class="page-title">{{ $t('mine.sunmitWithdraw') }}</h2>
+      <h2 class="page-title">{{ $t('mine.submitWithdraw') }}</h2>
     </div>
 
     <!-- PC端内容区域 -->
@@ -44,17 +44,17 @@
               class="readonly-input"
             >
               <template #append>
-                <span class="currency-unit">{{ $t('yuan') }}</span>
+                <span class="currency-unit">{{ $t('common.yuan') }}</span>
               </template>
             </el-input>
           </el-form-item>
 
           <!-- 收款账户 -->
-          <el-form-item :label="$t('mine.shouChannel')" prop="account_id">
+          <el-form-item :label="$t('mine.paymentAddress')" prop="account_id">
             <div class="account-row">
               <el-select
                 v-model="frm.account_id"
-                :placeholder="$t('selected')"
+                :placeholder="$t('common.selected')"
                 class="account-select"
                 @change="changeAccountHandler"
               >
@@ -67,7 +67,7 @@
                   <div class="account-option">
                     <span class="account-name">{{ account.text }}</span>
                     <el-tag v-if="account.isDefault" type="success" size="small">
-                      {{ $t('default') }}
+                      {{ $t('mine.defaultBadge') }}
                     </el-tag>
                   </div>
                 </el-option>
@@ -78,7 +78,7 @@
                 @click="goAddAccount"
                 class="add-account-btn"
               >
-                {{ $t('add') }}
+                {{ $t('common.add') }}
               </el-button>
             </div>
           </el-form-item>
@@ -125,7 +125,7 @@
             </el-input>
             <div class="amount-tips" v-if="frm.amount">
               <el-text type="info" size="small">
-                {{ $t('withdrawAmount') }}: ¥{{ frm.amount }}
+                {{ $t('withdraw.amount') }}: ¥{{ frm.amount }}
               </el-text>
             </div>
           </el-form-item>
@@ -152,14 +152,14 @@
               class="submit-btn"
               :icon="Check"
             >
-              {{ submitting ? $t('submitting') : $t('submit') }}
+              {{ submitting ? $t('withdraw.submitting') : $t('common.submit') }}
             </el-button>
             <el-button
               size="large"
               @click="resetForm"
               class="reset-btn"
             >
-              {{ $t('reset') }}
+              {{ $t('common.reset') }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -167,9 +167,9 @@
 
       <!-- 提现说明 -->
       <div class="notice-section">
-        <h3 class="section-title">{{ $t('withdrawNotice') }}</h3>
+        <h3 class="section-title">{{ $t('withdraw.notice') }}</h3>
         <el-alert
-          :title="$t('importantNotice')"
+          :title="$t('withdraw.importantNotice')"
           type="warning"
           :closable="false"
           show-icon
@@ -177,10 +177,10 @@
         >
           <template #default>
             <ul class="notice-list">
-              <li>{{ $t('withdrawNotice1') }}</li>
-              <li>{{ $t('withdrawNotice2') }}</li>
-              <li>{{ $t('withdrawNotice3') }}</li>
-              <li>{{ $t('withdrawNotice4') }}</li>
+              <li>{{ $t('withdraw.notice1') }}</li>
+              <li>{{ $t('withdraw.notice2') }}</li>
+              <li>{{ $t('withdraw.notice3') }}</li>
+              <li>{{ $t('withdraw.notice4') }}</li>
             </ul>
           </template>
         </el-alert>
@@ -260,7 +260,7 @@ const frm = reactive({
 // 验证规则
 const rules = reactive<FormRules>({
   account_id: [
-    { required: true, message: t('selectWithdrawAccount'), trigger: 'change' }
+    { required: true, message: t('withdraw.selectAccount'), trigger: 'change' }
   ],
   amount: [
     { required: true, message: t('mine.inputPlz'), trigger: 'blur' },
@@ -268,11 +268,11 @@ const rules = reactive<FormRules>({
       validator: (rule, value, callback) => {
         const amount = parseFloat(value)
         if (isNaN(amount) || amount <= 0) {
-          callback(new Error(t('enterValidAmount')))
+          callback(new Error(t('withdraw.enterValidAmount')))
         } else {
           const userMoney = store.getUser()?.money ?? 0
           if (amount > userMoney) {
-            callback(new Error(t('insufficientBalance')))
+            callback(new Error(t('withdraw.insufficientBalance')))
           } else {
             callback()
           }
@@ -283,7 +283,7 @@ const rules = reactive<FormRules>({
   ],
   withdraw_pwd: [
     { required: true, message: t('mine.inputPlz'), trigger: 'blur' },
-    { min: 6, message: t('passwordMinLength'), trigger: 'blur' }
+    { min: 6, message: t('withdraw.passwordMinLength'), trigger: 'blur' }
   ]
 })
 
@@ -347,7 +347,7 @@ async function onSubmit() {
       })
 
       if (resp && resp.code === 200) {
-        ElMessage.success(resp.message || t('withdrawApplySuccess'))
+        ElMessage.success(resp.message || t('withdraw.applySuccess'))
 
         // 更新用户余额
         const user = store.getUser()
@@ -365,11 +365,11 @@ async function onSubmit() {
         }, 1500)
 
       } else {
-        throw new Error(resp?.message || t('withdrawApplyFailed'))
+        throw new Error(resp?.message || t('withdraw.applyFailed'))
       }
     } catch (error) {
       console.error('提现申请错误:', error)
-      const message = (error as Error).message || t('withdrawApplyFailed')
+      const message = (error as Error).message || t('withdraw.applyFailed')
       ElMessage.error(message)
     } finally {
       submitting.value = false
@@ -400,11 +400,11 @@ async function loadAccountList() {
         selectedAccount.value = defaultAccount
       }
     } else {
-      throw new Error(resp?.message || t('getAccountListFailed'))
+      throw new Error(resp?.message || t('withdraw.getAccountListFailed'))
     }
   } catch (error) {
     console.error('获取账户列表错误:', error)
-    ElMessage.error(t('getAccountListFailed'))
+    ElMessage.error(t('withdraw.getAccountListFailed'))
   }
 }
 
