@@ -163,6 +163,8 @@ interface RecordItem {
   remark: string
 }
 
+type ElTagType = 'success' | 'info' | 'warning' | 'danger'
+
 const { t } = useI18n()
 const router = useRouter()
 
@@ -202,8 +204,8 @@ function getAmountClass(type: number): string {
   return (type === 1 || type === 4) ? 'amount-income' : 'amount-expense'
 }
 
-// 获取类型标签样式
-function getTypeTagType(type: number): string {
+// 获取类型标签样式 - 修复类型问题
+function getTypeTagType(type: number): 'success' | 'danger' {
   return (type === 1 || type === 4) ? 'success' : 'danger'
 }
 
