@@ -1,179 +1,179 @@
 <template>
-  <div class="withdraw-apply-container">
-    <!-- 页面头部 -->
-    <div class="page-header">
+  <div class="pc-withdraw-apply">
+    <!-- PC端头部 -->
+    <div class="pc-header">
       <el-button
-        @click="onClickLeft"
+        type="primary"
         :icon="ArrowLeft"
-        circle
-        size="small"
+        @click="handleBack"
         class="back-btn"
-      />
+      >
+        {{ $t('common.back') }}
+      </el-button>
       <h2 class="page-title">{{ $t('mine.sunmitWithdraw') }}</h2>
     </div>
 
-    <!-- 提现表单 -->
-    <el-card class="withdraw-card" shadow="never">
-      <el-form
-        ref="withdrawFormRef"
-        :model="frm"
-        :rules="rules"
-        label-width="140px"
-        @submit.prevent="onSubmit"
-        class="withdraw-form"
-      >
-        <!-- 用户信息 -->
-        <el-form-item :label="$t('mine.name')">
-          <el-input
-            v-model="frm.name"
-            readonly
-            :prefix-icon="User"
-            class="readonly-input"
-          />
-        </el-form-item>
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
+      <!-- 提现表单 -->
+      <div class="form-section">
+        <el-form
+          ref="withdrawFormRef"
+          :model="frm"
+          :rules="rules"
+          label-width="140px"
+          @submit.prevent="onSubmit"
+          class="withdraw-form"
+        >
+          <!-- 用户信息 -->
+          <el-form-item :label="$t('mine.name')">
+            <el-input
+              v-model="frm.name"
+              readonly
+              :prefix-icon="User"
+              class="readonly-input"
+            />
+          </el-form-item>
 
-        <!-- 可提现余额 -->
-        <el-form-item :label="$t('mine.canDrawMoney')">
-          <el-input
-            :model-value="store.getUser()?.money ?? 0"
-            readonly
-            :prefix-icon="Wallet"
-            class="readonly-input"
-          >
-            <template #append>
-              <span class="currency-unit">{{ $t('yuan') }}</span>
-            </template>
-          </el-input>
-        </el-form-item>
-
-        <!-- 收款账户 -->
-        <el-form-item :label="$t('mine.shouChannel')" prop="account_id">
-          <el-select
-            v-model="frm.account_id"
-            :placeholder="$t('selected')"
-            class="account-select"
-            @change="changeAccountHandler"
-          >
-            <el-option
-              v-for="account in accountList"
-              :key="account.value"
-              :label="account.text"
-              :value="account.value"
+          <!-- 可提现余额 -->
+          <el-form-item :label="$t('mine.canDrawMoney')">
+            <el-input
+              :model-value="store.getUser()?.money ?? 0"
+              readonly
+              :prefix-icon="Wallet"
+              class="readonly-input"
             >
-              <div class="account-option">
-                <span class="account-name">{{ account.text }}</span>
-                <el-tag v-if="account.isDefault" type="success" size="small">
-                  {{ $t('default') }}
-                </el-tag>
-              </div>
-            </el-option>
-          </el-select>
-          <el-button
-            type="primary"
-            :icon="Plus"
-            @click="goAddAccount"
-            class="add-account-btn"
-          >
-            {{ $t('add') }}
-          </el-button>
-        </el-form-item>
+              <template #append>
+                <span class="currency-unit">{{ $t('yuan') }}</span>
+              </template>
+            </el-input>
+          </el-form-item>
 
-        <!-- 账户名称 -->
-        <el-form-item :label="$t('mine.cardName')" v-if="selectedAccount">
-          <el-input
-            :model-value="selectedAccount?.account_name || ''"
-            readonly
-            :prefix-icon="CreditCard"
-            class="readonly-input"
-          />
-        </el-form-item>
-
-        <!-- 账户信息 -->
-        <el-form-item :label="$t('mine.cardAccount')" v-if="selectedAccount">
-          <el-input
-            :model-value="selectedAccount?.display_info || ''"
-            readonly
-            :prefix-icon="InfoFilled"
-            class="readonly-input"
-          />
-        </el-form-item>
-
-        <!-- 提现金额 -->
-        <el-form-item :label="$t('mine.drawMoney')" prop="amount">
-          <el-input
-            v-model="frm.amount"
-            type="number"
-            :placeholder="$t('mine.inputPlz')"
-            :prefix-icon="Money"
-            @input="handleAmountInput"
-            class="amount-input"
-          >
-            <template #append>
+          <!-- 收款账户 -->
+          <el-form-item :label="$t('mine.shouChannel')" prop="account_id">
+            <div class="account-row">
+              <el-select
+                v-model="frm.account_id"
+                :placeholder="$t('selected')"
+                class="account-select"
+                @change="changeAccountHandler"
+              >
+                <el-option
+                  v-for="account in accountList"
+                  :key="account.value"
+                  :label="account.text"
+                  :value="account.value"
+                >
+                  <div class="account-option">
+                    <span class="account-name">{{ account.text }}</span>
+                    <el-tag v-if="account.isDefault" type="success" size="small">
+                      {{ $t('default') }}
+                    </el-tag>
+                  </div>
+                </el-option>
+              </el-select>
               <el-button
                 type="primary"
-                @click="allMoney"
-                class="all-money-btn"
+                :icon="Plus"
+                @click="goAddAccount"
+                class="add-account-btn"
               >
-                {{ $t('mine.allMoney') }}
+                {{ $t('add') }}
               </el-button>
-            </template>
-          </el-input>
-          <div class="amount-tips" v-if="frm.amount">
-            <el-text type="info" size="small">
-              {{ $t('withdrawAmount') }}: ¥{{ frm.amount }}
-            </el-text>
-          </div>
-        </el-form-item>
+            </div>
+          </el-form-item>
 
-        <!-- 提现密码 -->
-        <el-form-item :label="$t('mine.drawingPwd')" prop="withdraw_pwd">
-          <el-input
-            v-model="frm.withdraw_pwd"
-            type="password"
-            :placeholder="$t('mine.inputPlz')"
-            :prefix-icon="Lock"
-            show-password
-            @keyup.enter="onSubmit"
-          />
-        </el-form-item>
+          <!-- 账户名称 -->
+          <el-form-item :label="$t('mine.cardName')" v-if="selectedAccount">
+            <el-input
+              :model-value="selectedAccount?.account_name || ''"
+              readonly
+              :prefix-icon="CreditCard"
+              class="readonly-input"
+            />
+          </el-form-item>
 
-        <!-- 提交按钮 -->
-        <el-form-item class="submit-item">
-          <el-button
-            type="primary"
-            size="large"
-            :loading="submitting"
-            @click="onSubmit"
-            class="submit-btn"
-            :icon="Check"
-          >
-            {{ submitting ? $t('submitting') : $t('submit') }}
-          </el-button>
-          <el-button
-            size="large"
-            @click="resetForm"
-            class="reset-btn"
-          >
-            {{ $t('reset') }}
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
+          <!-- 账户信息 -->
+          <el-form-item :label="$t('mine.cardAccount')" v-if="selectedAccount">
+            <el-input
+              :model-value="selectedAccount?.display_info || ''"
+              readonly
+              :prefix-icon="InfoFilled"
+              class="readonly-input"
+            />
+          </el-form-item>
 
-    <!-- 提现说明 -->
-    <el-card class="info-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <el-icon><InfoFilled /></el-icon>
-          <span>{{ $t('withdrawNotice') }}</span>
-        </div>
-      </template>
-      <div class="info-content">
+          <!-- 提现金额 -->
+          <el-form-item :label="$t('mine.drawMoney')" prop="amount">
+            <el-input
+              v-model="frm.amount"
+              type="number"
+              :placeholder="$t('mine.inputPlz')"
+              :prefix-icon="Money"
+              @input="handleAmountInput"
+              class="amount-input"
+            >
+              <template #append>
+                <el-button
+                  type="primary"
+                  @click="allMoney"
+                  class="all-money-btn"
+                >
+                  {{ $t('mine.allMoney') }}
+                </el-button>
+              </template>
+            </el-input>
+            <div class="amount-tips" v-if="frm.amount">
+              <el-text type="info" size="small">
+                {{ $t('withdrawAmount') }}: ¥{{ frm.amount }}
+              </el-text>
+            </div>
+          </el-form-item>
+
+          <!-- 提现密码 -->
+          <el-form-item :label="$t('mine.drawingPwd')" prop="withdraw_pwd">
+            <el-input
+              v-model="frm.withdraw_pwd"
+              type="password"
+              :placeholder="$t('mine.inputPlz')"
+              :prefix-icon="Lock"
+              show-password
+              @keyup.enter="onSubmit"
+            />
+          </el-form-item>
+
+          <!-- 提交按钮 -->
+          <el-form-item class="submit-item">
+            <el-button
+              type="primary"
+              size="large"
+              :loading="submitting"
+              @click="onSubmit"
+              class="submit-btn"
+              :icon="Check"
+            >
+              {{ submitting ? $t('submitting') : $t('submit') }}
+            </el-button>
+            <el-button
+              size="large"
+              @click="resetForm"
+              class="reset-btn"
+            >
+              {{ $t('reset') }}
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 提现说明 -->
+      <div class="notice-section">
+        <h3 class="section-title">{{ $t('withdrawNotice') }}</h3>
         <el-alert
           :title="$t('importantNotice')"
           type="warning"
           :closable="false"
           show-icon
+          class="notice-alert"
         >
           <template #default>
             <ul class="notice-list">
@@ -185,7 +185,7 @@
           </template>
         </el-alert>
       </div>
-    </el-card>
+    </div>
   </div>
 </template>
 
@@ -205,7 +205,7 @@ import {
   Plus
 } from '@element-plus/icons-vue'
 import { moneyApi } from '@/api'
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'PcWithdrawApply' })
@@ -288,7 +288,7 @@ const rules = reactive<FormRules>({
 })
 
 // 方法
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -445,263 +445,206 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss">
-.withdraw-apply-container {
-  padding: 20px;
+<style scoped>
+.pc-withdraw-apply {
+  min-height: 100vh;
   background-color: #f5f7fa;
-  min-height: calc(100vh - 40px);
-  max-width: 900px;
+  padding: 20px;
+  max-width: 1200px;
   margin: 0 auto;
-
-  .page-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    padding: 0 20px;
-
-    .page-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: #303133;
-      margin: 0 0 0 20px;
-      flex: 1;
-    }
-
-    .back-btn {
-      flex-shrink: 0;
-    }
-  }
-
-  .withdraw-card {
-    margin-bottom: 20px;
-
-    :deep(.el-card__body) {
-      padding: 30px;
-    }
-
-    .withdraw-form {
-      :deep(.el-form-item) {
-        margin-bottom: 24px;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      .readonly-input {
-        :deep(.el-input__wrapper) {
-          background-color: #f5f7fa;
-        }
-      }
-
-      .account-select {
-        flex: 1;
-        margin-right: 12px;
-      }
-
-      .account-option {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-
-        .account-name {
-          flex: 1;
-        }
-      }
-
-      .add-account-btn {
-        flex-shrink: 0;
-      }
-
-      .amount-input {
-        :deep(.el-input-group__append) {
-          padding: 0;
-          background-color: transparent;
-          border: none;
-
-          .all-money-btn {
-            border-radius: 0 4px 4px 0;
-            border-left: 1px solid #dcdfe6;
-          }
-        }
-      }
-
-      .amount-tips {
-        margin-top: 8px;
-        padding-left: 4px;
-      }
-
-      .currency-unit {
-        font-weight: 500;
-        color: #606266;
-      }
-
-      .submit-item {
-        :deep(.el-form-item__content) {
-          display: flex;
-          gap: 16px;
-          justify-content: center;
-          margin-top: 20px;
-        }
-
-        .submit-btn,
-        .reset-btn {
-          min-width: 140px;
-          height: 48px;
-          font-size: 16px;
-        }
-
-        .submit-btn {
-          background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%);
-          border: none;
-
-          &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%);
-          }
-        }
-      }
-    }
-  }
-
-  .info-card {
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      color: #303133;
-
-      .el-icon {
-        font-size: 20px;
-        color: #409eff;
-      }
-    }
-
-    .info-content {
-      .notice-list {
-        margin: 12px 0 0 0;
-        padding-left: 20px;
-        list-style: none;
-
-        li {
-          position: relative;
-          margin-bottom: 8px;
-          line-height: 1.6;
-          color: #606266;
-          font-size: 14px;
-
-          &:before {
-            content: '•';
-            position: absolute;
-            left: -16px;
-            color: #e6a23c;
-          }
-
-          &:last-child {
-            margin-bottom: 0;
-          }
-        }
-      }
-    }
-  }
 }
 
-// 响应式适配
-@media (max-width: 768px) {
-  .withdraw-apply-container {
-    padding: 12px;
-
-    .page-header {
-      padding: 0 12px;
-      margin-bottom: 16px;
-
-      .page-title {
-        font-size: 20px;
-        margin-left: 12px;
-      }
-    }
-
-    .withdraw-card {
-      :deep(.el-card__body) {
-        padding: 20px;
-      }
-
-      .withdraw-form {
-        :deep(.el-form) {
-          .el-form-item__label {
-            width: 100px !important;
-          }
-        }
-
-        .submit-item {
-          :deep(.el-form-item__content) {
-            flex-direction: column;
-
-            .submit-btn,
-            .reset-btn {
-              width: 100%;
-            }
-          }
-        }
-      }
-    }
-  }
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-// 大屏优化
-@media (min-width: 1200px) {
-  .withdraw-apply-container {
-    max-width: 1000px;
+.back-btn {
+  margin-right: 16px;
+}
 
-    .withdraw-card {
-      :deep(.el-card__body) {
-        padding: 40px;
-      }
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
 
-      .withdraw-form {
-        :deep(.el-form-item) {
-          margin-bottom: 28px;
-        }
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 
-        :deep(.el-form-item__label) {
-          font-size: 15px;
-        }
+.form-section {
+  margin-bottom: 32px;
+}
 
-        :deep(.el-input) {
-          font-size: 15px;
-        }
+.withdraw-form .el-form-item {
+  margin-bottom: 24px;
+}
 
-        .submit-item {
-          .submit-btn,
-          .reset-btn {
-            min-width: 160px;
-            height: 52px;
-            font-size: 17px;
-          }
-        }
-      }
-    }
+.withdraw-form .el-form-item:last-child {
+  margin-bottom: 0;
+}
 
-    .info-card {
-      .card-header {
-        font-size: 17px;
+.readonly-input :deep(.el-input__wrapper) {
+  background-color: #f5f7fa;
+}
 
-        .el-icon {
-          font-size: 22px;
-        }
-      }
+.account-row {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
 
-      .info-content {
-        .notice-list {
-          li {
-            font-size: 15px;
-            margin-bottom: 10px;
-          }
-        }
-      }
-    }
+.account-select {
+  flex: 1;
+}
+
+.account-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.account-name {
+  flex: 1;
+}
+
+.add-account-btn {
+  flex-shrink: 0;
+}
+
+.amount-input :deep(.el-input-group__append) {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+}
+
+.amount-input :deep(.el-input-group__append .all-money-btn) {
+  border-radius: 0 4px 4px 0;
+  border-left: 1px solid #dcdfe6;
+}
+
+.amount-tips {
+  margin-top: 8px;
+  padding-left: 4px;
+}
+
+.currency-unit {
+  font-weight: 500;
+  color: #606266;
+  padding: 0 12px;
+}
+
+.submit-item :deep(.el-form-item__content) {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.submit-btn,
+.reset-btn {
+  min-width: 140px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #409eff 0%, #3a8ee6 100%);
+  border: none;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #66b1ff 0%, #409eff 100%);
+}
+
+.notice-section {
+  border-top: 1px solid #ebeef5;
+  padding-top: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  position: relative;
+  padding-left: 12px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 3px;
+  height: 14px;
+  background-color: #4290ff;
+  border-radius: 2px;
+}
+
+.notice-alert {
+  border: 1px solid #faecd8;
+  background-color: #fdf6ec;
+}
+
+.notice-list {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.notice-list li {
+  position: relative;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #606266;
+  font-size: 14px;
+}
+
+.notice-list li:before {
+  content: '•';
+  position: absolute;
+  left: -16px;
+  color: #e6a23c;
+}
+
+.notice-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-withdraw-apply :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+.pc-withdraw-apply :deep(.el-input__wrapper) {
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px #dcdfe6 inset;
+}
+
+.pc-withdraw-apply :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #c0c4cc inset;
+}
+
+.pc-withdraw-apply :deep(.el-input.is-focus .el-input__wrapper) {
+  box-shadow: 0 0 0 1px #409eff inset;
+}
+
+@media (min-width: 1600px) {
+  .pc-withdraw-apply {
+    max-width: 1400px;
   }
 }
 </style>

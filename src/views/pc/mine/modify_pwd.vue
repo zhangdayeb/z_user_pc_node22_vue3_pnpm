@@ -1,142 +1,171 @@
 <template>
-  <div class="change-password-container">
-    <el-card class="password-card">
-      <template #header>
-        <div class="card-header">
-          <el-button
-            :icon="ArrowLeft"
-            @click="handleBack"
-            text
-          >
-            {{ $t('common.back') }}
-          </el-button>
-          <h2>{{ $t('mine.modifyLoginPwd') }}</h2>
-        </div>
-      </template>
-
-      <el-form
-        ref="passwordFormRef"
-        :model="passwordForm"
-        :rules="formRules"
-        label-width="140px"
-        class="password-form"
-        @submit.prevent="handleSubmit"
+  <div class="pc-change-password">
+    <!-- PC端头部 -->
+    <div class="pc-header">
+      <el-button
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
       >
-        <!-- 当前密码 -->
-        <el-form-item
-          :label="$t('mine.currPwd')"
-          prop="oldPassword"
-        >
-          <el-input
-            v-model="passwordForm.oldPassword"
-            type="password"
-            :placeholder="$t('mine.inputCurrPwd')"
-            show-password
-            autocomplete="current-password"
-            clearable
-          >
-            <template #prefix>
-              <el-icon><Lock /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
+        {{ $t('common.back') }}
+      </el-button>
+      <h2 class="page-title">{{ $t('mine.modifyLoginPwd') }}</h2>
+    </div>
 
-        <!-- 新密码 -->
-        <el-form-item
-          :label="$t('mine.newPwd')"
-          prop="newPassword"
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
+      <!-- 修改密码表单 -->
+      <div class="form-section">
+        <el-form
+          ref="passwordFormRef"
+          :model="passwordForm"
+          :rules="formRules"
+          label-width="140px"
+          class="password-form"
+          @submit.prevent="handleSubmit"
         >
-          <el-input
-            v-model="passwordForm.newPassword"
-            type="password"
-            :placeholder="$t('mine.inputNewPwd')"
-            show-password
-            autocomplete="new-password"
-            clearable
-            @input="checkPasswordStrength"
+          <!-- 当前密码 -->
+          <el-form-item
+            :label="$t('mine.currPwd')"
+            prop="oldPassword"
           >
-            <template #prefix>
-              <el-icon><Key /></el-icon>
-            </template>
-          </el-input>
+            <el-input
+              v-model="passwordForm.oldPassword"
+              type="password"
+              :placeholder="$t('mine.inputCurrPwd')"
+              show-password
+              autocomplete="current-password"
+              clearable
+            >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
 
-          <!-- 密码强度指示器 -->
-          <div v-if="passwordForm.newPassword" class="password-strength">
-            <div class="strength-bar">
-              <div
-                class="strength-level"
-                :class="passwordStrength.class"
-                :style="{ width: passwordStrength.percent }"
-              ></div>
+          <!-- 新密码 -->
+          <el-form-item
+            :label="$t('mine.newPwd')"
+            prop="newPassword"
+          >
+            <el-input
+              v-model="passwordForm.newPassword"
+              type="password"
+              :placeholder="$t('mine.inputNewPwd')"
+              show-password
+              autocomplete="new-password"
+              clearable
+              @input="checkPasswordStrength"
+            >
+              <template #prefix>
+                <el-icon><Key /></el-icon>
+              </template>
+            </el-input>
+
+            <!-- 密码强度指示器 -->
+            <div v-if="passwordForm.newPassword" class="password-strength">
+              <el-progress
+                :percentage="getStrengthPercentage()"
+                :color="passwordStrength.color"
+                :show-text="false"
+                class="strength-bar"
+              />
+              <span class="strength-text" :style="{ color: passwordStrength.color }">
+                {{ passwordStrength.text }}
+              </span>
             </div>
-            <span class="strength-text" :class="passwordStrength.class">
-              {{ passwordStrength.text }}
-            </span>
-          </div>
-        </el-form-item>
+          </el-form-item>
 
-        <!-- 确认新密码 -->
-        <el-form-item
-          :label="$t('mine.confrmNewPwd')"
-          prop="confirmPassword"
-        >
-          <el-input
-            v-model="passwordForm.confirmPassword"
-            type="password"
-            :placeholder="$t('mine.inputNewPwdAgain')"
-            show-password
-            autocomplete="new-password"
-            clearable
-            @paste.prevent
+          <!-- 确认新密码 -->
+          <el-form-item
+            :label="$t('mine.confrmNewPwd')"
+            prop="confirmPassword"
           >
-            <template #prefix>
-              <el-icon><Check /></el-icon>
-            </template>
-          </el-input>
-        </el-form-item>
+            <el-input
+              v-model="passwordForm.confirmPassword"
+              type="password"
+              :placeholder="$t('mine.inputNewPwdAgain')"
+              show-password
+              autocomplete="new-password"
+              clearable
+              @paste.prevent
+            >
+              <template #prefix>
+                <el-icon><CircleCheck /></el-icon>
+              </template>
+            </el-input>
+          </el-form-item>
 
-        <!-- 密码要求提示 -->
-        <el-form-item>
-          <div class="password-tips">
-            <p class="tips-title">{{ $t('mine.passwordRequirements') }}:</p>
-            <ul>
-              <li :class="{ valid: passwordChecks.length }">
-                <el-icon><CircleCheck v-if="passwordChecks.length" /><CircleClose v-else /></el-icon>
-                {{ $t('mine.passwordLength') }}
-              </li>
-              <li :class="{ valid: passwordChecks.hasNumber }">
-                <el-icon><CircleCheck v-if="passwordChecks.hasNumber" /><CircleClose v-else /></el-icon>
-                {{ $t('mine.passwordNumber') }}
-              </li>
-              <li :class="{ valid: passwordChecks.hasLetter }">
-                <el-icon><CircleCheck v-if="passwordChecks.hasLetter" /><CircleClose v-else /></el-icon>
-                {{ $t('mine.passwordLetter') }}
-              </li>
-            </ul>
-          </div>
-        </el-form-item>
-
-        <!-- 提交按钮 -->
-        <el-form-item>
-          <div class="form-actions">
+          <!-- 提交按钮 -->
+          <el-form-item class="form-actions">
             <el-button
               type="primary"
               size="large"
               :loading="isSubmitting"
               @click="handleSubmit"
+              class="submit-btn"
             >
               {{ isSubmitting ? $t('common.submitting') : $t('submit') }}
             </el-button>
             <el-button
               size="large"
               @click="handleReset"
+              class="reset-btn"
             >
               {{ $t('common.reset') }}
             </el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 密码要求提示 -->
+      <div class="requirements-section">
+        <h3 class="section-title">{{ $t('mine.passwordRequirements') }}</h3>
+        <div class="requirement-list">
+          <div class="requirement-item" :class="{ valid: passwordChecks.length }">
+            <el-icon class="requirement-icon">
+              <CircleCheck v-if="passwordChecks.length" />
+              <CircleClose v-else />
+            </el-icon>
+            <span>{{ $t('mine.passwordLength') }}</span>
           </div>
-        </el-form-item>
-      </el-form>
-    </el-card>
+          <div class="requirement-item" :class="{ valid: passwordChecks.hasNumber }">
+            <el-icon class="requirement-icon">
+              <CircleCheck v-if="passwordChecks.hasNumber" />
+              <CircleClose v-else />
+            </el-icon>
+            <span>{{ $t('mine.passwordNumber') }}</span>
+          </div>
+          <div class="requirement-item" :class="{ valid: passwordChecks.hasLetter }">
+            <el-icon class="requirement-icon">
+              <CircleCheck v-if="passwordChecks.hasLetter" />
+              <CircleClose v-else />
+            </el-icon>
+            <span>{{ $t('mine.passwordLetter') }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安全提示 -->
+      <div class="security-section">
+        <h3 class="section-title">安全提示</h3>
+        <el-alert
+          type="info"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <ul class="security-tips">
+              <li>密码修改成功后，需要重新登录</li>
+              <li>请使用包含字母和数字的强密码</li>
+              <li>不要使用简单或常见的密码组合</li>
+              <li>定期更换密码以保证账户安全</li>
+            </ul>
+          </template>
+        </el-alert>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -150,14 +179,13 @@ import {
   ArrowLeft,
   Lock,
   Key,
-  Check,
   CircleCheck,
   CircleClose
 } from '@element-plus/icons-vue'
 import { useAppStore } from '@/stores/app'
 import api from '@/api'
 
-defineOptions({ name: 'ChangePassword' })
+defineOptions({ name: 'PcChangePassword' })
 
 const { t } = useI18n()
 const router = useRouter()
@@ -185,7 +213,7 @@ const passwordChecks = reactive({
 // 密码强度计算
 const passwordStrength = computed(() => {
   const pwd = passwordForm.newPassword
-  if (!pwd) return { percent: '0%', text: '', class: '' }
+  if (!pwd) return { text: '', color: '#909399' }
 
   let strength = 0
   if (pwd.length >= 6) strength++
@@ -195,15 +223,30 @@ const passwordStrength = computed(() => {
   if (/[^a-zA-Z0-9]/.test(pwd)) strength++
 
   const levels = [
-    { percent: '20%', text: t('mine.passwordWeak'), class: 'weak' },
-    { percent: '40%', text: t('mine.passwordWeak'), class: 'weak' },
-    { percent: '60%', text: t('mine.passwordMedium'), class: 'medium' },
-    { percent: '80%', text: t('mine.passwordStrong'), class: 'strong' },
-    { percent: '100%', text: t('mine.passwordVeryStrong'), class: 'very-strong' }
+    { text: t('mine.passwordWeak'), color: '#F56C6C' },
+    { text: t('mine.passwordWeak'), color: '#F56C6C' },
+    { text: t('mine.passwordMedium'), color: '#E6A23C' },
+    { text: t('mine.passwordStrong'), color: '#67C23A' },
+    { text: t('mine.passwordVeryStrong'), color: '#409EFF' }
   ]
 
   return levels[Math.min(strength - 1, 4)] || levels[0]
 })
+
+// 获取强度百分比
+function getStrengthPercentage(): number {
+  const pwd = passwordForm.newPassword
+  if (!pwd) return 0
+
+  let strength = 0
+  if (pwd.length >= 6) strength++
+  if (pwd.length >= 10) strength++
+  if (/[0-9]/.test(pwd)) strength++
+  if (/[a-zA-Z]/.test(pwd)) strength++
+  if (/[^a-zA-Z0-9]/.test(pwd)) strength++
+
+  return Math.min(strength * 20, 100)
+}
 
 // 自定义验证规则
 const validatePassword = (rule: any, value: any, callback: any) => {
@@ -325,147 +368,170 @@ watch(() => passwordForm.newPassword, () => {
 })
 </script>
 
-<style lang="less" scoped>
-.change-password-container {
-  min-height: calc(100vh - 60px);
-  padding: 20px;
+<style scoped>
+.pc-change-password {
+  min-height: 100vh;
   background-color: #f5f7fa;
-
-  .password-card {
-    max-width: 700px;
-    margin: 0 auto;
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-
-      h2 {
-        margin: 0;
-        font-size: 20px;
-        color: #303133;
-      }
-    }
-
-    .password-form {
-      padding: 20px 40px;
-
-      .password-strength {
-        margin-top: 10px;
-
-        .strength-bar {
-          height: 6px;
-          background-color: #ebeef5;
-          border-radius: 3px;
-          overflow: hidden;
-          margin-bottom: 5px;
-
-          .strength-level {
-            height: 100%;
-            border-radius: 3px;
-            transition: all 0.3s;
-
-            &.weak {
-              background-color: #f56c6c;
-            }
-
-            &.medium {
-              background-color: #e6a23c;
-            }
-
-            &.strong {
-              background-color: #67c23a;
-            }
-
-            &.very-strong {
-              background: linear-gradient(90deg, #67c23a, #409eff);
-            }
-          }
-        }
-
-        .strength-text {
-          font-size: 12px;
-
-          &.weak {
-            color: #f56c6c;
-          }
-
-          &.medium {
-            color: #e6a23c;
-          }
-
-          &.strong {
-            color: #67c23a;
-          }
-
-          &.very-strong {
-            color: #409eff;
-          }
-        }
-      }
-
-      .password-tips {
-        background-color: #f4f4f5;
-        padding: 15px;
-        border-radius: 4px;
-
-        .tips-title {
-          margin: 0 0 10px 0;
-          font-weight: 500;
-          color: #606266;
-        }
-
-        ul {
-          margin: 0;
-          padding-left: 0;
-          list-style: none;
-
-          li {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 5px 0;
-            color: #909399;
-            transition: color 0.3s;
-
-            .el-icon {
-              font-size: 16px;
-            }
-
-            &.valid {
-              color: #67c23a;
-            }
-          }
-        }
-      }
-
-      .form-actions {
-        display: flex;
-        gap: 20px;
-        margin-left: 0;
-
-        .el-button {
-          min-width: 120px;
-        }
-      }
-    }
-  }
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-// 响应式适配
-@media (max-width: 768px) {
-  .change-password-container {
-    padding: 10px;
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 
-    .password-card {
-      .password-form {
-        padding: 20px;
+.back-btn {
+  margin-right: 16px;
+}
 
-        :deep(.el-form-item__label) {
-          width: 100px !important;
-        }
-      }
-    }
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  position: relative;
+  padding-left: 12px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 3px;
+  height: 14px;
+  background-color: #4290ff;
+  border-radius: 2px;
+}
+
+.form-section {
+  margin-bottom: 32px;
+}
+
+.password-form .el-form-item {
+  margin-bottom: 24px;
+}
+
+.password-strength {
+  margin-top: 8px;
+}
+
+.strength-bar {
+  margin-bottom: 4px;
+}
+
+.strength-text {
+  font-size: 12px;
+}
+
+.form-actions :deep(.el-form-item__content) {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.submit-btn,
+.reset-btn {
+  min-width: 120px;
+  height: 48px;
+  font-size: 16px;
+}
+
+.requirements-section {
+  margin-bottom: 32px;
+}
+
+.requirement-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #909399;
+  transition: color 0.3s;
+}
+
+.requirement-item.valid {
+  color: #67c23a;
+}
+
+.requirement-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.security-section {
+  border-top: 1px solid #ebeef5;
+  padding-top: 24px;
+}
+
+.security-tips {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.security-tips li {
+  position: relative;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #606266;
+  font-size: 14px;
+}
+
+.security-tips li:before {
+  content: '•';
+  position: absolute;
+  left: -16px;
+  color: #409eff;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-change-password :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+.pc-change-password :deep(.el-input__wrapper) {
+  border-radius: 6px;
+}
+
+.pc-change-password :deep(.el-alert) {
+  border-radius: 6px;
+}
+
+@media (min-width: 1600px) {
+  .pc-change-password {
+    max-width: 1400px;
   }
 }
 </style>

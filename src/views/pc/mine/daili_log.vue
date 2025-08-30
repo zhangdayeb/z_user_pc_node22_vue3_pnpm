@@ -5,7 +5,7 @@
       <el-button
         type="primary"
         :icon="ArrowLeft"
-        @click="onClickLeft"
+        @click="handleBack"
         class="back-btn"
       >
         {{ $t('common.back') }}
@@ -21,23 +21,41 @@
         :data="list"
         class="record-table"
         :empty-text="$t('noAgentRecord')"
-        v-infinite-scroll="onLoad"
-        :infinite-scroll-disabled="finished"
-        :infinite-scroll-delay="200"
+        stripe
       >
-        <el-table-column prop="name" :label="$t('agent')" width="200" />
-        <el-table-column :label="$t('balance')" width="150">
+        <el-table-column
+          prop="name"
+          :label="$t('agent')"
+          min-width="150"
+        />
+        <el-table-column
+          :label="$t('balance')"
+          width="150"
+          align="right"
+        >
           <template #default="{ row }">
-            {{ row.money }}
+            <span class="money-value">¥{{ formatMoney(row.money) }}</span>
           </template>
         </el-table-column>
-        <el-table-column :label="$t('currentRate')" width="120">
+        <el-table-column
+          :label="$t('currentRate')"
+          width="120"
+          align="center"
+        >
           <template #default="{ row }">
             <el-tag type="success">{{ row.fanyong_proportion }}%</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="created_at" :label="$t('applyTime')" width="180" />
-        <el-table-column :label="$t('common.tip')" width="200">
+        <el-table-column
+          prop="created_at"
+          :label="$t('applyTime')"
+          width="180"
+        />
+        <el-table-column
+          :label="$t('common.operate')"
+          width="240"
+          align="center"
+        >
           <template #default="{ row }">
             <el-button-group>
               <el-button
@@ -59,35 +77,18 @@
         </el-table-column>
       </el-table>
 
-      <!-- 加载更多提示 -->
-      <div v-if="!finished && list.length > 0" class="load-more">
-        <el-icon class="is-loading"><Loading /></el-icon>
-        <span>{{ $t('loading') }}</span>
-      </div>
-
-      <!-- 没有更多数据提示 -->
-      <div v-if="finished && list.length > 0" class="no-more">
-        {{ $t('noMore') }}
-      </div>
-
-      <!-- 空状态 -->
-      <el-empty
-        v-if="!loading && !refreshing && list.length === 0"
-        :description="$t('noAgentRecord')"
-        class="empty-state"
+      <!-- 分页组件 -->
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        :background="true"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+        class="pagination"
       />
-
-      <!-- 刷新按钮 -->
-      <el-button
-        v-if="list.length > 0"
-        type="primary"
-        :loading="refreshing"
-        @click="onRefresh"
-        class="refresh-btn"
-        :icon="Refresh"
-      >
-        {{ $t('refresh') }}
-      </el-button>
     </div>
 
     <!-- 编辑比例弹窗 -->
@@ -152,7 +153,7 @@
               {{ currentAddMoneyItem?.name || '' }}
             </el-descriptions-item>
             <el-descriptions-item :label="$t('yourBalance')">
-              {{ currentUserInfo?.money || '0.00' }}
+              ¥{{ formatMoney(currentUserInfo?.money) }}
             </el-descriptions-item>
           </el-descriptions>
         </div>
@@ -202,7 +203,7 @@ import { useRouter } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { invokeApi } from '@/utils/tools'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Loading, Refresh } from '@element-plus/icons-vue'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'PcDailiRecord' })
@@ -227,9 +228,9 @@ const { t } = useI18n()
 const list = ref<DailiRecordItem[]>([])
 const currentUserInfo = ref<UserInfo | null>(null)
 const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
 const loading = ref(false)
-const refreshing = ref(false)
-const finished = ref(false)
 
 // === 编辑比例状态 ===
 const showEditDialog = ref(false)
@@ -243,72 +244,72 @@ const currentAddMoneyItem = ref<DailiRecordItem | null>(null)
 const addMoneyAmount = ref('')
 const transferLoading = ref(false)
 
+// 格式化金额显示
+function formatMoney(amount: string | undefined): string {
+  if (!amount) return '0.00'
+  const num = parseFloat(amount)
+  return isNaN(num) ? '0.00' : num.toFixed(2)
+}
+
 // === 初始化 ===
 onMounted(() => {
-  loadData(1, true)
+  loadData()
 })
 
 // === 核心数据加载函数 ===
-async function loadData(page: number, isRefresh: boolean = false) {
-  try {
-    if (isRefresh) {
-      loading.value = false
-      finished.value = false
-      currentPage.value = 1
-      list.value = []
-    } else {
-      loading.value = true
-    }
+async function loadData() {
+  loading.value = true
 
+  try {
     const resp = await invokeApi('dailiRecord', {
-      page: page,
-      limit: 20
+      page: currentPage.value,
+      limit: pageSize.value
     })
 
-    if (!resp || !resp.message) {
-      finished.value = true
+    if (!resp) {
+      loading.value = false
       return
     }
 
-    const data = resp.message
+    if (resp.data) {
+      const data = resp.data
+      list.value = data.list || []
 
-    // 更新用户信息
-    if (data.user_info) {
-      currentUserInfo.value = data.user_info
-      updateLocalStorage(data.user_info.money)
-    }
+      // 更新用户信息
+      if (data.user_info) {
+        currentUserInfo.value = data.user_info
+        updateLocalStorage(data.user_info.money)
+      }
 
-    // 处理列表数据
-    const newList = data.list || []
-    if (page === 1) {
-      list.value = newList
+      // 更新分页信息
+      if (data.pagination) {
+        total.value = data.pagination.total || 0
+        currentPage.value = data.pagination.current_page || 1
+      }
     } else {
-      list.value = [...list.value, ...newList]
+      list.value = []
+      total.value = 0
     }
-
-    // 更新分页状态
-    currentPage.value = page
-    finished.value = !data.pagination?.has_more
-
   } catch (error) {
-    finished.value = true
+    ElMessage.error(t('getAgentRecordFailed'))
+    list.value = []
+    total.value = 0
   } finally {
     loading.value = false
-    refreshing.value = false
   }
 }
 
-// === 下拉刷新 ===
-async function onRefresh() {
-  refreshing.value = true
-  await loadData(1, true)
+// 处理分页变化
+async function handlePageChange(page: number) {
+  currentPage.value = page
+  await loadData()
 }
 
-// === 上拉加载更多 ===
-async function onLoad() {
-  if (!finished.value && !loading.value) {
-    await loadData(currentPage.value + 1, false)
-  }
+// 分页大小变化
+function handleSizeChange(val: number) {
+  pageSize.value = val
+  currentPage.value = 1
+  loadData()
 }
 
 // === 更新本地存储 ===
@@ -432,15 +433,12 @@ async function handleAddMoneyConfirm(action: string) {
 
     if (isSuccess) {
       showAddMoneyDialog.value = false
+      ElMessage.success(t('transferSuccess'))
 
-      // 延时提示和刷新
+      // 刷新数据
       setTimeout(() => {
-        ElMessage.success(t('transferSuccess'))
-      }, 200)
-
-      setTimeout(() => {
-        onRefresh()
-      }, 400)
+        loadData()
+      }, 500)
 
       return true
     } else {
@@ -456,7 +454,7 @@ async function handleAddMoneyConfirm(action: string) {
 }
 
 // === 返回上一页 ===
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 </script>
@@ -466,6 +464,8 @@ function onClickLeft() {
   min-height: 100vh;
   background-color: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pc-header {
@@ -494,7 +494,6 @@ function onClickLeft() {
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: relative;
 }
 
 .record-table {
@@ -502,45 +501,29 @@ function onClickLeft() {
   margin-bottom: 20px;
 }
 
-.load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  color: #666;
-  font-size: 14px;
+.money-value {
+  font-weight: 600;
+  color: #67c23a;
+  font-size: 15px;
 }
 
-.load-more .el-icon {
-  margin-right: 8px;
+.pagination {
+  margin-top: 20px;
+  justify-content: flex-end;
 }
 
-.no-more {
-  text-align: center;
-  padding: 20px;
-  color: #999;
-  font-size: 14px;
-}
-
-.empty-state {
-  padding: 80px 0;
-}
-
-.refresh-btn {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-}
-
-.edit-content, .add-money-content {
+.edit-content,
+.add-money-content {
   padding: 20px 0;
 }
 
-.edit-info, .add-money-info {
+.edit-info,
+.add-money-info {
   margin-bottom: 24px;
 }
 
-.edit-form, .add-money-form {
+.edit-form,
+.add-money-form {
   margin-top: 24px;
 }
 
@@ -573,6 +556,14 @@ function onClickLeft() {
   padding: 16px 12px;
 }
 
+.pc-daili-record :deep(.el-table__empty-block) {
+  padding: 60px 0;
+}
+
+.pc-daili-record :deep(.el-pagination) {
+  padding: 12px 0;
+}
+
 .pc-daili-record :deep(.el-button-group .el-button) {
   margin: 0;
 }
@@ -591,11 +582,9 @@ function onClickLeft() {
   border-top: 1px solid #ebeef5;
 }
 
-.pc-daili-record :deep(.el-descriptions__body .el-descriptions__table) {
-  border-radius: 6px;
-}
-
-.pc-daili-record :deep(.el-alert--warning) {
-  border-radius: 6px;
+@media (min-width: 1600px) {
+  .pc-daili-record {
+    max-width: 1400px;
+  }
 }
 </style>

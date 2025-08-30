@@ -1,69 +1,108 @@
 <template>
-  <div class="m-notices">
-    <van-nav-bar
-      left-arrow
-      :title="$t('mine.myNotices')"
-      @click-left="onClickLeft"
-      class="m-nav"
-    />
+  <div class="pc-notices">
+    <!-- PC端头部 -->
+    <div class="pc-header">
+      <el-button
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
+      >
+        {{ $t('common.back') }}
+      </el-button>
+      <h2 class="page-title">{{ $t('mine.myNotices') }}</h2>
+    </div>
 
-    <van-tabs v-model:active="active">
-      <van-tab :title="$t('unread')">
-        <van-empty
-          :description="$t('noRecord')"
-          v-if="unread.data.length <= 0"
-        />
-        <van-list
-          :immediate-check="false"
-          v-else
-          v-model:loading="unread.loading"
-          :finished="unread.finished"
-          :finished-text="$t('noMore')"
-          @load="unreadOnLoad"
-        >
-          <van-cell
-            v-for="(item, idx) in unread.data"
-            :key="idx"
-            is-link
-            :title="item.title"
-            :value="$t('unread')"
-            :label="item.created_at"
-            value-class="m-green m-f12"
-          />
-        </van-list>
-      </van-tab>
-      <van-tab :title="$t('readed')">
-        <van-empty :description="$t('noRecord')" v-if="read.data.length <= 0" />
-        <van-list
-          :immediate-check="false"
-          v-else
-          v-model:loading="unread.loading"
-          :finished="unread.finished"
-          :finished-text="$t('noMore')"
-          @load="unreadOnLoad"
-        >
-          <van-cell
-            v-for="(item, idx) in read.data"
-            :key="idx"
-            is-link
-            :title="item.title"
-            :value="$t('readed')"
-            :label="item.created_at"
-            value-class="m-c-red m-f12"
-          />
-        </van-list>
-      </van-tab>
-    </van-tabs>
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
+      <!-- 筛选标签 -->
+      <div class="filter-section">
+        <el-radio-group v-model="activeTab" @change="handleTabChange">
+          <el-radio-button :value="0">{{ $t('unread') }}</el-radio-button>
+          <el-radio-button :value="1">{{ $t('readed') }}</el-radio-button>
+        </el-radio-group>
+      </div>
+
+      <!-- 通知列表 -->
+      <div class="notices-list">
+        <!-- 未读通知 -->
+        <div v-if="activeTab === 0">
+          <div v-if="unread.data.length === 0 && !unread.loading" class="empty-state">
+            <el-empty :description="$t('noRecord')" />
+          </div>
+          <div v-else>
+            <div
+              v-for="(item, idx) in unread.data"
+              :key="`unread-${idx}`"
+              class="notice-item unread"
+              @click="handleNoticeClick(item)"
+            >
+              <div class="notice-content">
+                <h3 class="notice-title">{{ item.title }}</h3>
+                <p class="notice-time">{{ item.created_at }}</p>
+              </div>
+              <div class="notice-status">
+                <el-tag type="success" size="small">{{ $t('unread') }}</el-tag>
+              </div>
+              <div class="notice-arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 已读通知 -->
+        <div v-if="activeTab === 1">
+          <div v-if="read.data.length === 0 && !read.loading" class="empty-state">
+            <el-empty :description="$t('noRecord')" />
+          </div>
+          <div v-else>
+            <div
+              v-for="(item, idx) in read.data"
+              :key="`read-${idx}`"
+              class="notice-item read"
+              @click="handleNoticeClick(item)"
+            >
+              <div class="notice-content">
+                <h3 class="notice-title">{{ item.title }}</h3>
+                <p class="notice-time">{{ item.created_at }}</p>
+              </div>
+              <div class="notice-status">
+                <el-tag type="info" size="small">{{ $t('readed') }}</el-tag>
+              </div>
+              <div class="notice-arrow">
+                <el-icon><ArrowRight /></el-icon>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分页组件 -->
+      <el-pagination
+        v-if="getCurrentList().length > 0"
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        :background="true"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handlePageChange"
+        class="pagination"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { invokeApi } from '@/utils/tools'
 import type { ApiRead } from 'typings'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
-defineOptions({ name: 'myNotices' })
+defineOptions({ name: 'PcNotices' })
 
 interface ListData {
   data: ApiRead[]
@@ -72,8 +111,13 @@ interface ListData {
   total: number
   page: number
 }
+
 const router = useRouter()
-const active = ref(0)
+const activeTab = ref(0)
+const currentPage = ref(1)
+const pageSize = ref(20)
+const total = ref(0)
+
 const read = ref<ListData>({
   data: [],
   loading: false,
@@ -81,6 +125,7 @@ const read = ref<ListData>({
   total: 0,
   page: 0,
 })
+
 const unread = ref<ListData>({
   data: [],
   loading: false,
@@ -89,250 +134,252 @@ const unread = ref<ListData>({
   page: 0,
 })
 
-async function unreadOnLoad() {
-  await getMessage(unread.value.page + 1)
-}
+// 获取当前标签对应的列表
+const getCurrentList = computed(() => {
+  return activeTab.value === 0 ? unread.value.data : read.value.data
+})
 
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
-async function getMessage(p: number) {
-  const resp = await invokeApi('message', { page: p })
+// 标签切换
+function handleTabChange(value: number) {
+  activeTab.value = value
+  currentPage.value = 1
+  loadMessages()
+}
 
-  if (resp) {
-    const data = resp.data.data as ApiRead[]
+// 分页变化
+function handlePageChange(page: number) {
+  currentPage.value = page
+  loadMessages()
+}
 
-    data.forEach(it => {
-      if (it.is_read === 0) {
-        unread.value.data.push(it)
-      }
-      if (it.is_read === 1) {
-        read.value.data.push(it)
-      }
-    })
-    unread.value.finished = read.value.finished = true
-    console.log('unread', unread.value, read.value)
+// 分页大小变化
+function handleSizeChange(val: number) {
+  pageSize.value = val
+  currentPage.value = 1
+  loadMessages()
+}
+
+// 点击通知项
+function handleNoticeClick(item: ApiRead) {
+  // 处理通知点击事件，可以跳转到详情页或标记为已读
+  console.log('点击通知:', item)
+
+  // 如果是未读通知，可以标记为已读
+  if (item.is_read === 0) {
+    markAsRead(item)
   }
 }
 
-onMounted(async () => {
-  unread.value.data = []
-  unread.value.page = 0
-  await unreadOnLoad()
+// 标记为已读
+async function markAsRead(item: ApiRead) {
+  try {
+    // 调用标记已读的API
+    const resp = await invokeApi('markMessageRead', { id: item.id })
+
+    if (resp && resp.code === 200) {
+      // 从未读列表移除，添加到已读列表
+      const index = unread.value.data.findIndex(notice => notice.id === item.id)
+      if (index !== -1) {
+        const readItem = { ...item, is_read: 1 }
+        unread.value.data.splice(index, 1)
+        read.value.data.unshift(readItem)
+      }
+    }
+  } catch (error) {
+    console.error('标记已读失败:', error)
+  }
+}
+
+// 加载消息数据
+async function loadMessages() {
+  try {
+    const resp = await invokeApi('message', {
+      page: currentPage.value,
+      limit: pageSize.value
+    })
+
+    if (resp && resp.data) {
+      const data = resp.data.data as ApiRead[]
+
+      // 清空现有数据
+      unread.value.data = []
+      read.value.data = []
+
+      // 分类消息
+      data.forEach(item => {
+        if (item.is_read === 0) {
+          unread.value.data.push(item)
+        } else {
+          read.value.data.push(item)
+        }
+      })
+
+      // 更新分页信息
+      if (resp.data.pagination) {
+        total.value = resp.data.pagination.total || 0
+        currentPage.value = resp.data.pagination.current_page || 1
+      } else {
+        total.value = data.length
+      }
+
+      // 标记加载完成
+      unread.value.finished = true
+      read.value.finished = true
+    }
+  } catch (error) {
+    console.error('加载消息失败:', error)
+    unread.value.data = []
+    read.value.data = []
+    total.value = 0
+  }
+}
+
+onMounted(() => {
+  loadMessages()
 })
 </script>
 
-<style lang="less" scoped>
-.m-notices {
-  display: flex;
-  flex-direction: column;
+<style scoped>
+.pc-notices {
   min-height: 100vh;
-  background-color: #f7f8fa;
+  background-color: #f5f7fa;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.m-nav {
-  background-color: #fff;
-  border-bottom: 1px solid #ebedf0;
-}
-
-/* 移动端样式 */
-.m-notices :deep(.van-tabs) {
-  background-color: #fff;
-}
-
-.m-notices :deep(.van-cell) {
+.pc-header {
+  display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 20px;
+  padding: 16px 24px;
   background-color: #fff;
   border-radius: 8px;
-  margin-left: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
   margin-right: 16px;
 }
 
-.m-notices :deep(.van-cell:first-child) {
-  margin-top: 16px;
-}
-
-.m-notices :deep(.van-cell__title) {
-  font-size: 14px;
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
   color: #333;
-  font-weight: 500;
+  margin: 0;
 }
 
-.m-notices :deep(.van-cell__label) {
-  font-size: 12px;
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-section {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.notices-list {
+  margin-bottom: 24px;
+}
+
+.notice-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.notice-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #409eff;
+}
+
+.notice-item:last-child {
+  margin-bottom: 0;
+}
+
+.notice-item.unread {
+  border-left: 3px solid #67c23a;
+}
+
+.notice-item.read {
+  border-left: 3px solid #909399;
+}
+
+.notice-content {
+  flex: 1;
+}
+
+.notice-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+}
+
+.notice-time {
+  font-size: 14px;
   color: #999;
-  margin-top: 4px;
+  margin: 0;
 }
 
-.m-notices :deep(.van-cell__value) {
-  font-size: 12px;
+.notice-status {
+  flex-shrink: 0;
+}
+
+.notice-arrow {
+  flex-shrink: 0;
+  color: #c0c4cc;
+  font-size: 16px;
+}
+
+.notice-item:hover .notice-arrow {
+  color: #409eff;
+}
+
+.empty-state {
+  padding: 60px 0;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-notices :deep(.el-radio-group) {
+  display: flex;
+  gap: 8px;
+}
+
+.pc-notices :deep(.el-radio-button__inner) {
+  padding: 12px 24px;
   font-weight: 500;
 }
 
-/* PC端适配样式 */
-@media (min-width: 768px) {
-  .m-notices {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  }
-
-  .m-nav {
-    border-radius: 8px 8px 0 0;
-  }
-
-  .m-notices :deep(.van-tabs) {
-    border-radius: 0 0 8px 8px;
-  }
-
-  .m-notices :deep(.van-tabs__wrap) {
-    background-color: #f8f9fa;
-  }
-
-  .m-notices :deep(.van-tabs__nav) {
-    background-color: transparent;
-  }
-
-  .m-notices :deep(.van-tab) {
-    font-size: 16px;
-    font-weight: 500;
-    color: #606266;
-    padding: 16px 24px;
-    transition: all 0.3s;
-  }
-
-  .m-notices :deep(.van-tab--active) {
-    color: #409eff;
-    font-weight: 600;
-  }
-
-  .m-notices :deep(.van-tab:hover) {
-    color: #409eff;
-    background: rgba(64, 158, 255, 0.1);
-  }
-
-  .m-notices :deep(.van-tabs__line) {
-    background: #409eff;
-    height: 3px;
-    border-radius: 2px;
-  }
-
-  .m-notices :deep(.van-tabs__content) {
-    padding: 16px 24px;
-  }
-
-  .m-notices :deep(.van-cell) {
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 12px;
-    padding: 20px 24px;
-    border: 1px solid #ebedf0;
-    transition: all 0.3s ease;
-  }
-
-  .m-notices :deep(.van-cell:hover) {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transform: translateY(-2px);
-    border-color: #d0d0d0;
-  }
-
-  .m-notices :deep(.van-cell:first-child) {
-    margin-top: 0;
-  }
-
-  .m-notices :deep(.van-cell__title) {
-    font-size: 16px;
-    font-weight: 600;
-  }
-
-  .m-notices :deep(.van-cell__label) {
-    font-size: 14px;
-    margin-top: 6px;
-  }
-
-  .m-notices :deep(.van-cell__value) {
-    font-size: 14px;
-    font-weight: 600;
-  }
-
-  .m-notices :deep(.van-empty) {
-    padding: 120px 0;
-  }
+.pc-notices :deep(.el-pagination) {
+  padding: 12px 0;
 }
 
-/* 大屏PC端适配 */
-@media (min-width: 1200px) {
-  .m-notices {
-    max-width: 1000px;
-  }
-
-  .m-notices :deep(.van-tabs__content) {
-    padding: 24px 32px;
-  }
-
-  .m-notices :deep(.van-cell) {
-    padding: 24px 32px;
-    margin-bottom: 16px;
-  }
-
-  .m-notices :deep(.van-cell__title) {
-    font-size: 18px;
-  }
-
-  .m-notices :deep(.van-cell__label) {
-    font-size: 15px;
-  }
-
-  .m-notices :deep(.van-cell__value) {
-    font-size: 15px;
-  }
-}
-
-/* 超大屏适配 */
 @media (min-width: 1600px) {
-  .m-notices {
-    max-width: 1200px;
-  }
-}
-</style>
-
-<style lang="less">
-@import url('@/views/mobile/common.less');
-
-.m-notices {
-  .van-tabs__nav--line {
-    padding-bottom: 0px;
-  }
-  .van-tabs__line {
-    bottom: 0px;
-  }
-  .van-cell {
-    align-items: center;
-  }
-  .m-green {
-    color: #07c160 !important;
-  }
-  .m-c-red {
-    color: #ee0a24 !important;
-  }
-  .m-f12 {
-    font-size: 12px;
-  }
-
-  /* PC端颜色适配 */
-  @media (min-width: 768px) {
-    .m-f12 {
-      font-size: 14px;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    .m-f12 {
-      font-size: 15px;
-    }
+  .pc-notices {
+    max-width: 1400px;
   }
 }
 </style>

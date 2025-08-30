@@ -1,271 +1,302 @@
 <template>
-  <div class="m-safe-setting">
-    <van-nav-bar
-      left-arrow
-      :title="$t('mine.safeSetting')"
-      @click-left="onClickLeft"
-      class="nav-bar"
-    />
-    <van-cell-group class="m-mt10">
-      <van-cell :title="$t('mine.loginPwd')" is-link to="/modifyPwd">
-        <template #icon>
-          <div class="icon-lock"></div>
-        </template>
-      </van-cell>
-      <van-cell :title="$t('mine.withdrawPwd')" is-link to="/withdrawalPwd">
-        <template #icon>
-          <div class="icon-shield"></div>
-        </template>
-      </van-cell>
-    </van-cell-group>
+  <div class="pc-safe-setting">
+    <!-- PC端头部 -->
+    <div class="pc-header">
+      <el-button
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
+      >
+        {{ $t('common.back') }}
+      </el-button>
+      <h2 class="page-title">{{ $t('mine.safeSetting') }}</h2>
+    </div>
+
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
+      <!-- 安全设置列表 -->
+      <div class="setting-list">
+        <div
+          class="setting-item"
+          @click="goToLoginPwd"
+        >
+          <div class="setting-icon">
+            <div class="icon-lock"></div>
+          </div>
+          <div class="setting-content">
+            <h3 class="setting-title">{{ $t('mine.loginPwd') }}</h3>
+            <p class="setting-desc">修改登录密码，保护账户安全</p>
+          </div>
+          <div class="setting-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+
+        <div
+          class="setting-item"
+          @click="goToWithdrawPwd"
+        >
+          <div class="setting-icon">
+            <div class="icon-shield"></div>
+          </div>
+          <div class="setting-content">
+            <h3 class="setting-title">{{ $t('mine.withdrawPwd') }}</h3>
+            <p class="setting-desc">设置提现密码，确保资金安全</p>
+          </div>
+          <div class="setting-arrow">
+            <el-icon><ArrowRight /></el-icon>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安全提示 -->
+      <div class="security-tips">
+        <h3 class="section-title">安全提示</h3>
+        <el-alert
+          title="账户安全建议"
+          type="info"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <ul class="tips-list">
+              <li>定期更新密码，建议使用字母、数字和特殊字符组合</li>
+              <li>提现密码应与登录密码不同，增强安全性</li>
+              <li>不要在公共场所或不安全的网络环境下修改密码</li>
+              <li>如发现账户异常，请立即联系客服</li>
+            </ul>
+          </template>
+        </el-alert>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
 
-defineOptions({ name: 'MineSafeSetting' })
+defineOptions({ name: 'PcSafeSetting' })
 
 const router = useRouter()
 
-function onClickLeft() {
+function handleBack() {
   router.back()
+}
+
+function goToLoginPwd() {
+  router.push('/modifyPwd')
+}
+
+function goToWithdrawPwd() {
+  router.push('/withdrawalPwd')
 }
 </script>
 
-<style lang="less" scoped>
-.m-safe-setting {
-  display: flex;
-  flex-direction: column;
-  background: #f7f8fa;
+<style scoped>
+.pc-safe-setting {
   min-height: 100vh;
-
-  .nav-bar {
-    background-color: #fff;
-    border-bottom: 1px solid #ebedf0;
-  }
-
-  .m-mt10 {
-    margin-top: 10px;
-  }
-
-  /* CSS图标样式 */
-  .icon-lock,
-  .icon-shield {
-    width: 20px;
-    height: 20px;
-    margin-right: 12px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .icon-lock {
-    background: linear-gradient(135deg, #4ecdc4, #44a08d);
-
-    &::before {
-      content: '';
-      width: 8px;
-      height: 10px;
-      border: 2px solid #fff;
-      border-radius: 2px;
-      border-top: 3px solid #fff;
-      border-bottom: 3px solid #fff;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      border: 2px solid #fff;
-      border-radius: 50% 50% 0 0;
-      border-bottom: none;
-      top: 4px;
-    }
-  }
-
-  .icon-shield {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-
-    &::before {
-      content: '';
-      width: 10px;
-      height: 12px;
-      background: #fff;
-      clip-path: polygon(50% 0%, 0% 40%, 50% 100%, 100% 40%);
-    }
-  }
-
-  /* 移动端样式 */
-  .m-safe-setting :deep(.van-cell) {
-    margin-bottom: 8px;
-    background-color: #fff;
-    border-radius: 8px;
-    margin-left: 16px;
-    margin-right: 16px;
-    padding: 16px 20px;
-  }
-
-  .m-safe-setting :deep(.van-cell:first-child) {
-    margin-top: 0;
-  }
-
-  .m-safe-setting :deep(.van-cell__title) {
-    font-size: 16px;
-    color: #333;
-    font-weight: 500;
-  }
-
-  .m-safe-setting :deep(.van-cell__right-icon) {
-    color: #969799;
-    font-size: 16px;
-  }
+  background-color: #f5f7fa;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* PC端适配样式 */
-@media (min-width: 768px) {
-  .m-safe-setting {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-
-    .nav-bar {
-      border-radius: 8px 8px 0 0;
-    }
-
-    .m-mt10 {
-      margin-top: 24px;
-      padding: 0 24px;
-    }
-
-    .m-safe-setting :deep(.van-cell-group) {
-      background-color: transparent;
-    }
-
-    .m-safe-setting :deep(.van-cell) {
-      margin-left: 0;
-      margin-right: 0;
-      margin-bottom: 12px;
-      padding: 20px 24px;
-      border: 1px solid #ebedf0;
-      transition: all 0.3s ease;
-    }
-
-    .m-safe-setting :deep(.van-cell:hover) {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: translateY(-2px);
-      border-color: #d0d0d0;
-      background-color: #fafbfc;
-    }
-
-    .m-safe-setting :deep(.van-cell__title) {
-      font-size: 18px;
-      font-weight: 600;
-    }
-
-    .m-safe-setting :deep(.van-cell__right-icon) {
-      font-size: 18px;
-    }
-
-    /* PC端图标尺寸调整 */
-    .icon-lock,
-    .icon-shield {
-      width: 24px;
-      height: 24px;
-      margin-right: 16px;
-    }
-
-    .icon-lock {
-      &::before {
-        width: 10px;
-        height: 12px;
-        border-width: 2px;
-        border-top-width: 4px;
-        border-bottom-width: 4px;
-      }
-
-      &::after {
-        width: 8px;
-        height: 8px;
-        border-width: 2px;
-        top: 5px;
-      }
-    }
-
-    .icon-shield {
-      &::before {
-        width: 12px;
-        height: 14px;
-      }
-    }
-  }
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* 大屏PC端适配 */
-@media (min-width: 1200px) {
-  .m-safe-setting {
-    max-width: 1000px;
-
-    .m-mt10 {
-      margin-top: 32px;
-      padding: 0 32px;
-    }
-
-    .m-safe-setting :deep(.van-cell) {
-      padding: 24px 32px;
-      margin-bottom: 16px;
-    }
-
-    .m-safe-setting :deep(.van-cell__title) {
-      font-size: 20px;
-    }
-
-    .m-safe-setting :deep(.van-cell__right-icon) {
-      font-size: 20px;
-    }
-
-    /* 大屏图标尺寸调整 */
-    .icon-lock,
-    .icon-shield {
-      width: 28px;
-      height: 28px;
-      margin-right: 20px;
-    }
-
-    .icon-lock {
-      &::before {
-        width: 12px;
-        height: 14px;
-        border-width: 3px;
-        border-top-width: 4px;
-        border-bottom-width: 4px;
-      }
-
-      &::after {
-        width: 10px;
-        height: 10px;
-        border-width: 3px;
-        top: 6px;
-      }
-    }
-
-    .icon-shield {
-      &::before {
-        width: 14px;
-        height: 16px;
-      }
-    }
-  }
+.back-btn {
+  margin-right: 16px;
 }
 
-/* 超大屏适配 */
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.setting-list {
+  margin-bottom: 32px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  background: #fff;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.setting-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  border-color: #409eff;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-icon {
+  flex-shrink: 0;
+}
+
+.setting-content {
+  flex: 1;
+}
+
+.setting-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.setting-desc {
+  font-size: 14px;
+  color: #999;
+  margin: 0;
+}
+
+.setting-arrow {
+  flex-shrink: 0;
+  color: #c0c4cc;
+  font-size: 16px;
+}
+
+.setting-item:hover .setting-arrow {
+  color: #409eff;
+}
+
+/* CSS图标样式 */
+.icon-lock,
+.icon-shield {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.icon-lock {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+}
+
+.icon-lock::before {
+  content: '';
+  width: 16px;
+  height: 20px;
+  border: 3px solid #fff;
+  border-radius: 4px;
+  border-top: 6px solid #fff;
+  border-bottom: 6px solid #fff;
+}
+
+.icon-lock::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 0 0;
+  border-bottom: none;
+  top: 8px;
+}
+
+.icon-shield {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.icon-shield::before {
+  content: '';
+  width: 20px;
+  height: 24px;
+  background: #fff;
+  clip-path: polygon(50% 0%, 0% 40%, 50% 100%, 100% 40%);
+}
+
+.security-tips {
+  border-top: 1px solid #ebeef5;
+  padding-top: 24px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 16px 0;
+  position: relative;
+  padding-left: 12px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 3px;
+  height: 14px;
+  background-color: #4290ff;
+  border-radius: 2px;
+}
+
+.tips-list {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.tips-list li {
+  position: relative;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #606266;
+  font-size: 14px;
+}
+
+.tips-list li:before {
+  content: '•';
+  position: absolute;
+  left: -16px;
+  color: #409eff;
+}
+
+.tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-safe-setting :deep(.el-alert) {
+  border: 1px solid #d9ecff;
+  background-color: #ecf5ff;
+}
+
 @media (min-width: 1600px) {
-  .m-safe-setting {
-    max-width: 1200px;
+  .pc-safe-setting {
+    max-width: 1400px;
   }
 }
 </style>

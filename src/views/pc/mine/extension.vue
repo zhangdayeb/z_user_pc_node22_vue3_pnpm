@@ -5,7 +5,7 @@
       <el-button
         type="primary"
         :icon="ArrowLeft"
-        @click="onClickLeft"
+        @click="handleBack"
         class="back-btn"
       >
         {{ $t('common.back') }}
@@ -15,80 +15,99 @@
 
     <!-- PC端内容区域 -->
     <div class="pc-content">
-      <div class="content-wrapper">
-        <!-- 用户信息卡片 -->
-        <div class="user-info-card">
-          <div class="card-header">
-            <el-icon class="header-icon"><User /></el-icon>
-            <h3>{{ $t('mine.baseInfo') }}</h3>
-          </div>
-          <div class="user-details">
-            <div class="user-id">ID: {{ userInfo?.id }}</div>
+      <!-- 用户信息 -->
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('mine.baseInfo') }}</h3>
+        <div class="user-info">
+          <div class="info-item">
+            <span class="info-label">
+              <el-icon><User /></el-icon>
+              用户ID
+            </span>
+            <span class="info-value">{{ userInfo?.id || '-' }}</span>
           </div>
         </div>
+      </div>
 
-        <!-- 邀请码卡片 -->
-        <div class="invite-code-card">
-          <div class="card-header">
-            <el-icon class="header-icon"><Ticket /></el-icon>
-            <h3>{{ $t('extension.myInviteCode') }}</h3>
-          </div>
-          <div class="invite-code-content">
-            <div class="invite-code-display">
-              <div class="invite-code">
-                {{ userInfo?.inviteCode || $t('extension.loading') }}
-              </div>
-              <el-button
-                type="primary"
-                :loading="copyingCode"
-                @click="copyInviteCode"
-                class="copy-btn"
-              >
-                <el-icon><DocumentCopy /></el-icon>
-                {{ $t('extension.copyInviteCode') }}
-              </el-button>
+      <!-- 邀请码 -->
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('extension.myInviteCode') }}</h3>
+        <div class="invite-code-wrapper">
+          <div class="invite-code-display">
+            <div class="invite-code">
+              {{ userInfo?.inviteCode || $t('extension.loading') }}
             </div>
-          </div>
-        </div>
-
-        <!-- 推广链接卡片 -->
-        <div class="promotion-link-card">
-          <div class="card-header">
-            <el-icon class="header-icon"><Link /></el-icon>
-            <h3>{{ $t('extension.promotionLink') }}</h3>
-          </div>
-          <div class="link-content">
-            <div class="link-text">{{ promotionLink }}</div>
             <el-button
               type="primary"
-              :loading="copyingLink"
-              @click="copyPromotionLink"
-              class="copy-link-btn"
+              :loading="copyingCode"
+              @click="copyInviteCode"
+              class="copy-btn"
+              :icon="DocumentCopy"
             >
-              <el-icon><DocumentCopy /></el-icon>
-              {{ $t('extension.copyLink') }}
+              {{ $t('extension.copyInviteCode') }}
             </el-button>
           </div>
         </div>
+      </div>
 
-        <!-- 分享操作卡片 -->
-        <div class="share-action-card">
-          <div class="card-header">
-            <el-icon class="header-icon"><Share /></el-icon>
-            <h3>{{ $t('extension.sharePromotionLink') }}</h3>
-          </div>
-          <div class="share-content">
-            <el-button
-              type="success"
-              size="large"
-              @click="sharePromotion"
-              class="share-btn"
+      <!-- 推广链接 -->
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('extension.promotionLink') }}</h3>
+        <div class="link-wrapper">
+          <div class="link-display">
+            <el-input
+              :model-value="promotionLink"
+              readonly
+              class="link-input"
             >
-              <el-icon><Share /></el-icon>
-              {{ $t('extension.sharePromotionLink') }}
-            </el-button>
+              <template #append>
+                <el-button
+                  type="primary"
+                  :loading="copyingLink"
+                  @click="copyPromotionLink"
+                  :icon="DocumentCopy"
+                >
+                  {{ $t('extension.copyLink') }}
+                </el-button>
+              </template>
+            </el-input>
           </div>
         </div>
+      </div>
+
+      <!-- 分享操作 -->
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('extension.sharePromotionLink') }}</h3>
+        <div class="share-actions">
+          <el-button
+            type="success"
+            size="large"
+            @click="sharePromotion"
+            class="share-btn"
+            :icon="Share"
+          >
+            {{ $t('extension.sharePromotionLink') }}
+          </el-button>
+        </div>
+      </div>
+
+      <!-- 推广说明 -->
+      <div class="info-section">
+        <h3 class="section-title">推广说明</h3>
+        <el-alert
+          type="info"
+          :closable="false"
+          show-icon
+        >
+          <template #default>
+            <ul class="promotion-tips">
+              <li>通过您的邀请码注册的用户将成为您的下级</li>
+              <li>您可以获得下级用户产生的返佣奖励</li>
+              <li>邀请码和推广链接永久有效</li>
+              <li>可以将推广链接分享给朋友或在社交媒体上推广</li>
+            </ul>
+          </template>
+        </el-alert>
       </div>
     </div>
   </div>
@@ -98,11 +117,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, User, Ticket, Link, Share, DocumentCopy } from '@element-plus/icons-vue'
+import { ArrowLeft, User, Share, DocumentCopy } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { userApi } from '@/api'
 
-defineOptions({ name: 'PcExtensionVue' })
+defineOptions({ name: 'PcExtension' })
 
 // 用户信息类型
 interface UserInfo {
@@ -130,7 +149,7 @@ const promotionLink = computed(() => {
 })
 
 // 返回
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -240,12 +259,14 @@ onMounted(() => {
   min-height: 100vh;
   background-color: #f5f7fa;
   padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pc-header {
   display: flex;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   padding: 16px 24px;
   background-color: #fff;
   border-radius: 8px;
@@ -264,86 +285,94 @@ onMounted(() => {
 }
 
 .pc-content {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* 卡片通用样式 */
-.user-info-card,
-.invite-code-card,
-.promotion-link-card,
-.share-action-card {
   background-color: #fff;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 24px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e4e7ed;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f2f5;
+.info-section {
+  margin-bottom: 32px;
 }
 
-.header-icon {
-  font-size: 20px;
-  color: #409eff;
-  margin-right: 12px;
+.info-section:last-child {
+  margin-bottom: 0;
 }
 
-.card-header h3 {
+.section-title {
   font-size: 16px;
   font-weight: 600;
   color: #333;
-  margin: 0;
+  margin: 0 0 20px 0;
+  position: relative;
+  padding-left: 12px;
 }
 
-/* 用户信息卡片 */
-.user-details {
-  margin-top: 16px;
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 3px;
+  height: 14px;
+  background-color: #4290ff;
+  border-radius: 2px;
 }
 
-.user-id {
-  font-size: 14px;
-  color: #999;
-  padding: 12px;
+.user-info {
+  padding: 16px;
   background-color: #f8f9fa;
   border-radius: 6px;
-  border: 1px solid #e9ecef;
 }
 
-/* 邀请码卡片 */
-.invite-code-content {
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.info-label .el-icon {
+  font-size: 16px;
+  color: #909399;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #303133;
+  font-family: monospace;
+}
+
+.invite-code-wrapper {
   text-align: center;
 }
 
 .invite-code-display {
-  display: flex;
+  display: inline-flex;
   flex-direction: column;
   align-items: center;
   gap: 20px;
 }
 
 .invite-code {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: bold;
   color: #409eff;
-  letter-spacing: 4px;
-  padding: 20px 30px;
+  letter-spacing: 6px;
+  padding: 24px 32px;
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
   border-radius: 12px;
   border: 2px dashed #409eff;
-  min-width: 200px;
   font-family: 'Courier New', monospace;
+  min-width: 240px;
 }
 
 .copy-btn {
@@ -351,39 +380,73 @@ onMounted(() => {
   font-size: 14px;
 }
 
-/* 推广链接卡片 */
-.link-content {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.link-wrapper {
+  margin-top: 8px;
 }
 
-.link-text {
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #666;
-  word-break: break-all;
-  border: 1px solid #e9ecef;
-  font-family: 'Courier New', monospace;
+.link-display {
+  max-width: 600px;
 }
 
-.copy-link-btn {
-  align-self: flex-start;
+.link-input :deep(.el-input__wrapper) {
+  border-radius: 6px 0 0 6px;
 }
 
-/* 分享操作卡片 */
-.share-content {
+.link-input :deep(.el-input-group__append) {
+  border-radius: 0 6px 6px 0;
+  padding: 0;
+  border-left: none;
+}
+
+.link-input :deep(.el-input-group__append .el-button) {
+  border-radius: 0 6px 6px 0;
+  border-left: 1px solid #dcdfe6;
+}
+
+.share-actions {
   text-align: center;
 }
 
 .share-btn {
-  padding: 14px 32px;
+  min-width: 200px;
+  padding: 16px 32px;
   font-size: 16px;
   border-radius: 8px;
-  width: 100%;
-  max-width: 300px;
+}
+
+.promotion-tips {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.promotion-tips li {
+  position: relative;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #606266;
+  font-size: 14px;
+}
+
+.promotion-tips li:before {
+  content: '•';
+  position: absolute;
+  left: -16px;
+  color: #409eff;
+}
+
+.promotion-tips li:last-child {
+  margin-bottom: 0;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-extension :deep(.el-alert) {
+  border-radius: 6px;
+}
+
+@media (min-width: 1600px) {
+  .pc-extension {
+    max-width: 1400px;
+  }
 }
 </style>

@@ -86,12 +86,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/pc/mine/vip.vue'),
     meta: { title: 'VIP等级', requiresAuth: true }
   },
-  {
-    path: '/vipDetail',
-    name: 'vipDetail',
-    component: () => import('@/views/pc/mine/vip_detail.vue'),
-    meta: { title: 'VIP详情', requiresAuth: true }
-  },
 
   // ========== 密码管理 ==========
   {

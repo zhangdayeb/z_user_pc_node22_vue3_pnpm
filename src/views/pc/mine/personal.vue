@@ -1,93 +1,89 @@
 <template>
   <div class="pc-person">
-    <el-page-header @back="onClickLeft" class="pc-header">
-      <template #title>
-        <span class="pc-header-title">{{ $t('mine.baseInfo') }}</span>
-      </template>
-    </el-page-header>
+    <!-- PC端头部 -->
+    <div class="pc-header">
+      <el-button
+        type="primary"
+        :icon="ArrowLeft"
+        @click="handleBack"
+        class="back-btn"
+      >
+        {{ $t('common.back') }}
+      </el-button>
+      <h2 class="page-title">{{ $t('mine.baseInfo') }}</h2>
+    </div>
 
+    <!-- PC端内容区域 -->
     <div class="pc-content">
       <!-- 基础信息 -->
-      <el-card class="pc-info-card">
-        <template #header>
-          <div class="card-header">
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('mine.baseInfo') }}</h3>
+        <div class="info-item">
+          <span class="info-label">
             <el-icon><User /></el-icon>
-            <span>{{ $t('mine.baseInfo') }}</span>
-          </div>
-        </template>
-        <div class="pc-info-item">
-          <span class="pc-info-label">{{ $t('login.username') }}</span>
-          <span class="pc-info-value">{{ userInfo?.name ?? '' }}</span>
+            {{ $t('login.username') }}
+          </span>
+          <span class="info-value">{{ userInfo?.name ?? '' }}</span>
         </div>
-      </el-card>
+      </div>
 
       <!-- 资金信息 -->
-      <el-card class="pc-info-card">
-        <template #header>
-          <div class="card-header">
-            <el-icon><Wallet /></el-icon>
-            <span>{{ $t('user.wallet') }}</span>
-          </div>
-        </template>
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('user.wallet') }}</h3>
 
-        <div class="pc-money-item">
-          <span class="pc-money-label">
+        <div class="money-item">
+          <span class="money-label">
             <el-icon color="#67C23A"><Money /></el-icon>
             {{ $t('user.balance') }}
           </span>
-          <span class="pc-money-value primary">¥ {{ formatMoney(userInfo?.money) }}</span>
+          <span class="money-value primary">¥{{ formatMoney(userInfo?.money) }}</span>
         </div>
 
         <!-- 条件渲染：只有当配置允许时才显示返水金额 -->
-        <div class="pc-money-item" v-if="shouldShowFanshui">
-          <span class="pc-money-label">
+        <div class="money-item" v-if="shouldShowFanshui">
+          <span class="money-label">
             <el-icon color="#409EFF"><Coin /></el-icon>
             {{ $t('rebateAmount') }}
           </span>
-          <span class="pc-money-value rebate">¥ {{ formatMoney(userInfo?.money_rebate) }}</span>
+          <span class="money-value rebate">¥{{ formatMoney(userInfo?.money_rebate) }}</span>
         </div>
 
-        <div class="pc-money-item">
-          <span class="pc-money-label">
+        <div class="money-item">
+          <span class="money-label">
             <el-icon color="#E6A23C"><Present /></el-icon>
             {{ $t('commissionAmount') }}
           </span>
-          <span class="pc-money-value commission">¥ {{ formatMoney(userInfo?.money_fanyong) }}</span>
+          <span class="money-value commission">¥{{ formatMoney(userInfo?.money_fanyong) }}</span>
         </div>
 
         <el-divider />
 
-        <div class="pc-info-item">
-          <span class="pc-info-label">{{ $t('currencyType') }}</span>
-          <span class="pc-info-value">
+        <div class="info-item">
+          <span class="info-label">{{ $t('currencyType') }}</span>
+          <span class="info-value">
             <el-tag type="info" size="large">{{ formatCurrency(userInfo?.currency) }}</el-tag>
           </span>
         </div>
-      </el-card>
+      </div>
 
       <!-- 个人资料 -->
-      <el-card class="pc-info-card">
-        <template #header>
-          <div class="card-header">
-            <el-icon><UserFilled /></el-icon>
-            <span>{{ $t('mine.persionalInfo') }}</span>
-          </div>
-        </template>
+      <div class="info-section">
+        <h3 class="section-title">{{ $t('mine.persionalInfo') }}</h3>
 
-        <div class="pc-info-item">
-          <span class="pc-info-label">
+        <div class="info-item">
+          <span class="info-label">
             <el-icon><UserFilled /></el-icon>
             {{ $t('register.realName') }}
           </span>
-          <span class="pc-info-value">{{ userInfo?.realname ?? userInfo?.real_name ?? '--' }}</span>
+          <span class="info-value">{{ userInfo?.realname ?? userInfo?.real_name ?? '--' }}</span>
         </div>
 
-        <div class="pc-info-item pc-clickable" @click="editUserInfo('phone')">
-          <span class="pc-info-label">
+        <div class="info-item clickable" @click="editUserInfo('phone')">
+          <span class="info-label">
             <el-icon><Phone /></el-icon>
             {{ $t('register.phone') }}
           </span>
-          <span class="pc-info-value">
+          <span class="info-value">
             <span>{{ userInfo?.phone ?? '--' }}</span>
             <el-button type="primary" link>
               <el-icon><Edit /></el-icon>
@@ -96,12 +92,12 @@
           </span>
         </div>
 
-        <div class="pc-info-item pc-clickable" @click="editUserInfo('nick_name')">
-          <span class="pc-info-label">
+        <div class="info-item clickable" @click="editUserInfo('nick_name')">
+          <span class="info-label">
             <el-icon><Avatar /></el-icon>
             {{ $t('nickname') }}
           </span>
-          <span class="pc-info-value">
+          <span class="info-value">
             <span>{{ userInfo?.nick_name ?? userInfo?.nickname ?? '--' }}</span>
             <el-button type="primary" link>
               <el-icon><Edit /></el-icon>
@@ -109,7 +105,7 @@
             </el-button>
           </span>
         </div>
-      </el-card>
+      </div>
     </div>
 
     <!-- 编辑基础信息弹窗 -->
@@ -117,7 +113,7 @@
       v-model="showEditBasic"
       :title="editField === 'nick_name' ? $t('nickname') : $t('register.phone')"
       width="500px"
-      class="pc-edit-dialog"
+      class="edit-dialog"
     >
       <el-form :model="basicForm" label-width="100px">
         <el-form-item
@@ -174,6 +170,7 @@ import { useI18n } from 'vue-i18n'
 import { userApi } from '@/api/index'
 import { ElMessage } from 'element-plus'
 import {
+  ArrowLeft,
   User,
   UserFilled,
   Wallet,
@@ -185,7 +182,7 @@ import {
   Edit
 } from '@element-plus/icons-vue'
 
-defineOptions({ name: 'PersonalVue' })
+defineOptions({ name: 'PcPersonalInfo' })
 
 const { t } = useI18n()
 const store = useAppStore()
@@ -243,7 +240,7 @@ function formatCurrency(currency: string | undefined): string {
 }
 
 // 返回
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -319,150 +316,182 @@ onMounted(() => {
 })
 </script>
 
-<style lang="less" scoped>
+<style scoped>
 .pc-person {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
-  background: #f5f7fa;
-
-  .pc-header {
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-
-    .pc-header-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
-    }
-  }
-
-  .pc-content {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 20px;
-
-    .pc-info-card {
-      border-radius: 12px;
-      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-
-      .card-header {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 18px;
-        font-weight: 600;
-        color: #303133;
-
-        .el-icon {
-          font-size: 20px;
-          color: #409eff;
-        }
-      }
-
-      .pc-info-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 16px 0;
-        border-bottom: 1px solid #ebeef5;
-        transition: all 0.3s;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        &.pc-clickable {
-          cursor: pointer;
-
-          &:hover {
-            background-color: #f5f7fa;
-            margin: 0 -20px;
-            padding: 16px 20px;
-          }
-        }
-
-        .pc-info-label {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 14px;
-          color: #606266;
-          font-weight: 500;
-
-          .el-icon {
-            font-size: 18px;
-            color: #909399;
-          }
-        }
-
-        .pc-info-value {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-size: 14px;
-          color: #303133;
-        }
-      }
-
-      .pc-money-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 20px 0;
-        border-bottom: 1px solid #ebeef5;
-
-        &:last-of-type {
-          border-bottom: none;
-        }
-
-        .pc-money-label {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 15px;
-          color: #606266;
-          font-weight: 500;
-
-          .el-icon {
-            font-size: 20px;
-          }
-        }
-
-        .pc-money-value {
-          font-size: 24px;
-          font-weight: 700;
-
-          &.primary {
-            color: #67c23a;
-          }
-
-          &.rebate {
-            color: #409eff;
-          }
-
-          &.commission {
-            color: #e6a23c;
-          }
-        }
-      }
-
-      .el-divider {
-        margin: 20px 0;
-      }
-    }
-  }
 }
 
-.pc-edit-dialog {
-  .dialog-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.back-btn {
+  margin-right: 16px;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.info-section {
+  margin-bottom: 32px;
+}
+
+.info-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  position: relative;
+  padding-left: 12px;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 3px;
+  width: 3px;
+  height: 14px;
+  background-color: #4290ff;
+  border-radius: 2px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #ebeef5;
+  transition: all 0.3s;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item.clickable {
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.info-item.clickable:hover {
+  background-color: #f5f7fa;
+  margin: 0 -12px;
+  padding: 16px 12px;
+}
+
+.info-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.info-label .el-icon {
+  font-size: 16px;
+  color: #909399;
+}
+
+.info-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: #303133;
+}
+
+.money-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.money-item:last-of-type {
+  border-bottom: none;
+}
+
+.money-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.money-label .el-icon {
+  font-size: 18px;
+}
+
+.money-value {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.money-value.primary {
+  color: #67c23a;
+}
+
+.money-value.rebate {
+  color: #409eff;
+}
+
+.money-value.commission {
+  color: #e6a23c;
+}
+
+.el-divider {
+  margin: 20px 0;
+}
+
+.edit-dialog .dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-person :deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+.pc-person :deep(.el-input__wrapper) {
+  border-radius: 6px;
+}
+
+@media (min-width: 1600px) {
+  .pc-person {
+    max-width: 1400px;
   }
 }
 </style>
