@@ -18,7 +18,7 @@
       <!-- 筛选条件 -->
       <div class="filter-section">
         <el-form :inline="true" class="filter-form">
-          <el-form-item :label="$t('common.status')">
+          <el-form-item :label="$t('moneyLog.status')">
             <el-select
               v-model="activeStatus"
               :placeholder="$t('common.all')"
@@ -105,7 +105,7 @@
 
         <el-table-column
           prop="status_text"
-          :label="$t('common.status')"
+          :label="$t('moneyLog.status')"
           width="120"
         >
           <template #default="{ row }">

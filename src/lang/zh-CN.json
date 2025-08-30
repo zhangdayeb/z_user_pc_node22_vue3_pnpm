@@ -157,6 +157,9 @@
   "mine": {
     "safeSetting": "安全设置",
     "aboutUs": "关于我们",
+    "personalInfo": "个人资料",
+    "nickname": "昵称",
+    "inputNickname": "请输入昵称",
     "loginPwd": "登录密码",
     "withdrawPwd": "提现密码",
     "deposit": "存款",
@@ -221,13 +224,13 @@
     "inputTransferMoney": "请输入转账金额",
     "money": "金额",
     "myNotices": "我的消息",
+    "noticeClick": "点击查看详情",
     "centerWalletBalance": "中心钱包余额",
     "toGame": "进入游戏",
     "loveIsHere": "你爱的都在这里",
     "bankCard": "银行卡",
     "accountSafe": "账户与安全",
     "safest": "完善账户信息，更安全",
-    "personalInfo": "个人资料",
     "normalFunc": "常用功能",
     "welcomeTo": "欢迎来到",
     "levelRight": "等级特权",
@@ -333,8 +336,6 @@
     "remark": "备注",
     "settingSuccess": "设置成功",
     "settingFailed": "设置失败",
-    "nickname": "昵称",
-    "inputNickname": "请输入昵称",
     "balance": "余额",
     "noRebateRecord": "暂无返水记录",
     "getRebateRecordFailed": "获取返水记录失败",
@@ -427,7 +428,10 @@
     "confirmModifyWithdrawPwd": "确定要修改取款密码吗？",
     "confirmSetWithdrawPwd": "确定要设置取款密码吗？",
     "withdrawPwdModifySuccess": "取款密码修改成功",
-    "withdrawPwdSetSuccess": "取款密码设置成功"
+    "withdrawPwdSetSuccess": "取款密码设置成功",
+    "loginPwdDesc": "修改登录密码，保护账户安全",
+    "withdrawPwdDesc": "设置提现密码，确保资金安全",
+    "accountSecurityAdvice": "账户安全建议"
   },
 
   "moneyLog": {
@@ -471,7 +475,12 @@
     "weeklyReward": "每周礼金",
     "monthlyReward": "每月礼金",
     "birthdayReward": "生日礼金",
-    "rightDetail": "VIP特权详情"
+    "rightDetail": "VIP特权详情",
+    "levelDetails": "VIP等级详情",
+    "vipLevel": "VIP等级",
+    "depositRequirement": "存款要求($)",
+    "betRequirement": "投注要求($)",
+    "upgradeBonus": "升级奖金($)"
   },
 
   "deposit": {
@@ -535,7 +544,21 @@
     "bankName": "银行名称",
     "receivingAccount": "收款账户",
     "remark": "备注",
-    "getRecordFailed": "获取提现记录失败"
+    "getRecordFailed": "获取提现记录失败",
+    "submitting": "提交中...",
+    "selectAccount": "请选择提现账户",
+    "enterValidAmount": "请输入有效的提现金额",
+    "insufficientBalance": "余额不足",
+    "passwordMinLength": "密码长度至少6位",
+    "applySuccess": "提现申请提交成功",
+    "applyFailed": "提现申请失败",
+    "getAccountListFailed": "获取账户列表失败",
+    "notice": "提现说明",
+    "importantNotice": "重要提示",
+    "notice1": "提现申请提交后，将在24小时内处理完成",
+    "notice2": "提现手续费根据不同渠道收取，具体以实际扣除为准",
+    "notice3": "请确保收款账户信息准确无误，错误信息可能导致到账延迟",
+    "notice4": "如有疑问请及时联系客服处理"
   },
 
   "extension": {
@@ -618,7 +641,11 @@
     "systemAnnouncement": "系统公告",
     "unread": "未读",
     "read": "已读",
-    "todayDoNotShow": "今日不再显示"
+    "todayDoNotShow": "今日不再显示",
+    "getNoticesFailed": "获取通知失败，请稍后重试",
+    "noticeDetail": "通知详情",
+    "noticeList": "通知列表",
+    "noNotices": "暂无通知"
   },
 
   "gameTypes": {
