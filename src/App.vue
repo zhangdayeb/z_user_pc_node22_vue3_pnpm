@@ -30,19 +30,62 @@ const themeConfig = computed(() => ({
 // 初始化应用
 const initApp = async () => {
   try {
+    console.log('开始应用初始化...')
+
     // 加载系统配置
     await configStore.loadSiteConfig()
 
-    // 检查用户登录状态
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      await appStore.fetchUserInfo()
+    // 检查用户登录状态 - 修复关键点
+    const jwtToken = localStorage.getItem('access_token')
+    const simpleToken = localStorage.getItem('X-Token')
+
+    console.log('检查Token状态:', {
+      hasJwtToken: !!jwtToken,
+      hasSimpleToken: !!simpleToken,
+      jwtPreview: jwtToken ? jwtToken.substring(0, 20) + '...' : null,
+      simplePreview: simpleToken ? simpleToken.substring(0, 8) + '...' : null
+    })
+
+    // 如果有任意一种token，都尝试获取用户信息
+    if (jwtToken || simpleToken) {
+      console.log('发现Token，开始获取用户信息...')
+
+      try {
+        // 如果只有Simple Token但没有JWT Token，先将Simple Token设置为主要Token
+        if (simpleToken && !jwtToken) {
+          console.log('只有Simple Token，将其设置为主要Token')
+          localStorage.setItem('access_token', simpleToken)
+          appStore.setToken(simpleToken)
+        }
+
+        // 尝试获取用户信息
+        const userInfoResult = await appStore.fetchUserInfo()
+
+        if (userInfoResult) {
+          console.log('✅ 用户信息获取成功，自动登录完成')
+        } else {
+          console.log('❌ 用户信息获取失败，Token可能无效')
+          // 清理无效Token
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('X-Token')
+          appStore.logout()
+        }
+      } catch (error) {
+        console.error('获取用户信息时出错:', error)
+        // 清理可能无效的Token
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('X-Token')
+        appStore.logout()
+      }
+    } else {
+      console.log('未发现任何Token，保持未登录状态')
     }
 
     // 初始化语言设置
     const currentLang = getLanguage()
     locale.value = getElementLocale()
     console.log('当前语言设置:', currentLang)
+    console.log('应用初始化完成')
 
   } catch (error) {
     console.error('应用初始化失败:', error)
@@ -101,54 +144,47 @@ body {
 #app {
   width: 100%;
   height: 100%;
-  min-width: 1200px;
-  position: relative;
-  background-color: #f5f7fa;
 }
 
-// 应用加载动画
 .app-loading {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: #f5f7fa;
   z-index: 9999;
+}
 
-  .loading-spinner {
-    text-align: center;
+.loading-spinner {
+  text-align: center;
+}
 
-    .spinner {
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 20px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #409eff;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    p {
-      color: #606266;
-      font-size: 14px;
-    }
-  }
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #409eff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-// 路由切换动画
+.loading-spinner p {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 页面过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -157,25 +193,5 @@ body {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-// 滚动条样式
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 4px;
-
-  &:hover {
-    background: #a8a8a8;
-  }
 }
 </style>
