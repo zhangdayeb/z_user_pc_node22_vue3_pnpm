@@ -178,7 +178,7 @@ function handleNoticeClick(item: ApiRead) {
 async function markAsRead(item: ApiRead) {
   try {
     // 调用标记已读的API
-    const resp = await invokeApi('markMessageRead', { id: item.id })
+    const resp:any = await invokeApi('markMessageRead', { id: item.id })
 
     if (resp && resp.code === 200) {
       // 从未读列表移除，添加到已读列表
@@ -197,7 +197,7 @@ async function markAsRead(item: ApiRead) {
 // 加载消息数据
 async function loadMessages() {
   try {
-    const resp = await invokeApi('message', {
+    const resp:any = await invokeApi('message', {
       page: currentPage.value,
       limit: pageSize.value
     })

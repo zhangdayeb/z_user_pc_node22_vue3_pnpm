@@ -161,7 +161,7 @@ async function getGameRecords() {
   loading.value = true
 
   try {
-    const resp = await invokeApi('gameRecord', {
+    const resp:any = await invokeApi('gameRecord', {
       page: currentPage.value,
       limit: pageSize.value
     })

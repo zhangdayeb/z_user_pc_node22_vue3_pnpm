@@ -151,7 +151,7 @@ const isCollected = ref(false)
 
 // 获取活动详情
 async function getActivityDetail() {
-  store.showLoading()
+  store.loading()
   try {
     const id = route.params?.id
     if (!id) {
@@ -172,7 +172,7 @@ async function getActivityDetail() {
     ElMessage.error('加载失败，请稍后重试')
     router.back()
   } finally {
-    store.hideLoading()
+    store.stopLoad()
   }
 }
 

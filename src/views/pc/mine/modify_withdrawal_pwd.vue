@@ -362,7 +362,7 @@ async function handleSubmit() {
         confirm_withdraw_pwd: passwordForm.confirmPassword
       }
 
-      const resp = await api.updateWithdrawPassword(requestData)
+      const resp:any = await api.updateWithdrawPassword(requestData)
 
       if (resp && resp.code === 200) {
         const successMsg = isModify.value

@@ -265,7 +265,7 @@ async function fetchRecords() {
       params.end_date = filterForm.dateRange[1]
     }
 
-    const resp = await api.moneyRecord(params)
+    const resp:any = await api.moneyRecord(params)
 
     if (resp && resp.code === 200) {
       const data = resp.data

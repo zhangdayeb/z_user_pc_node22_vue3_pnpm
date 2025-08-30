@@ -328,7 +328,7 @@ async function getWithdrawRecords() {
       params.status = activeStatus.value
     }
 
-    const resp = await invokeApi('withdrawRecord', params)
+    const resp:any = await invokeApi('withdrawRecord', params)
 
     if (!resp) {
       loading.value = false

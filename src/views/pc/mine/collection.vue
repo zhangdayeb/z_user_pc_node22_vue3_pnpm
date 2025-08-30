@@ -252,7 +252,7 @@ function handleBack() {
 }
 
 async function cancelFavor(it: ApiCollectGame) {
-  const resp = await invokeApi('favorDelete', {
+  const resp:any = await invokeApi('favorDelete', {
     game_type: it.game_type,
     api_name: it.api_name,
     model_id: it.id,
@@ -265,7 +265,7 @@ async function cancelFavor(it: ApiCollectGame) {
 }
 
 async function getMyGames() {
-  const resp = await invokeApi('favorList')
+  const resp:any = await invokeApi('favorList')
   if (!resp) {
     return
   }

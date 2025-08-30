@@ -223,7 +223,7 @@ function toDetails() {
 }
 
 async function getVips() {
-  const resp = await invokeApi('vips')
+  const resp:any = await invokeApi('vips')
   if (!resp) {
     return
   }

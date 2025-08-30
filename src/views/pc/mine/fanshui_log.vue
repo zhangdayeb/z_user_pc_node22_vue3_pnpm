@@ -122,7 +122,7 @@ async function getFanshuiRecords() {
   loading.value = true
 
   try {
-    const resp = await invokeApi('fanshuiRecord', {
+    const resp:any = await invokeApi('fanshuiRecord', {
       page: currentPage.value,
       limit: pageSize.value
     })

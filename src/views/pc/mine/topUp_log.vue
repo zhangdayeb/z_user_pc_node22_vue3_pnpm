@@ -302,7 +302,7 @@ async function getTopUpRecords() {
       params.status = activeStatus.value
     }
 
-    const resp = await invokeApi('topUpRecord', params)
+    const resp:any = await invokeApi('topUpRecord', params)
 
     if (!resp) {
       loading.value = false

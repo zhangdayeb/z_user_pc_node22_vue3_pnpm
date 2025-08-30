@@ -313,14 +313,14 @@ function resetFilters() {
 }
 
 onMounted(async () => {
-  store.showLoading()
+  store.loading()
   try {
     await Promise.all([
       getActivityTypes(),
       getActivities()
     ])
   } finally {
-    store.hideLoading()
+    store.stopLoad()
   }
 })
 </script>

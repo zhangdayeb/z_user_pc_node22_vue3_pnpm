@@ -122,7 +122,7 @@ async function getFanyongRecords() {
   loading.value = true
 
   try {
-    const resp = await invokeApi('fanyongRecord', {
+    const resp:any = await invokeApi('fanyongRecord', {
       page: currentPage.value,
       limit: pageSize.value
     })

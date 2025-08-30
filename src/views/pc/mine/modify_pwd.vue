@@ -336,7 +336,7 @@ async function handleSubmit() {
         confirm_password: passwordForm.confirmPassword
       }
 
-      const resp = await api.updatePassword(requestData)
+      const resp:any = await api.updatePassword(requestData)
 
       if (resp && resp.code === 200) {
         ElMessage.success(resp.message || t('mine.successAndLoginAgain'))

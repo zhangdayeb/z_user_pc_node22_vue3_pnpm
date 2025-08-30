@@ -261,7 +261,7 @@ async function loadData() {
   loading.value = true
 
   try {
-    const resp = await invokeApi('dailiRecord', {
+    const resp:any = await invokeApi('dailiRecord', {
       page: currentPage.value,
       limit: pageSize.value
     })
@@ -356,7 +356,7 @@ async function handleEditConfirm(action: string) {
   editLoading.value = true
 
   try {
-    const resp = await invokeApi('dailiEdit', {
+    const resp:any = await invokeApi('dailiEdit', {
       user_id: currentEditItem.value.id,
       fanyong_proportion: inputValue.toFixed(2)
     })
@@ -422,7 +422,7 @@ async function handleAddMoneyConfirm(action: string) {
   transferLoading.value = true
 
   try {
-    const resp = await invokeApi('dailiAddMemberMoney', {
+    const resp:any = await invokeApi('dailiAddMemberMoney', {
       user_id: currentAddMoneyItem.value.id,
       amount: inputValue.toFixed(2)
     })

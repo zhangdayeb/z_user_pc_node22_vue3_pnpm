@@ -340,7 +340,7 @@ async function onSubmit() {
       submitting.value = true
 
       // 调用提现接口
-      const resp = await moneyApi.withdraw({
+      const resp:any = await moneyApi.withdraw({
         account_id: parseInt(frm.account_id),
         amount: parseFloat(frm.amount),
         withdraw_pwd: frm.withdraw_pwd,
@@ -380,7 +380,7 @@ async function onSubmit() {
 // 获取用户账户列表
 async function loadAccountList() {
   try {
-    const resp = await moneyApi.accountList()
+    const resp:any = await moneyApi.accountList()
 
     if (resp && resp.code === 200) {
       const data = resp.data as AccountListResponse

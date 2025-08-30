@@ -415,7 +415,7 @@ async function uploadHandler(file: any) {
     const formData = new FormData()
     formData.append('image', file)
 
-    const resp = await api.uploadImg(formData)
+    const resp:any = await api.uploadImg(formData)
 
     if (resp && resp.code === 200 && resp.data?.image_url) {
       form.value.certImage = resp.data.image_url
@@ -510,7 +510,7 @@ async function submitHandler() {
       user_bank_card: getTransferAccount()
     }
 
-    const resp = await api.topUp(submitData)
+    const resp:any = await api.topUp(submitData)
 
     if (resp && resp.code === 200) {
       ElMessage.success(t('rechargeSubmitSuccess'))
@@ -540,7 +540,7 @@ async function submitHandler() {
 
 async function loadPayMethods() {
   try {
-    const resp = await api.topUpInfo()
+    const resp:any = await api.topUpInfo()
 
     if (resp && resp.code === 200 && resp.data) {
       if (resp.data.pay_methods && Array.isArray(resp.data.pay_methods)) {

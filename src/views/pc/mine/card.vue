@@ -17,7 +17,7 @@
     <div class="pc-content">
       <!-- 账户列表展示 -->
       <div class="pc-bank-list" v-if="list.length > 0">
-        <div class="pc-bank-item" v-for="(item, idx) in list" :key="`account-${item.id}`" :class="{ 'is-default': item.is_default }">
+        <div class="pc-bank-item" v-for="(item) in list" :key="`account-${item.id}`" :class="{ 'is-default': item.is_default }">
           <div class="pc-bank-info">
             <div class="pc-bank-left">
               <div class="pc-bank-name">
@@ -33,9 +33,9 @@
                 size="small"
                 @click="setDefaultHandler(item)"
                 :loading="setDefaultLoading === item.id"
-                :type="(item.is_default === 1 || item.is_default === '1') ? 'success' : 'default'"
+                :type="(item.is_default === 1 || item.is_default === 1) ? 'success' : 'default'"
               >
-                {{ (item.is_default === 1 || item.is_default === '1') ? $t('mine.currentDefault') : $t('mine.setDefault') }}
+                {{ (item.is_default === 1 || item.is_default === 1 )? $t('mine.currentDefault') : $t('mine.setDefault') }}
               </el-button>
               <el-button
                 size="small"
@@ -49,7 +49,7 @@
           <div class="pc-bank-card">{{ getFullAccountNumber(item) }}</div>
           <div class="pc-bank-extra-info">
             <span class="pc-account-holder">{{ $t('mine.accountHolder') }}：{{ item.account_name }}</span>
-            <span class="pc-account-date">{{ formatDate(item.created_at) }}</span>
+            <span class="pc-account-date">{{ formatDate(item?.created_at as string) }}</span>
           </div>
         </div>
       </div>
@@ -260,7 +260,7 @@ function resetForm() {
 
 // 设为默认处理函数
 async function setDefaultHandler(item: UserAccount) {
-  if (item.is_default === 1 || item.is_default === '1') {
+  if (item.is_default === 1) {
     ElMessage.warning(t('mine.alreadyDefault'))
     return
   }
@@ -278,7 +278,7 @@ async function setDefaultHandler(item: UserAccount) {
 
     setDefaultLoading.value = item.id
 
-    const resp = await invokeApi('setDefaultAccount', { account_id: item.id })
+    const resp:any = await invokeApi('setDefaultAccount', { account_id: item.id })
 
     if (resp && resp.code === 200) {
       ElMessage.success(t('mine.switchSuccess'))
@@ -543,7 +543,7 @@ async function submitUsdtHandler() {
 async function addAccount(data: object) {
   submitLoading.value = true
   try {
-    const resp = await invokeApi('addAccount', data)
+    const resp:any = await invokeApi('addAccount', data)
     if (resp && resp.code === 200) {
       showBottom.value = false
       ElMessage.success(t('mine.addSuccess'))
@@ -568,7 +568,7 @@ async function editAccount(id: number, data: object) {
       id: id,
       ...data
     }
-    const resp = await invokeApi('editAccount', editData)
+    const resp:any = await invokeApi('editAccount', editData)
     if (resp && resp.code === 200) {
       showBottom.value = false
       ElMessage.success(t('mine.updateSuccess'))
@@ -588,7 +588,7 @@ async function editAccount(id: number, data: object) {
 // 获取用户账户列表
 async function loadAccountList() {
   try {
-    const resp = await invokeApi('accountList')
+    const resp:any = await invokeApi('accountList')
     if (resp && resp.code === 200) {
       list.value = resp.data?.list || []
     } else {
