@@ -12,9 +12,41 @@ import 'element-plus/dist/index.css'
 import './styles/index.less' // 自定义全局样式
 
 /**
+ * 处理URL中的Token参数
+ */
+function handleUrlToken() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search)
+    const urlToken = urlParams.get('token')
+
+    // 检查是否是有效的Simple Token（32位随机字符串）
+    if (urlToken && urlToken.length === 32 && /^[a-zA-Z0-9]{32}$/.test(urlToken)) {
+      // 存储到localStorage
+      localStorage.setItem('X-Token', urlToken)
+
+      console.log('URL Token已存储:', urlToken.substring(0, 8) + '...')
+
+      // 清除URL中的token参数，避免token暴露
+      const url = new URL(window.location.href)
+      url.searchParams.delete('token')
+
+      // 使用replaceState避免在浏览器历史中留下带token的URL
+      window.history.replaceState({}, document.title, url.toString())
+
+      console.log('URL已清理，token参数已移除')
+    }
+  } catch (error) {
+    console.warn('处理URL Token时发生错误:', error)
+  }
+}
+
+/**
  * 应用初始化
  */
 async function bootstrap() {
+  // 首先处理URL Token（在应用启动之前）
+  handleUrlToken()
+
   const app = createApp(App)
 
   // 注册核心插件（顺序很重要）
@@ -68,6 +100,12 @@ async function bootstrap() {
     console.log('🚀 应用已启动 (开发模式)')
     console.log('📝 Vue:', app.version)
     console.log('🔗 API:', import.meta.env.VITE_API_BASE_URL)
+
+    // 调试信息：显示当前存储的Token
+    const jwtToken = localStorage.getItem('access_token')
+    const simpleToken = localStorage.getItem('X-Token')
+    console.log('💾 JWT Token:', jwtToken ? jwtToken.substring(0, 20) + '...' : '无')
+    console.log('💾 Simple Token:', simpleToken ? simpleToken.substring(0, 8) + '...' : '无')
   }
 }
 

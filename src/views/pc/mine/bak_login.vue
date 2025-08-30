@@ -112,45 +112,6 @@ const loading = ref(false)
 const captchaUrl = ref('')
 const captchaKey = ref('')
 
-/**
- * 存储双Token到localStorage
- * @param jwtToken JWT Token
- * @param simpleToken Simple Token (可选)
- */
-const storeTokens = (jwtToken: string, simpleToken?: string) => {
-  try {
-    // 存储JWT Token（保持原有逻辑）
-    localStorage.setItem('access_token', jwtToken)
-    console.log('JWT Token存储成功:', jwtToken.substring(0, 20) + '...')
-
-    // 存储Simple Token（如果存在）
-    if (simpleToken) {
-      localStorage.setItem('X-Token', simpleToken)
-      console.log('Simple Token存储成功:', simpleToken.substring(0, 8) + '...')
-    } else {
-      // 如果没有Simple Token，清除可能存在的旧值
-      localStorage.removeItem('X-Token')
-      console.log('未收到Simple Token，已清除旧值')
-    }
-
-    // 同时通过Store设置（保持原有逻辑）
-    appStore.setToken(jwtToken)
-
-  } catch (error) {
-    console.error('Token存储失败:', error)
-    throw error
-  }
-}
-
-/**
- * 清除所有Token
- */
-const clearTokens = () => {
-  localStorage.removeItem('access_token')
-  localStorage.removeItem('X-Token')
-  console.log('所有Token已清除')
-}
-
 // 获取验证码
 const getCaptcha = async () => {
   try {
@@ -190,25 +151,19 @@ const handleLogin = async () => {
       const res: any = await api.login(params)
 
       if (res?.code === 200 || res?.code === 1 || res?.code === 0) {
-        // 获取返回的Token数据
-        const {
-          access_token,
-          simple_token,
-          x_token,
-          user_info
-        } = res.data || {}
+        // 使用移动端验证过的数据结构处理
+        const { access_token, user_info } = res.data || {}
 
         if (!access_token) {
           ElMessage.error(t('user.loginNoToken'))
           return
         }
 
-        // 存储双Token - 关键修改点
-        // 优先使用x_token，其次使用simple_token
-        const finalSimpleToken = x_token || simple_token
-        storeTokens(access_token, finalSimpleToken)
+        // 使用 Store 方法设置 token - 关键修改点
+        appStore.setToken(access_token)
+        console.log('Token set successfully:', access_token)
 
-        // 设置用户信息
+        // 使用 Store 方法设置用户信息 - 关键修改点
         if (user_info) {
           // 转换用户信息格式以匹配 store 期望的格式
           const userForStore: any = {
@@ -225,29 +180,14 @@ const handleLogin = async () => {
           }
 
           appStore.setUser(userForStore)
-          console.log('用户信息设置成功:', userForStore)
+          console.log('User info set successfully:', userForStore)
         }
 
-        // 成功提示
-        const tokenMessage = finalSimpleToken
-          ? '登录成功（双Token模式）'
-          : '登录成功（JWT模式）'
-        ElMessage.success(tokenMessage)
-
-        // 调试信息
-        if (import.meta.env.DEV) {
-          console.log('登录成功详情:', {
-            hasJwtToken: !!access_token,
-            hasSimpleToken: !!finalSimpleToken,
-            jwtTokenPreview: access_token.substring(0, 20) + '...',
-            simpleTokenPreview: finalSimpleToken ? finalSimpleToken.substring(0, 8) + '...' : null
-          })
-        }
+        ElMessage.success(t('user.loginSuccess'))
 
         // 跳转到原本要访问的页面或首页
         const redirect = route.query.redirect as string
         router.push(redirect || '/')
-
       } else {
         // 登录失败，刷新验证码
         ElMessage.error(res?.message || t('user.loginFailed'))
@@ -260,8 +200,7 @@ const handleLogin = async () => {
       console.error('Login process error:', error)
       ElMessage.error(error?.message || t('user.loginError'))
 
-      // 登录失败，清除可能的Token并刷新验证码
-      clearTokens()
+      // 登录失败，刷新验证码
       if (captchaUrl.value) {
         getCaptcha()
         loginForm.captcha = ''
@@ -280,9 +219,6 @@ const handleForgotPassword = () => {
 
 // 初始化
 onMounted(() => {
-  // 清除可能存在的旧Token
-  clearTokens()
-
   // 获取验证码（根据需要可以注释掉）
   // getCaptcha()
 })
