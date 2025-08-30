@@ -264,6 +264,7 @@ const passwordStrength = computed(() => {
 
 // 验证规则
 const validateOldPassword = (rule: any, value: any, callback: any) => {
+  // 只有在修改模式下才需要验证旧密码
   if (isModify.value && !value) {
     callback(new Error(t('mine.inputCurrWithdrawPwd')))
   } else {
@@ -356,28 +357,35 @@ async function handleSubmit() {
       isSubmitting.value = true
       appStore.loading()
 
+      // 根据模式构建请求数据
       const requestData = {
-        old_withdraw_pwd: isModify.value ? passwordForm.oldPassword : '',
+        old_withdraw_pwd: isModify.value ? passwordForm.oldPassword : '', // 首次设置传空字符串
         new_withdraw_pwd: passwordForm.newPassword,
         confirm_withdraw_pwd: passwordForm.confirmPassword
       }
 
-      const resp:any = await api.updateWithdrawPassword(requestData)
+      console.log('提交数据:', {
+        ...requestData,
+        old_withdraw_pwd: requestData.old_withdraw_pwd ? '***' : '(空)',
+        new_withdraw_pwd: '***',
+        confirm_withdraw_pwd: '***'
+      })
 
-      if (resp && resp.code === 200) {
+      const resp: any = await api.updateWithdrawPassword(requestData)
+
+      if (resp && (resp.code === 200 || resp.code === 1 || resp.code === 0)) {
         const successMsg = isModify.value
           ? t('mine.withdrawPwdModifySuccess')
           : t('mine.withdrawPwdSetSuccess')
 
         ElMessage.success(resp.message || successMsg)
 
-        // 更新用户状态
-        if (!isModify.value) {
-          const user = appStore.getUser()
-          if (user) {
-            user.has_qk_pwd = true
-            appStore.setUser(user)
-          }
+        // 更新用户状态 - 无论是设置还是修改都要更新
+        const user = appStore.getUser()
+        if (user) {
+          user.withdraw_password_set = 1 // 标记已设置
+          user.withdraw_pwd = passwordForm.newPassword // 可选：如果前端需要存储
+          appStore.setUser(user)
         }
 
         setTimeout(() => {
@@ -388,6 +396,7 @@ async function handleSubmit() {
       }
     } catch (error: any) {
       if (error !== 'cancel') {
+        console.error('提交错误:', error)
         ElMessage.error(error.message || t('common.operationFailed'))
       }
     } finally {
@@ -397,10 +406,25 @@ async function handleSubmit() {
   })
 }
 
-// 初始化
+// 初始化 - 修复判断逻辑
 function init() {
   const user = appStore.getUser()
-  isModify.value = !!(user && user.has_qk_pwd)
+
+  // 使用 withdraw_password_set 字段和 withdraw_pwd 字段来判断是否为修改模式
+  // 如果 withdraw_password_set = 1 且 withdraw_pwd 不为空，则为修改模式
+  isModify.value = !!(user &&
+    user.withdraw_password_set === 1 &&
+    user.withdraw_pwd &&
+    user.withdraw_pwd.trim() !== ''
+  )
+
+  console.log('用户信息:', {
+    withdraw_password_set: user?.withdraw_password_set,
+    has_withdraw_pwd: !!(user?.withdraw_pwd && user.withdraw_pwd.trim() !== ''),
+    is_modify_mode: isModify.value
+  })
+
+  console.log('是否为修改模式:', isModify.value)
 }
 
 // 监听密码变化
@@ -410,8 +434,10 @@ watch(() => passwordForm.newPassword, () => {
   }
 })
 
+// 组件挂载
 onMounted(() => {
   init()
+  console.log('提现密码组件挂载完成')
 })
 </script>
 

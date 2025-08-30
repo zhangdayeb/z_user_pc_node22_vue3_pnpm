@@ -145,7 +145,7 @@ const promotionLink = computed(() => {
   if (!userInfo.value?.inviteCode) return ''
 
   const currentDomain = window.location.origin
-  return `${currentDomain}/register?invite=${userInfo.value.inviteCode}`
+  return `${currentDomain}/register?invite_code=${userInfo.value.inviteCode}`
 })
 
 // 返回

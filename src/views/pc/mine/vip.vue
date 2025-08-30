@@ -20,29 +20,29 @@
         <div class="user-info">
           <img :src="avatarImg" class="avatar" alt="avatar" />
           <div class="user-details">
-            <h3 class="username">{{ store.getUser()?.name ?? '' }}</h3>
-            <div class="level-badge">VIP{{ store.getUser()?.level ?? 0 }}</div>
+            <h3 class="username">{{ store.getUser()?.name ?? 'Guest' }}</h3>
+            <div class="level-badge">VIP{{ currentUserLevel }}</div>
           </div>
-          <div class="level-icon" :class="`level-${store.getUser()?.level ?? 0}`"></div>
+          <div class="level-icon" :class="`level-${currentUserLevel}`"></div>
         </div>
 
         <div class="progress-section">
           <div class="progress-header">
-            <span class="current-level">VIP{{ store.getUser()?.level ?? 0 }}</span>
-            <span class="next-level">VIP{{ (store.getUser()?.level ?? 0) + 1 }}</span>
+            <span class="current-level">VIP{{ currentUserLevel }}</span>
+            <span class="next-level">VIP{{ currentUserLevel + 1 }}</span>
           </div>
           <div class="progress-bars">
             <div class="progress-item">
               <div class="progress-bar">
-                <div class="progress-fill deposit" :style="{ width: getPercent(1) + '%' }">
-                  <span class="progress-text">{{ getNumber(vips?.total_deposit ?? 0) }}</span>
+                <div class="progress-fill deposit" :style="{ width: depositPercent + '%' }">
+                  <span class="progress-text">{{ mockData.total_deposit }}</span>
                 </div>
               </div>
             </div>
             <div class="progress-item">
               <div class="progress-bar">
-                <div class="progress-fill bet" :style="{ width: getPercent(2) + '%' }">
-                  <span class="progress-text">{{ getNumber(vips?.total_bet ?? 0) }}</span>
+                <div class="progress-fill bet" :style="{ width: betPercent + '%' }">
+                  <span class="progress-text">{{ mockData.total_bet }}</span>
                 </div>
               </div>
             </div>
@@ -52,13 +52,13 @@
         <div class="stats-section">
           <div class="stat-item">
             <span class="stat-label">{{ $t('vip.currentDeposit') }}：</span>
-            <span class="stat-value">{{ getNumber(vips?.total_deposit ?? 0) }}</span>
-            <span class="stat-target">（{{ userLevel?.deposit_money ?? 0 }}/{{ userNextLevel?.deposit_money }}）</span>
+            <span class="stat-value">{{ mockData.total_deposit }}</span>
+            <span class="stat-target">（{{ currentLevelData.deposit_money }}/{{ nextLevelData.deposit_money }}）</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">{{ $t('vip.currentBet') }}：</span>
-            <span class="stat-value">{{ getNumber(vips?.total_bet ?? 0) }}</span>
-            <span class="stat-target">（{{ userLevel?.bet_money ?? 0 }}/{{ userNextLevel?.bet_money ?? 0 }}）</span>
+            <span class="stat-value">{{ mockData.total_bet }}</span>
+            <span class="stat-target">（{{ currentLevelData.bet_money }}/{{ nextLevelData.bet_money }}）</span>
           </div>
         </div>
       </div>
@@ -67,7 +67,7 @@
       <div class="vip-levels-section">
         <h3 class="section-title">{{ $t('vip.levelDetails') }}</h3>
         <el-table
-          :data="vips?.levels ?? []"
+          :data="mockLevels"
           class="levels-table"
           stripe
         >
@@ -128,42 +128,42 @@
       <!-- 当前等级特权 -->
       <div class="privileges-section">
         <h3 class="section-title">
-          {{ currentLevel?.level_name ?? 'VIP0' }}{{ $t('vip.exclusive') }}
+          {{ currentLevelData.level_name }}{{ $t('vip.exclusive') }}
         </h3>
         <div class="privileges-grid">
           <div class="privilege-item">
             <div class="privilege-icon gift-icon"></div>
             <div class="privilege-info">
               <div class="privilege-label">{{ $t('vip.amount') }}</div>
-              <div class="privilege-value">{{ currentLevel?.level_bonus ?? '0.00' }}$</div>
+              <div class="privilege-value">{{ currentLevelData.level_bonus }}$</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon calendar-icon"></div>
             <div class="privilege-info">
               <div class="privilege-label">{{ $t('vip.dailyReward') }}</div>
-              <div class="privilege-value">{{ currentLevel?.day_bonus ?? '0.00' }}{{ $t('common.yuan') }}</div>
+              <div class="privilege-value">{{ currentLevelData.day_bonus }}{{ $t('common.yuan') }}</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon week-icon"></div>
             <div class="privilege-info">
               <div class="privilege-label">{{ $t('vip.weeklyReward') }}</div>
-              <div class="privilege-value">{{ currentLevel?.week_bonus ?? '0.00' }}$</div>
+              <div class="privilege-value">{{ currentLevelData.week_bonus }}$</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon month-icon"></div>
             <div class="privilege-info">
               <div class="privilege-label">{{ $t('vip.monthlyReward') }}</div>
-              <div class="privilege-value">{{ currentLevel?.month_bonus ?? '0.00' }}$</div>
+              <div class="privilege-value">{{ currentLevelData.month_bonus }}$</div>
             </div>
           </div>
           <div class="privilege-item">
             <div class="privilege-icon birthday-icon"></div>
             <div class="privilege-info">
               <div class="privilege-label">{{ $t('vip.birthdayReward') }}</div>
-              <div class="privilege-value">{{ currentLevel?.year_bonus ?? '0.00' }}$</div>
+              <div class="privilege-value">{{ currentLevelData.year_bonus }}$</div>
             </div>
           </div>
         </div>
@@ -182,75 +182,69 @@ import avatarImg from '@/assets/mobile/avatar.png'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useI18n } from 'vue-i18n'
-import { ref, onMounted } from 'vue'
-import { invokeApi } from '@/utils/tools'
+import { computed } from 'vue'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import type { ApiLevel } from 'typings'
 
 defineOptions({ name: 'PcVipIndex' })
 
 const { t } = useI18n()
 const router = useRouter()
 const store = useAppStore()
-const vips = ref<any | null>(null)
-const userLevel = ref<ApiLevel | null>(null)
-const userNextLevel = ref<ApiLevel | null>(null)
-const currentLevel = ref<ApiLevel>()
+
+// 模拟VIP等级数据
+const mockLevels = [
+  { level_name: 'VIP0', deposit_money: '0.00', bet_money: '0.00', level_bonus: '0.00', day_bonus: '0.00', week_bonus: '0.00', month_bonus: '0.00', year_bonus: '0.00' },
+  { level_name: 'VIP1', deposit_money: '1,000.00', bet_money: '5,000.00', level_bonus: '50.00', day_bonus: '2.00', week_bonus: '10.00', month_bonus: '30.00', year_bonus: '100.00' },
+  { level_name: 'VIP2', deposit_money: '5,000.00', bet_money: '20,000.00', level_bonus: '200.00', day_bonus: '5.00', week_bonus: '25.00', month_bonus: '80.00', year_bonus: '300.00' },
+  { level_name: 'VIP3', deposit_money: '15,000.00', bet_money: '50,000.00', level_bonus: '500.00', day_bonus: '12.00', week_bonus: '60.00', month_bonus: '200.00', year_bonus: '600.00' },
+  { level_name: 'VIP4', deposit_money: '50,000.00', bet_money: '150,000.00', level_bonus: '1,500.00', day_bonus: '30.00', week_bonus: '150.00', month_bonus: '500.00', year_bonus: '1,500.00' },
+  { level_name: 'VIP5', deposit_money: '150,000.00', bet_money: '500,000.00', level_bonus: '5,000.00', day_bonus: '80.00', week_bonus: '400.00', month_bonus: '1,200.00', year_bonus: '5,000.00' }
+]
+
+// 模拟用户数据
+const mockData = {
+  total_deposit: '8,500.00',
+  total_bet: '35,000.00'
+}
+
+// 计算当前用户等级（基于用户信息或默认为1）
+const currentUserLevel = computed(() => {
+  const user = store.getUser()
+  return user?.level ?? 1
+})
+
+// 当前等级数据
+const currentLevelData = computed(() => {
+  return mockLevels[currentUserLevel.value] || mockLevels[0]
+})
+
+// 下一等级数据
+const nextLevelData = computed(() => {
+  const nextLevel = currentUserLevel.value + 1
+  return mockLevels[nextLevel] || mockLevels[mockLevels.length - 1]
+})
+
+// 计算充值进度百分比
+const depositPercent = computed(() => {
+  const current = parseFloat(mockData.total_deposit.replace(/,/g, ''))
+  const target = parseFloat(nextLevelData.value.deposit_money.replace(/,/g, ''))
+  return target > 0 ? Math.min((current / target) * 100, 100) : 0
+})
+
+// 计算下注进度百分比
+const betPercent = computed(() => {
+  const current = parseFloat(mockData.total_bet.replace(/,/g, ''))
+  const target = parseFloat(nextLevelData.value.bet_money.replace(/,/g, ''))
+  return target > 0 ? Math.min((current / target) * 100, 100) : 0
+})
 
 function handleBack() {
   router.back()
 }
 
-function getNumber(d: string | number) {
-  const tmp = Number(`${d}`)
-  return tmp <= 0 ? '0.00' : tmp
-}
-
-function getPercent(n: number) {
-  switch (n) {
-    case 1:
-      const max = Number(userNextLevel.value?.deposit_money ?? '0'),
-        curr = Number(vips.value?.total_deposit ?? '0')
-      return max > 0 ? (curr / max) * 100 : 0
-    case 2:
-      const max2 = Number(userNextLevel.value?.bet_money ?? '0'),
-        curr2 = Number(vips.value?.total_bet ?? '0')
-      return max2 > 0 ? (curr2 / max2) * 100 : 0
-  }
-  return 0
-}
-
 function toDetails() {
   router.push({ name: 'vipDetail' })
 }
-
-async function getVips() {
-  const resp:any = await invokeApi('vips')
-  if (!resp) {
-    return
-  }
-  vips.value = (resp.data as any) ?? null
-  if ((vips.value?.levels.length ?? 0) > 0) {
-    currentLevel.value = vips.value.levels[0]
-  }
-
-  // 获取用户等级
-  const user = store.getUser()
-  if (user) {
-    userLevel.value = vips.value.levels[user?.level ?? 0]
-    let nLevel = user?.level ?? 0
-    nLevel += 1
-    if (vips.value.levels.length - nLevel <= 1) {
-      nLevel = vips.value.levels.length - 1
-    }
-    userNextLevel.value = vips.value.levels[nLevel]
-    currentLevel.value = vips.value.levels[user?.level ?? 0]
-  }
-}
-
-onMounted(async () => {
-  await getVips()
-})
 </script>
 
 <style scoped>

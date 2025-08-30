@@ -86,9 +86,13 @@ export const useAppStore = defineStore('app', () => {
         localStorage.setItem(USER_KEY, JSON.stringify(resp.data))
       }
     } catch (err) {
+      localStorage.clear()
+      token.value = null
+      me.value = null
+      console.warn('服务器错误，已清除本地存储')
       console.log('获取用户信息出错:', err)
     }
-  }
+}
 
   /**
    * 清除用户信息
