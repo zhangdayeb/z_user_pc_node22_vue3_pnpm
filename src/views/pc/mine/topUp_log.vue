@@ -1,183 +1,139 @@
 <template>
-  <div class="top-up-record-container">
-    <!-- 页面头部 -->
-    <div class="page-header">
+  <div class="pc-topup-record">
+    <!-- PC端头部 -->
+    <div class="pc-header">
       <el-button
-        @click="onClickLeft"
+        type="primary"
         :icon="ArrowLeft"
-        circle
-        size="small"
+        @click="handleBack"
         class="back-btn"
-      />
+      >
+        {{ $t('common.back') }}
+      </el-button>
       <h2 class="page-title">{{ $t('rechargeRecord') }}</h2>
-      <el-button
-        @click="onRefresh"
-        :icon="Refresh"
-        circle
-        size="small"
-        class="refresh-btn"
-      />
     </div>
 
-    <!-- 状态筛选标签页 -->
-    <el-card class="filter-card" shadow="never">
-      <el-tabs v-model="activeStatus" @tab-change="onTabChange">
-        <el-tab-pane :label="$t('all')" name=""></el-tab-pane>
-        <el-tab-pane :label="$t('pending')" name="0"></el-tab-pane>
-        <el-tab-pane :label="$t('approved')" name="1"></el-tab-pane>
-        <el-tab-pane :label="$t('rejected')" name="2"></el-tab-pane>
-      </el-tabs>
-    </el-card>
-
-    <!-- 充值记录列表 -->
-    <el-card class="record-list-card" shadow="never" v-loading="loading">
-      <div class="record-list">
-        <div
-          v-for="item in list"
-          :key="item.id"
-          class="record-item"
-          @click="showRecordDetail(item)"
-        >
-          <div class="record-main">
-            <div class="record-left">
-              <div class="amount-row">
-                <span class="amount" :class="getAmountClass(item.status)">
-                  ¥{{ item.amount }}
-                </span>
-                <el-tag
-                  :type="getStatusTagType(item.status)"
-                  size="small"
-                  effect="dark"
-                >
-                  {{ getStatusText(item.status) }}
-                </el-tag>
-              </div>
-              <div class="info-row">
-                <span class="label">{{ $t('orderNumber') }}:</span>
-                <span class="value">{{ item.id }}</span>
-              </div>
-            </div>
-            <div class="record-right">
-              <div class="time-info">
-                <div class="time-row">
-                  <span class="label">{{ $t('applyTime') }}:</span>
-                  <span class="value">{{ formatTime(item.create_time) }}</span>
-                </div>
-                <div class="time-row" v-if="item.success_time">
-                  <span class="label">{{ $t('completeTime') }}:</span>
-                  <span class="value">{{ formatTime(item.success_time) }}</span>
-                </div>
-              </div>
-              <div class="bank-info" v-if="item.u_bank_name">
-                <span class="label">{{ $t('transferBankName') }}:</span>
-                <span class="value">{{ item.u_bank_name }}</span>
-              </div>
-            </div>
-          </div>
-          <el-button
-            type="primary"
-            link
-            :icon="View"
-            class="view-detail-btn"
-          >
-            {{ $t('viewDetail') }}
-          </el-button>
-        </div>
-
-        <!-- 空状态 -->
-        <el-empty
-          v-if="!loading && list.length === 0"
-          :description="$t('noData')"
-          class="empty-state"
-        />
+    <!-- PC端内容区域 -->
+    <div class="pc-content">
+      <!-- 筛选条件 -->
+      <div class="filter-section">
+        <el-form :inline="true" class="filter-form">
+          <el-form-item :label="$t('moneyLog.status')">
+            <el-select
+              v-model="activeStatus"
+              :placeholder="$t('all')"
+              clearable
+              @change="handleFilterChange"
+            >
+              <el-option :label="$t('all')" value="" />
+              <el-option :label="$t('pending')" value="0" />
+              <el-option :label="$t('approved')" value="1" />
+              <el-option :label="$t('rejected')" value="2" />
+            </el-select>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">
+              {{ $t('common.search') }}
+            </el-button>
+            <el-button @click="handleReset">
+              {{ $t('common.reset') }}
+            </el-button>
+          </el-form-item>
+        </el-form>
       </div>
 
-      <!-- 分页 -->
+      <!-- 充值记录表格 -->
+      <el-table
+        v-loading="loading"
+        :data="list"
+        class="record-table"
+        :empty-text="$t('noData')"
+        stripe
+      >
+        <el-table-column
+          prop="create_time"
+          :label="$t('applyTime')"
+          width="180"
+        >
+          <template #default="{ row }">
+            {{ formatTime(row.create_time) }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="id"
+          :label="$t('orderNumber')"
+          width="150"
+        />
+
+        <el-table-column
+          prop="amount"
+          :label="$t('rechargeAmount')"
+          width="150"
+          align="right"
+        >
+          <template #default="{ row }">
+            <span :class="getAmountClass(row.status)">
+              ¥{{ row.amount }}
+            </span>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="status_text"
+          :label="$t('moneyLog.status')"
+          width="120"
+        >
+          <template #default="{ row }">
+            <el-tag :type="getStatusTagType(row.status)">
+              {{ getStatusText(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="success_time"
+          :label="$t('completeTime')"
+          width="180"
+        >
+          <template #default="{ row }">
+            {{ row.success_time ? formatTime(row.success_time) : '-' }}
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          prop="u_bank_name"
+          :label="$t('transferBankName')"
+          min-width="150"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            {{ row.u_bank_name || '-' }}
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <!-- 分页组件 -->
       <el-pagination
-        v-if="list.length > 0"
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
-        :total="total"
         :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        :background="true"
         layout="total, sizes, prev, pager, next, jumper"
-        class="pagination"
         @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
+        @current-change="handlePageChange"
+        class="pagination"
       />
-    </el-card>
-
-    <!-- 详情对话框 -->
-    <el-dialog
-      v-model="showDetail"
-      :title="$t('rechargeDetail')"
-      width="600px"
-      class="detail-dialog"
-    >
-      <div class="detail-content" v-if="selectedRecord">
-        <!-- 金额和状态 -->
-        <div class="detail-header-info">
-          <div class="detail-amount">
-            <label>{{ $t('rechargeAmount') }}</label>
-            <span class="amount-value" :class="getAmountClass(selectedRecord.status)">
-              ¥{{ selectedRecord.amount }}
-            </span>
-          </div>
-          <el-tag
-            :type="getStatusTagType(selectedRecord.status)"
-            size="large"
-            effect="dark"
-          >
-            {{ getStatusText(selectedRecord.status) }}
-          </el-tag>
-        </div>
-
-        <!-- 详细信息 -->
-        <el-descriptions :column="1" border class="detail-descriptions">
-          <el-descriptions-item :label="$t('orderNumber')">
-            {{ selectedRecord.id }}
-          </el-descriptions-item>
-          <el-descriptions-item :label="$t('applyTime')">
-            {{ formatTime(selectedRecord.create_time) }}
-          </el-descriptions-item>
-          <el-descriptions-item
-            v-if="selectedRecord.success_time"
-            :label="$t('completeTime')"
-          >
-            {{ formatTime(selectedRecord.success_time) }}
-          </el-descriptions-item>
-          <el-descriptions-item
-            v-if="selectedRecord.u_bank_name"
-            :label="$t('transferBankName')"
-          >
-            {{ selectedRecord.u_bank_name }}
-          </el-descriptions-item>
-          <el-descriptions-item
-            v-if="selectedRecord.u_bank_user_name"
-            :label="$t('bankAccountName')"
-          >
-            {{ selectedRecord.u_bank_user_name }}
-          </el-descriptions-item>
-          <el-descriptions-item
-            v-if="selectedRecord.u_bank_card"
-            :label="$t('bankCardNumber')"
-          >
-            {{ formatBankCard(selectedRecord.u_bank_card) }}
-          </el-descriptions-item>
-        </el-descriptions>
-      </div>
-
-      <template #footer>
-        <el-button @click="showDetail = false">{{ $t('close') }}</el-button>
-      </template>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ArrowLeft, Refresh, View } from '@element-plus/icons-vue'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import { useI18n } from 'vue-i18n'
 import { invokeApi } from '@/utils/tools'
 
@@ -208,8 +164,6 @@ const total = ref(0)
 const list = ref<TopUpRecordItem[]>([])
 const loading = ref(false)
 const activeStatus = ref('')
-const showDetail = ref(false)
-const selectedRecord = ref<TopUpRecordItem | null>(null)
 
 // 获取状态样式类
 function getAmountClass(status: number): string {
@@ -237,7 +191,7 @@ function getStatusTagType(status: number): 'success' | 'danger' | 'warning' {
   }
 }
 
-// 获取状态文本 - 使用多语言
+// 获取状态文本
 function getStatusText(status: number): string {
   switch (status) {
     case 0:
@@ -251,16 +205,14 @@ function getStatusText(status: number): string {
   }
 }
 
-// 格式化时间 - 根据语言环境调整
+// 格式化时间
 function formatTime(timeStr: string): string {
   if (!timeStr) return '-'
 
   try {
     const date = new Date(timeStr)
-    // 根据当前语言获取对应的 locale
     const currentLocale = locale.value || 'zh-CN'
 
-    // 将 vue-i18n 的 locale 格式转换为标准的 locale 格式
     let dateLocale = currentLocale
     switch (currentLocale) {
       case 'zh-CN':
@@ -298,49 +250,40 @@ function formatTime(timeStr: string): string {
   }
 }
 
-// 格式化银行卡号（隐藏中间部分）
-function formatBankCard(cardNumber: string): string {
-  if (!cardNumber || cardNumber.length < 8) return cardNumber
-
-  const start = cardNumber.substring(0, 4)
-  const end = cardNumber.substring(cardNumber.length - 4)
-  const middle = '*'.repeat(cardNumber.length - 8)
-
-  return `${start}${middle}${end}`
-}
-
-// 显示详情
-function showRecordDetail(record: TopUpRecordItem) {
-  selectedRecord.value = record
-  showDetail.value = true
-}
-
-// 标签切换
-function onTabChange() {
+// 筛选变化
+function handleFilterChange() {
   currentPage.value = 1
   getTopUpRecords()
 }
 
-// 刷新
-const onRefresh = async () => {
-  currentPage.value = 1
-  await getTopUpRecords()
-  ElMessage.success(t('refreshSuccess'))
-}
-
-// 分页大小改变
-function handleSizeChange() {
+// 搜索
+function handleSearch() {
   currentPage.value = 1
   getTopUpRecords()
 }
 
-// 页码改变
-function handleCurrentChange() {
+// 重置
+function handleReset() {
+  activeStatus.value = ''
+  currentPage.value = 1
+  getTopUpRecords()
+}
+
+// 分页大小变化
+function handleSizeChange(val: number) {
+  pageSize.value = val
+  currentPage.value = 1
+  getTopUpRecords()
+}
+
+// 页码变化
+function handlePageChange(val: number) {
+  currentPage.value = val
   getTopUpRecords()
 }
 
 // 返回上一页
-function onClickLeft() {
+function handleBack() {
   router.back()
 }
 
@@ -384,293 +327,115 @@ async function getTopUpRecords() {
   }
 }
 
-// 监听状态变化
-watch(activeStatus, () => {
-  currentPage.value = 1
-})
-
 onMounted(() => {
   getTopUpRecords()
 })
 </script>
 
-<style scoped lang="scss">
-.top-up-record-container {
-  padding: 20px;
+<style scoped>
+.pc-topup-record {
+  min-height: 100vh;
   background-color: #f5f7fa;
-  min-height: calc(100vh - 40px);
-
-  .page-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    padding: 0 20px;
-
-    .page-title {
-      font-size: 24px;
-      font-weight: 600;
-      color: #303133;
-      margin: 0;
-      flex: 1;
-      text-align: center;
-    }
-
-    .back-btn,
-    .refresh-btn {
-      flex-shrink: 0;
-    }
-  }
-
-  .filter-card {
-    margin-bottom: 20px;
-
-    :deep(.el-card__body) {
-      padding: 10px 20px;
-    }
-
-    :deep(.el-tabs__header) {
-      margin-bottom: 0;
-    }
-  }
-
-  .record-list-card {
-    :deep(.el-card__body) {
-      padding: 20px;
-    }
-  }
-
-  .record-list {
-    .record-item {
-      padding: 20px;
-      margin-bottom: 16px;
-      background: #fff;
-      border: 1px solid #e4e7ed;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        transform: translateY(-2px);
-        border-color: #c0c4cc;
-      }
-
-      &:last-child {
-        margin-bottom: 0;
-      }
-
-      .record-main {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        gap: 40px;
-
-        .record-left {
-          .amount-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-
-            .amount {
-              font-size: 24px;
-              font-weight: 600;
-
-              &.amount-success {
-                color: #67c23a;
-              }
-
-              &.amount-error {
-                color: #f56c6c;
-              }
-
-              &.amount-pending {
-                color: #e6a23c;
-              }
-            }
-          }
-
-          .info-row {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-
-            .label {
-              color: #909399;
-            }
-
-            .value {
-              color: #606266;
-              font-family: monospace;
-            }
-          }
-        }
-
-        .record-right {
-          flex: 1;
-
-          .time-info {
-            margin-bottom: 8px;
-
-            .time-row {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              margin-bottom: 6px;
-              font-size: 14px;
-
-              &:last-child {
-                margin-bottom: 0;
-              }
-
-              .label {
-                color: #909399;
-                min-width: 80px;
-              }
-
-              .value {
-                color: #606266;
-              }
-            }
-          }
-
-          .bank-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-
-            .label {
-              color: #909399;
-            }
-
-            .value {
-              color: #606266;
-            }
-          }
-        }
-      }
-
-      .view-detail-btn {
-        font-size: 14px;
-      }
-    }
-
-    .empty-state {
-      padding: 60px 0;
-    }
-  }
-
-  .pagination {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-  }
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-.detail-dialog {
-  :deep(.el-dialog__body) {
-    padding: 20px 30px;
-  }
-
-  .detail-content {
-    .detail-header-info {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 20px;
-      background: #f5f7fa;
-      border-radius: 8px;
-      margin-bottom: 20px;
-
-      .detail-amount {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-
-        label {
-          font-size: 14px;
-          color: #909399;
-        }
-
-        .amount-value {
-          font-size: 32px;
-          font-weight: 600;
-
-          &.amount-success {
-            color: #67c23a;
-          }
-
-          &.amount-error {
-            color: #f56c6c;
-          }
-
-          &.amount-pending {
-            color: #e6a23c;
-          }
-        }
-      }
-    }
-
-    .detail-descriptions {
-      :deep(.el-descriptions__label) {
-        width: 140px;
-        font-weight: 500;
-      }
-    }
-  }
+.pc-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 16px 24px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-// 响应式适配
-@media (max-width: 1200px) {
-  .top-up-record-container {
-    padding: 16px;
-
-    .record-list {
-      .record-item {
-        .record-main {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 16px;
-        }
-      }
-    }
-  }
+.back-btn {
+  margin-right: 16px;
 }
 
-@media (max-width: 768px) {
-  .top-up-record-container {
-    padding: 12px;
+.page-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
 
-    .page-header {
-      padding: 0 12px;
+.pc-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
 
-      .page-title {
-        font-size: 20px;
-      }
-    }
+.filter-section {
+  margin-bottom: 20px;
+}
 
-    .record-list {
-      .record-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
+.filter-form .el-form-item {
+  margin-bottom: 0;
+}
 
-        .view-detail-btn {
-          align-self: flex-end;
-        }
-      }
-    }
-  }
+.record-table {
+  width: 100%;
+  margin-bottom: 20px;
+}
 
-  .detail-dialog {
-    width: 90% !important;
-    max-width: 500px;
+.amount-success {
+  color: #67c23a;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.amount-error {
+  color: #f56c6c;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.amount-pending {
+  color: #e6a23c;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+/* Element Plus 样式覆盖 */
+.pc-topup-record :deep(.el-table) {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.pc-topup-record :deep(.el-table__header) {
+  background-color: #f8f9fa;
+}
+
+.pc-topup-record :deep(.el-table th) {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.pc-topup-record :deep(.el-table td) {
+  padding: 16px 12px;
+}
+
+.pc-topup-record :deep(.el-table__empty-block) {
+  padding: 60px 0;
+}
+
+.pc-topup-record :deep(.el-pagination) {
+  padding: 12px 0;
+}
+
+@media (min-width: 1600px) {
+  .pc-topup-record {
+    max-width: 1400px;
   }
 }
 </style>

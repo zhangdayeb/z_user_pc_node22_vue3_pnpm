@@ -314,7 +314,7 @@
     "transferType": "转账类型",
     "desc": "操作描述",
     "tradeDate": "交易时间",
-    "status": "游戏状态"
+    "status": "状态"
   },
   "support": {
     "welcome": "欢迎来到客服中心",
