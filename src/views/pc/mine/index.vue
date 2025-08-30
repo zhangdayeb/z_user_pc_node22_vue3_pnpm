@@ -96,9 +96,9 @@
             <el-icon :size="32" color="#F56C6C"><Share /></el-icon>
             <span>{{ t('mine.promotion') }}</span>
           </div>
-          <div v-if="isLoggedIn" class="function-item" @click="showSettings">
-            <el-icon :size="32" color="#909399"><Setting /></el-icon>
-            <span>{{ t('user.settings') }}</span>
+          <div v-if="isLoggedIn" class="function-item" @click="goToPage('team')">
+            <el-icon :size="32" color="#909399"><UserFilled /></el-icon>
+            <span>{{ t('mine.subordinateMembers') }}</span>
           </div>
           <div v-if="isLoggedIn" class="function-item" @click="handleLogout">
             <el-icon :size="32" color="#F56C6C"><SwitchButton /></el-icon>
@@ -159,26 +159,6 @@
           <el-menu-item index="commissionLog">
             <el-icon><Present /></el-icon>
             <span>{{ t('records.commissionRecord') }}</span>
-          </el-menu-item>
-        </el-menu>
-      </el-card>
-
-      <!-- 推广代理 -->
-      <el-card class="menu-card">
-        <template #header>
-          <div class="card-header">
-            <span>{{ t('mine.agencyPromotion') }}</span>
-          </div>
-        </template>
-
-        <el-menu :default-active="activeMenu" @select="handleMenuSelect">
-          <el-menu-item index="team">
-            <el-icon><UserFilled /></el-icon>
-            <span>{{ t('mine.subordinateMembers') }}</span>
-          </el-menu-item>
-          <el-menu-item index="extension">
-            <el-icon><Share /></el-icon>
-            <span>{{ t('mine.promotionCenter') }}</span>
           </el-menu-item>
         </el-menu>
       </el-card>
