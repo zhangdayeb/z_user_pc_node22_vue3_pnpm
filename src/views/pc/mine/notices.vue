@@ -15,240 +15,191 @@
 
     <!-- PC端内容区域 -->
     <div class="pc-content">
-      <!-- 筛选标签 -->
-      <div class="filter-section">
-        <el-radio-group v-model="activeTab" @change="handleTabChange">
-          <el-radio-button :value="0">{{ $t('unread') }}</el-radio-button>
-          <el-radio-button :value="1">{{ $t('readed') }}</el-radio-button>
-        </el-radio-group>
+      <!-- 加载状态 -->
+      <div v-if="loading" class="loading-container" v-loading="loading">
+        <span>{{ $t('common.loading') }}</span>
       </div>
 
       <!-- 通知列表 -->
-      <div class="notices-list">
-        <!-- 未读通知 -->
-        <div v-if="activeTab === 0">
-          <div v-if="unread.data.length === 0 && !unread.loading" class="empty-state">
-            <el-empty :description="$t('noRecord')" />
+      <div v-else-if="noticeList.length > 0" class="notices-list">
+        <div
+          v-for="(item, idx) in noticeList"
+          :key="idx"
+          class="notice-item"
+          @click="handleNoticeClick(item)"
+        >
+          <div class="notice-content">
+            <h3 class="notice-title">{{ item.title }}</h3>
+            <div class="notice-text" v-html="item.content"></div>
+            <p class="notice-time">{{ formatTime(item.created_at) }}</p>
           </div>
-          <div v-else>
-            <div
-              v-for="(item, idx) in unread.data"
-              :key="`unread-${idx}`"
-              class="notice-item unread"
-              @click="handleNoticeClick(item)"
-            >
-              <div class="notice-content">
-                <h3 class="notice-title">{{ item.title }}</h3>
-                <p class="notice-time">{{ item.created_at }}</p>
-              </div>
-              <div class="notice-status">
-                <el-tag type="success" size="small">{{ $t('unread') }}</el-tag>
-              </div>
-              <div class="notice-arrow">
-                <el-icon><ArrowRight /></el-icon>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 已读通知 -->
-        <div v-if="activeTab === 1">
-          <div v-if="read.data.length === 0 && !read.loading" class="empty-state">
-            <el-empty :description="$t('noRecord')" />
-          </div>
-          <div v-else>
-            <div
-              v-for="(item, idx) in read.data"
-              :key="`read-${idx}`"
-              class="notice-item read"
-              @click="handleNoticeClick(item)"
-            >
-              <div class="notice-content">
-                <h3 class="notice-title">{{ item.title }}</h3>
-                <p class="notice-time">{{ item.created_at }}</p>
-              </div>
-              <div class="notice-status">
-                <el-tag type="info" size="small">{{ $t('readed') }}</el-tag>
-              </div>
-              <div class="notice-arrow">
-                <el-icon><ArrowRight /></el-icon>
-              </div>
-            </div>
+          <div class="notice-arrow">
+            <el-icon><ArrowRight /></el-icon>
           </div>
         </div>
       </div>
 
-      <!-- 分页组件 -->
-      <el-pagination
-        v-if="getCurrentList().length > 0"
-        v-model:current-page="currentPage"
-        v-model:page-size="pageSize"
-        :page-sizes="[10, 20, 50, 100]"
-        :total="total"
-        :background="true"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-        @current-change="handlePageChange"
-        class="pagination"
-      />
+      <!-- 空数据状态 -->
+      <div v-else class="empty-container">
+        <el-empty :description="$t('common.noData')" />
+      </div>
+
+      <!-- 分页器 -->
+      <div v-if="total > 0" class="pagination-container">
+        <el-pagination
+          v-model:current-page="currentPage"
+          v-model:page-size="pageSize"
+          :total="total"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+        />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { invokeApi } from '@/utils/tools'
-import type { ApiRead } from 'typings'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { ElMessage } from 'element-plus'
 import { ArrowLeft, ArrowRight } from '@element-plus/icons-vue'
+import api from '@/api'
 
 defineOptions({ name: 'PcNotices' })
 
-interface ListData {
-  data: ApiRead[]
-  loading: boolean
-  finished: boolean
-  total: number
-  page: number
+interface NoticeItem {
+  id: number
+  title: string
+  content: string
+  created_at: string
 }
 
+const { t } = useI18n()
 const router = useRouter()
-const activeTab = ref(0)
+
+// 响应式数据
+const noticeList = ref<NoticeItem[]>([])
+const loading = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
-
-const read = ref<ListData>({
-  data: [],
-  loading: false,
-  finished: false,
-  total: 0,
-  page: 0,
-})
-
-const unread = ref<ListData>({
-  data: [],
-  loading: false,
-  finished: false,
-  total: 0,
-  page: 0,
-})
-
-// 获取当前标签对应的列表
-const getCurrentList = computed(() => {
-  return activeTab.value === 0 ? unread.value.data : read.value.data
-})
 
 function handleBack() {
   router.back()
 }
 
-// 标签切换
-function handleTabChange(value: number) {
-  activeTab.value = value
-  currentPage.value = 1
-  loadMessages()
+// 格式化时间
+function formatTime(timeStr: string): string {
+  if (!timeStr) return ''
+
+  try {
+    const date = new Date(timeStr)
+    if (isNaN(date.getTime())) {
+      return timeStr
+    }
+
+    return date.toLocaleString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+  } catch (error) {
+    console.error('时间格式化错误:', error)
+    return timeStr
+  }
 }
 
-// 分页变化
-function handlePageChange(page: number) {
-  currentPage.value = page
-  loadMessages()
-}
+// 获取通知列表
+async function getNotices(page = 1, limit = 20) {
+  loading.value = true
 
-// 分页大小变化
-function handleSizeChange(val: number) {
-  pageSize.value = val
-  currentPage.value = 1
-  loadMessages()
+  try {
+    const params = {
+      page: page,
+      limit: limit
+    }
+
+    console.log('请求通知列表:', params)
+    const resp:any = await api.notices(params)
+    console.log('通知列表响应:', resp)
+
+    if (resp && resp.code === 200) {
+      // 处理数据 - 适配后端返回格式
+      if (Array.isArray(resp.data)) {
+        // 如果 data 直接是数组
+        noticeList.value = resp.data
+        total.value = resp.total || resp.data.length
+      } else if (resp.data && Array.isArray(resp.data.list)) {
+        // 如果有分页结构
+        noticeList.value = resp.data.list
+        const pagination = resp.data.pagination
+        if (pagination) {
+          total.value = pagination.total || 0
+          currentPage.value = pagination.current_page || page
+          pageSize.value = pagination.per_page || limit
+        } else {
+          total.value = resp.data.total || resp.total || noticeList.value.length
+        }
+      } else {
+        // 兜底处理
+        noticeList.value = []
+        total.value = 0
+      }
+
+      console.log('通知数据处理结果:', {
+        count: noticeList.value.length,
+        total: total.value,
+        currentPage: currentPage.value
+      })
+    } else {
+      throw new Error(resp?.message || '获取通知失败')
+    }
+  } catch (error) {
+    console.error('获取通知列表失败:', error)
+    ElMessage.error('获取通知失败，请稍后重试')
+    noticeList.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
+  }
 }
 
 // 点击通知项
-function handleNoticeClick(item: ApiRead) {
-  // 处理通知点击事件，可以跳转到详情页或标记为已读
+function handleNoticeClick(item: NoticeItem) {
   console.log('点击通知:', item)
-
-  // 如果是未读通知，可以标记为已读
-  if (item.is_read === 0) {
-    markAsRead(item)
-  }
+  // 这里可以添加点击通知的处理逻辑
+  // 比如跳转到详情页或展开显示完整内容
 }
 
-// 标记为已读
-async function markAsRead(item: ApiRead) {
-  try {
-    // 调用标记已读的API
-    const resp:any = await invokeApi('markMessageRead', { id: item.id })
-
-    if (resp && resp.code === 200) {
-      // 从未读列表移除，添加到已读列表
-      const index = unread.value.data.findIndex(notice => notice.id === item.id)
-      if (index !== -1) {
-        const readItem = { ...item, is_read: 1 }
-        unread.value.data.splice(index, 1)
-        read.value.data.unshift(readItem)
-      }
-    }
-  } catch (error) {
-    console.error('标记已读失败:', error)
-  }
+// 分页大小改变
+async function handleSizeChange(newSize: number) {
+  pageSize.value = newSize
+  currentPage.value = 1
+  await getNotices(1, newSize)
 }
 
-// 加载消息数据
-async function loadMessages() {
-  try {
-    const resp:any = await invokeApi('message', {
-      page: currentPage.value,
-      limit: pageSize.value
-    })
-
-    if (resp && resp.data) {
-      const data = resp.data.data as ApiRead[]
-
-      // 清空现有数据
-      unread.value.data = []
-      read.value.data = []
-
-      // 分类消息
-      data.forEach(item => {
-        if (item.is_read === 0) {
-          unread.value.data.push(item)
-        } else {
-          read.value.data.push(item)
-        }
-      })
-
-      // 更新分页信息
-      if (resp.data.pagination) {
-        total.value = resp.data.pagination.total || 0
-        currentPage.value = resp.data.pagination.current_page || 1
-      } else {
-        total.value = data.length
-      }
-
-      // 标记加载完成
-      unread.value.finished = true
-      read.value.finished = true
-    }
-  } catch (error) {
-    console.error('加载消息失败:', error)
-    unread.value.data = []
-    read.value.data = []
-    total.value = 0
-  }
+// 当前页改变
+async function handleCurrentChange(newPage: number) {
+  currentPage.value = newPage
+  await getNotices(newPage, pageSize.value)
 }
 
-onMounted(() => {
-  loadMessages()
+onMounted(async () => {
+  await getNotices()
 })
 </script>
 
-<style scoped>
+<style lang="less" scoped>
 .pc-notices {
   min-height: 100vh;
   background-color: #f5f7fa;
   padding: 20px;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -260,17 +211,17 @@ onMounted(() => {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
 
-.back-btn {
-  margin-right: 16px;
-}
+  .back-btn {
+    margin-right: 16px;
+  }
 
-.page-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
-  margin: 0;
+  .page-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
 }
 
 .pc-content {
@@ -278,108 +229,130 @@ onMounted(() => {
   border-radius: 8px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+  min-height: 600px;
 
-.filter-section {
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: center;
-}
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    color: #666;
+    gap: 16px;
+  }
 
-.notices-list {
-  margin-bottom: 24px;
-}
+  .notices-list {
+    margin-bottom: 40px;
 
-.notice-item {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 12px;
-  background: #fff;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
+    .notice-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
 
-.notice-item:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-  border-color: #409eff;
-}
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        border-color: #409eff;
+        background: #fff;
+      }
 
-.notice-item:last-child {
-  margin-bottom: 0;
-}
+      &:last-child {
+        margin-bottom: 0;
+      }
 
-.notice-item.unread {
-  border-left: 3px solid #67c23a;
-}
+      .notice-content {
+        flex: 1;
+        min-width: 0;
 
-.notice-item.read {
-  border-left: 3px solid #909399;
-}
+        .notice-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #303133;
+          margin: 0 0 12px 0;
+          line-height: 1.4;
+        }
 
-.notice-content {
-  flex: 1;
-}
+        .notice-text {
+          font-size: 14px;
+          color: #666;
+          line-height: 1.6;
+          margin-bottom: 12px;
+          max-height: 60px;
+          overflow: hidden;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
 
-.notice-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin: 0 0 8px 0;
-  line-height: 1.4;
-}
+          :deep(p) {
+            margin: 0;
+          }
 
-.notice-time {
-  font-size: 14px;
-  color: #999;
-  margin: 0;
-}
+          :deep(img) {
+            max-width: 100%;
+            height: auto;
+          }
+        }
 
-.notice-status {
-  flex-shrink: 0;
-}
+        .notice-time {
+          font-size: 13px;
+          color: #999;
+          margin: 0;
+        }
+      }
 
-.notice-arrow {
-  flex-shrink: 0;
-  color: #c0c4cc;
-  font-size: 16px;
-}
+      .notice-arrow {
+        flex-shrink: 0;
+        color: #c0c4cc;
+        font-size: 18px;
+        transition: all 0.3s ease;
+      }
 
-.notice-item:hover .notice-arrow {
-  color: #409eff;
-}
+      &:hover .notice-arrow {
+        color: #409eff;
+        transform: translateX(4px);
+      }
+    }
+  }
 
-.empty-state {
-  padding: 60px 0;
-}
+  .empty-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 0;
 
-.pagination {
-  margin-top: 20px;
-  justify-content: flex-end;
-}
+    :deep(.el-empty) {
+      .el-empty__description {
+        font-size: 16px;
+        color: #909399;
+      }
+    }
+  }
 
-/* Element Plus 样式覆盖 */
-.pc-notices :deep(.el-radio-group) {
-  display: flex;
-  gap: 8px;
-}
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
 
-.pc-notices :deep(.el-radio-button__inner) {
-  padding: 12px 24px;
-  font-weight: 500;
-}
-
-.pc-notices :deep(.el-pagination) {
-  padding: 12px 0;
+    :deep(.el-pagination) {
+      .el-pagination__total,
+      .el-pagination__sizes,
+      .el-pagination__jump {
+        color: #606266;
+      }
+    }
+  }
 }
 
 @media (min-width: 1600px) {
   .pc-notices {
-    max-width: 1400px;
+    max-width: 1600px;
   }
 }
 </style>

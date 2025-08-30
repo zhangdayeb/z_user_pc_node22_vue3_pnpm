@@ -78,7 +78,7 @@
         </template>
 
         <!-- 银行转账信息 -->
-        <div v-if="selectedMethod.method_code === 'bank'" class="payment-details">
+        <div v-if="selectedMethod?.method_code === 'bank'" class="payment-details">
           <el-descriptions :column="1" border>
             <el-descriptions-item :label="$t('account')">
               <div class="copy-field">
@@ -118,7 +118,7 @@
         </div>
 
         <!-- 汇旺支付信息 -->
-        <div v-else-if="selectedMethod.method_code === 'huiwang'" class="payment-details">
+        <div v-else-if="selectedMethod?.method_code === 'huiwang'" class="payment-details">
           <!-- 二维码 -->
           <div v-if="selectedAccount.qr_code_url" class="qrcode-container">
             <h4>{{ $t('recharge_qrcode') }}</h4>
@@ -158,7 +158,7 @@
         </div>
 
         <!-- USDT支付信息 -->
-        <div v-else-if="selectedMethod.method_code === 'usdt'" class="payment-details">
+        <div v-else-if="selectedMethod?.method_code === 'usdt'" class="payment-details">
           <!-- 二维码 -->
           <div v-if="selectedAccount.qr_code_url" class="qrcode-container">
             <h4>{{ $t('recharge_qrcode') }}</h4>

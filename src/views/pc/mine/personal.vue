@@ -260,7 +260,7 @@ function editUserInfo(field: string) {
 // 更新基础信息
 async function updateBasicInfo() {
   try {
-    let updateData: any = {}
+    const updateData:any = {}
 
     if (editField.value === 'nick_name') {
       if (!basicForm.value.nick_name.trim()) {
@@ -276,7 +276,7 @@ async function updateBasicInfo() {
       updateData.phone = basicForm.value.phone.trim()
     }
 
-    const response = await userApi.updateUserInfo(updateData)
+    const response:any = await userApi.updateUserInfo(updateData)
 
     if (response && response.code === 200) {
       ElMessage.success(t('mine.updateSuccess'))
@@ -300,7 +300,7 @@ async function updateBasicInfo() {
 // 刷新用户信息
 async function refreshUserInfo() {
   try {
-    const response = await userApi.getUserInfo()
+    const response:any = await userApi.getUserInfo()
 
     if (response && response.code === 200 && response.data) {
       store.setUser(response.data)

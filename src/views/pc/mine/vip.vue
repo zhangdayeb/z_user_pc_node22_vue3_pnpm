@@ -184,13 +184,13 @@ import { useAppStore } from '@/stores/app'
 import { ref, onMounted } from 'vue'
 import { invokeApi } from '@/utils/tools'
 import { ArrowLeft } from '@element-plus/icons-vue'
-import type { ApiLevel, ApiVips } from 'typings'
+import type { ApiLevel } from 'typings'
 
 defineOptions({ name: 'PcVipIndex' })
 
 const router = useRouter()
 const store = useAppStore()
-const vips = ref<ApiVips | null>(null)
+const vips = ref<any | null>(null)
 const userLevel = ref<ApiLevel | null>(null)
 const userNextLevel = ref<ApiLevel | null>(null)
 const currentLevel = ref<ApiLevel>()
@@ -227,7 +227,7 @@ async function getVips() {
   if (!resp) {
     return
   }
-  vips.value = (resp.data as ApiVips) ?? null
+  vips.value = (resp.data as any) ?? null
   if ((vips.value?.levels.length ?? 0) > 0) {
     currentLevel.value = vips.value.levels[0]
   }
